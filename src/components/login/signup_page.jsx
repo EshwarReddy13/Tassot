@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider, db } from '../../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
-import login_background from '../assets/login_background.webp';
+import login_background from '../../assets/login_background.webp';
 
 function SignUpPageView() {
   const [firstName, setFirstName] = useState('');
@@ -25,6 +26,8 @@ function SignUpPageView() {
     number: false,
     specialChar: false,
   });
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState('');
 
   const navigate = useNavigate();
 
@@ -74,7 +77,7 @@ function SignUpPageView() {
       specialChar: /[^A-Za-z0-9]/.test(val),
     };
     setPasswordChecks(updatedChecks);
-    if (!val) {
+    if (!val){
       setPasswordError('Please fill in this field');
     } else {
       setPasswordError('');
@@ -157,18 +160,27 @@ function SignUpPageView() {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, {
+      const user = userCredential.user;
+      await updateProfile(user, {
         displayName: `${firstName} ${lastName}`,
       });
-      navigate('/dashboard');
+      await sendEmailVerification(user);
+      setAuthError('A verification email has been sent. Please verify your email before logging in.');
+      navigate('/verify-email');
     } catch (err) {
-      setPasswordError(err.message);
+      console.error('Sign-up error:', err.code, err.message);
+      if (err.code === 'auth/email-already-in-use') {
+        setAuthError('This email is already registered. Please log in or use a different email.');
+      } else {
+        setAuthError(err.message || 'Failed to sign up');
+      }
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
       setAuthError('');
+      setShowPopup(false);
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       if (!user.displayName) {
@@ -176,19 +188,46 @@ function SignUpPageView() {
           displayName: 'User',
         });
       }
-      navigate('/dashboard');
+      if (user.emailVerified) {
+        const displayName = user.displayName || 'User';
+        const [firstName, lastName = ''] = displayName.split(' ');
+        await setDoc(doc(db, 'users', user.uid), {
+          firstName,
+          lastName,
+          email: user.email,
+          provider: 'google',
+        });
+        navigate('/dashboard');
+      } else {
+        navigate('/verify-email');
+      }
     } catch (err) {
-      console.error('Google Sign-In Error:', err);
-      setAuthError(err.message || 'Failed to sign in with Google');
+      console.error('Google Sign-In Error:', err.code, err.message);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setAuthError('Google Sign-In was cancelled. Please try again.');
+      } else {
+        setAuthError(err.message || 'Failed to sign in with Google');
+      }
     }
+  };
+
+  const handleAppleSignIn = () => {
+    setPopupType('apple');
+    setShowPopup(true);
+    setAuthError('');
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+    setPopupType('');
   };
 
   const passwordStrength = getPasswordStrength();
 
   return (
-    <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
-      {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+    <div className="min-h-screen flex font-poppins w-full">
+      {/* Left Image Section - Fixed */}
+      <div className="fixed top-0 left-0 h-screen w-1/2 bg-[#2c2638] p-4 flex items-center justify-center transition-none">
         <img
           src={login_background}
           alt="Signup Background"
@@ -196,14 +235,14 @@ function SignUpPageView() {
         />
       </div>
 
-      {/* Right Form Section */}
+      {/* Right Form Section - Scrollable and Centered */}
       <motion.div
-        className="w-1/2 h-full flex flex-col px-12 bg-[#2c2638] min-w-0 flex-shrink-0 overflow-y-auto"
+        className="ml-[50%] w-1/2 min-h-screen bg-[#2c2638] px-12 overflow-y-auto flex flex-col justify-center items-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <div className="w-full max-w-md mx-auto pt-6">
+        <div className="w-full max-w-md py-8">
           <motion.h2
             className="text-5xl font-bold text-white mb-6 text-center"
             initial={{ opacity: 0 }}
@@ -244,7 +283,6 @@ function SignUpPageView() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.3 }}
             >
-              {/* First Name */}
               <div className="flex-1">
                 <label htmlFor="firstName" className="block text-xl font-medium text-white text-left">
                   First Name
@@ -268,7 +306,6 @@ function SignUpPageView() {
                 )}
               </div>
 
-              {/* Last Name */}
               <div className="flex-1">
                 <label htmlFor="lastName" className="block text-xl font-medium text-white text-left">
                   Last Name
@@ -293,7 +330,6 @@ function SignUpPageView() {
               </div>
             </motion.div>
 
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-xl font-medium text-white text-left">
                 Email
@@ -317,7 +353,6 @@ function SignUpPageView() {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-xl font-medium text-white text-left">
                 Password
@@ -342,7 +377,6 @@ function SignUpPageView() {
 
               {password && (
                 <>
-                  {/* Strength Bar */}
                   <div className="w-full h-2 mt-5 bg-[#4a4952] rounded-md">
                     <motion.div
                       style={{
@@ -356,7 +390,6 @@ function SignUpPageView() {
                     />
                   </div>
 
-                  {/* Inline checklist */}
                   <motion.div
                     className="mt-2 flex flex-wrap gap-2 text-xs text-white"
                     initial={{ opacity: 0 }}
@@ -383,7 +416,6 @@ function SignUpPageView() {
               )}
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-xl font-medium text-white text-left">
                 Confirm Password
@@ -407,7 +439,6 @@ function SignUpPageView() {
               )}
             </div>
 
-            {/* Terms & Conditions */}
             <motion.div
               className="flex items-center space-x-2 mt-2"
               initial={{ opacity: 0 }}
@@ -433,7 +464,6 @@ function SignUpPageView() {
               </label>
             </motion.div>
 
-            {/* Submit */}
             <button
               type="submit"
               className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold"
@@ -441,7 +471,6 @@ function SignUpPageView() {
               Sign Up
             </button>
 
-            {/* Divider */}
             <motion.div
               className="flex items-center my-6"
               initial={{ opacity: 0 }}
@@ -453,14 +482,12 @@ function SignUpPageView() {
               <div className="flex-grow border-t border-gray-600" />
             </motion.div>
 
-            {/* OAuth Buttons Row */}
             <motion.div
               className="flex gap-4 pb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.3 }}
             >
-              {/* Google */}
               <motion.button
                 type="button"
                 className="w-1/2 flex items-center justify-center hover:bg-[#9674da] hover:outline-black gap-2 outline-1 outline-[#9674da] bg-transparent text-white py-2 rounded-md shadow hover:scale-105 transition-transform duration-200"
@@ -477,11 +504,10 @@ function SignUpPageView() {
                 Google
               </motion.button>
 
-              {/* Apple */}
               <motion.button
                 type="button"
                 className="w-1/2 flex items-center justify-center gap-2 hover:bg-[#9674da] hover:outline-black outline-1 outline-[#9674da] bg-transparent text-white py-2 rounded-md shadow hover:scale-105 transition-transform duration-200"
-                onClick={() => console.log('Apple Sign-Up logic goes here')}
+                onClick={handleAppleSignIn}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
@@ -495,6 +521,42 @@ function SignUpPageView() {
               </motion.button>
             </motion.div>
           </form>
+
+          {showPopup && popupType === 'apple' && (
+            <motion.div
+              className="fixed inset-0 bg-[#000]/40 backdrop-blur-sm flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closePopup}
+            >
+              <motion.div
+                className="bg-[#2c2638] p-10 rounded-lg max-w-sm w-full"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-xl font-bold text-white mb-4 text-center">
+                  Apple Sign-In Not Available
+                </h3>
+                <p className="text-white text-sm mb-6 text-center">
+                  We are still working on setting up Apple sign in. For now, just use Google or create an account using email.
+                </p>
+                <motion.button
+                  type="button"
+                  className="w-full bg-[#9674da] text-white py-2 rounded-md font-bold"
+                  onClick={closePopup}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  Exit
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </div>
