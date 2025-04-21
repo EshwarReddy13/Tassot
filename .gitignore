@@ -33,3 +33,11 @@ dist-ssr
 .env.development
 .env.test
 .env.production
+
+# Firebase Hosting/Emulator
+.firebase/
+.firebaserc
+apphosting.emulator.yaml
+apphosting.yaml
+firebase-debug.log
+firebase-debug.*.log
