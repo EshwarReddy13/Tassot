@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 // Import other Firebase services as needed, e.g., Firestore, Auth
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your Firebase configuration object
 const firebaseConfig = {
@@ -10,7 +10,8 @@ const firebaseConfig = {
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
   };
 
 // Initialize Firebase
@@ -19,6 +20,7 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 const db = getFirestore(app); // For Firestore
 const auth = getAuth(app); // For Authentication
+const googleProvider = new GoogleAuthProvider();
 
 // Export services for use in your app
-export { db, auth };
+export { db, auth, googleProvider };
