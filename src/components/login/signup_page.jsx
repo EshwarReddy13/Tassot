@@ -5,9 +5,12 @@ import { auth, googleProvider, db } from '../../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
+import { useUser } from '../global widgets/user_provider.jsx';
+
 import login_background from '../../assets/login_background.webp';
 
 function SignUpPageView() {
+  const { userData, loading } = useUser();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,6 +33,12 @@ function SignUpPageView() {
   const [popupType, setPopupType] = useState('');
 
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  if (!loading && userData) {
+    navigate(userData.emailVerified ? '/dashboard' : '/verify-email', { replace: true });
+    return null;
+  }
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidName = (name) => /^[A-Za-z\s-]{1,50}$/.test(name);
@@ -77,7 +86,7 @@ function SignUpPageView() {
       specialChar: /[^A-Za-z0-9]/.test(val),
     };
     setPasswordChecks(updatedChecks);
-    if (!val){
+    if (!val) {
       setPasswordError('Please fill in this field');
     } else {
       setPasswordError('');
@@ -164,6 +173,12 @@ function SignUpPageView() {
       await updateProfile(user, {
         displayName: `${firstName} ${lastName}`,
       });
+      await setDoc(doc(db, 'users', user.uid), {
+        firstName,
+        lastName,
+        email: user.email,
+        provider: 'email',
+      });
       await sendEmailVerification(user);
       setAuthError('A verification email has been sent. Please verify your email before logging in.');
       navigate('/verify-email');
@@ -224,13 +239,26 @@ function SignUpPageView() {
 
   const passwordStrength = getPasswordStrength();
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1f1e25] font-poppins">
+        <div
+          className="w-[2.5rem] h-[2.5rem] border-[0.25rem] border-t-[#9674da] border-[#ffffff33] rounded-full animate-spin"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading"
+        ></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex font-poppins w-full">
       {/* Left Image Section - Fixed */}
       <div className="fixed top-0 left-0 h-screen w-1/2 bg-[#2c2638] p-4 flex items-center justify-center transition-none">
         <img
           src={login_background}
-          alt="Signup Background"
+          alt="Decorative signup background"
           className="w-full h-full object-cover rounded-lg scale-100 transition-none"
         />
       </div>
@@ -245,6 +273,7 @@ function SignUpPageView() {
         <div className="w-full max-w-md py-8">
           <motion.h2
             className="text-5xl font-bold text-white mb-6 text-center"
+            style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -254,6 +283,7 @@ function SignUpPageView() {
 
           <motion.p
             className="mt-3 mb-8 text-center text-sm text-white"
+            style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
@@ -270,6 +300,7 @@ function SignUpPageView() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
+              role="alert"
             >
               {authError}
             </motion.p>
@@ -293,13 +324,16 @@ function SignUpPageView() {
                   value={firstName}
                   onChange={(e) => handleFirstNameChange(e.target.value)}
                   className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+                  aria-describedby={firstNameError ? 'firstName-error' : undefined}
                 />
                 {firstNameError && (
                   <motion.p
+                    id="firstName-error"
                     className="text-red-400 text-sm mt-1"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
+                    role="alert"
                   >
                     {firstNameError}
                   </motion.p>
@@ -316,13 +350,16 @@ function SignUpPageView() {
                   value={lastName}
                   onChange={(e) => handleLastNameChange(e.target.value)}
                   className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+                  aria-describedby={lastNameError ? 'lastName-error' : undefined}
                 />
                 {lastNameError && (
                   <motion.p
+                    id="lastName-error"
                     className="text-red-400 text-sm mt-1"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
+                    role="alert"
                   >
                     {lastNameError}
                   </motion.p>
@@ -340,13 +377,16 @@ function SignUpPageView() {
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+                aria-describedby={emailError ? 'email-error' : undefined}
               />
               {emailError && (
                 <motion.p
+                  id="email-error"
                   className="text-red-400 text-sm mt-1"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
+                  role="alert"
                 >
                   {emailError}
                 </motion.p>
@@ -363,13 +403,16 @@ function SignUpPageView() {
                 value={password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+                aria-describedby={passwordError ? 'password-error' : undefined}
               />
               {passwordError && (
                 <motion.p
+                  id="password-error"
                   className="text-red-400 text-sm mt-1"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
+                  role="alert"
                 >
                   {passwordError}
                 </motion.p>
@@ -426,13 +469,16 @@ function SignUpPageView() {
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+                aria-describedby={confirmPasswordError ? 'confirmPassword-error' : undefined}
               />
               {confirmPasswordError && (
                 <motion.p
+                  id="confirmPassword-error"
                   className="text-red-400 text-sm mt-1"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
+                  role="alert"
                 >
                   {confirmPasswordError}
                 </motion.p>
@@ -450,6 +496,7 @@ function SignUpPageView() {
                 id="terms"
                 required
                 className="form-checkbox h-4 w-4 text-[#9500ff] border-gray-300 rounded"
+                aria-label="Agree to Terms & Conditions"
               />
               <label htmlFor="terms" className="text-sm text-white">
                 I agree to the{' '}
@@ -466,7 +513,8 @@ function SignUpPageView() {
 
             <button
               type="submit"
-              className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold"
+              className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold hover:bg-[#7f5fb7] focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+              aria-label="Sign up with email and password"
             >
               Sign Up
             </button>
@@ -495,10 +543,11 @@ function SignUpPageView() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
+                aria-label="Sign up with Google"
               >
                 <img
                   src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  alt="Google"
+                  alt="Google logo"
                   className="w-5 h-5"
                 />
                 Google
@@ -511,10 +560,11 @@ function SignUpPageView() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
+                aria-label="Sign up with Apple"
               >
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg"
-                  alt="Apple"
+                  alt="Apple logo"
                   className="w-5 h-5"
                 />
                 Apple
@@ -529,6 +579,8 @@ function SignUpPageView() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closePopup}
+              aria-modal="true"
+              role="dialog"
             >
               <motion.div
                 className="bg-[#2c2638] p-10 rounded-lg max-w-sm w-full"
@@ -551,6 +603,7 @@ function SignUpPageView() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ duration: 0.2 }}
+                  aria-label="Close Apple sign-in popup"
                 >
                   Exit
                 </motion.button>

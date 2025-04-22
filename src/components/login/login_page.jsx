@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 import { auth, googleProvider, db } from '../../firebase';
-import { doc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-
+import { useUser } from '../global widgets/user_provider.jsx';
 import login_background from '../../assets/login_background.webp';
 
 function SignInPageView() {
+  const { userData, loading } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -18,8 +19,11 @@ function SignInPageView() {
 
   const navigate = useNavigate();
 
-  // Log Firebase initialization
-  console.log('Firebase initialized:', auth ? 'Yes' : 'No', 'Project ID:', auth?.app?.options?.projectId, 'Firestore:', db ? 'Yes' : 'No');
+  // Redirect if already logged in
+  if (!loading && userData) {
+    navigate(userData.emailVerified ? '/dashboard' : '/verify-email', { replace: true });
+    return null;
+  }
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -68,33 +72,6 @@ function SignInPageView() {
     if (hasError) return;
 
     try {
-      // Query Firestore for user with matching email
-      const usersQuery = query(collection(db, 'users'), where('email', '==', email));
-      const querySnapshot = await getDocs(usersQuery);
-      console.log('Firestore query for email', email, ':', querySnapshot.size, 'documents found');
-
-      if (querySnapshot.empty) {
-        setAuthError('No account found with this email. Please sign up.');
-        return;
-      }
-
-      // Get the first matching user document
-      const userDoc = querySnapshot.docs[0];
-      const userData = userDoc.data();
-      console.log('User data:', userData);
-
-      // Check provider
-      const provider = userData.provider || 'unknown';
-      console.log('Provider for', email, ':', provider);
-
-      if (provider === 'google') {
-        setPopupType('google');
-        setShowPopup(true);
-        setAuthError('');
-        return;
-      }
-
-      // Proceed with email/password login for non-Google or unknown providers
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       if (user.emailVerified) {
@@ -156,13 +133,26 @@ function SignInPageView() {
     setPopupType('');
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1f1e25] font-poppins">
+        <div
+          className="w-[2.5rem] h-[2.5rem] border-[0.25rem] border-t-[#9674da] border-[#ffffff33] rounded-full animate-spin"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading"
+        ></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
       {/* Left Image Section */}
       <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
         <img
           src={login_background}
-          alt="Login Background"
+          alt="Decorative login background"
           className="w-full h-full object-cover rounded-lg scale-100 transition-none"
         />
       </div>
@@ -176,6 +166,7 @@ function SignInPageView() {
       >
         <motion.h2
           className="text-5xl font-bold text-white mb-6 text-center"
+          style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -185,6 +176,7 @@ function SignInPageView() {
 
         <motion.p
           className="mt-3 mb-8 text-center text-sm text-white"
+          style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -201,6 +193,7 @@ function SignInPageView() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
+            role="alert"
           >
             {authError}
           </motion.p>
@@ -218,13 +211,16 @@ function SignInPageView() {
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
               className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+              aria-describedby={emailError ? 'email-error' : undefined}
             />
             {emailError && (
               <motion.p
+                id="email-error"
                 className="text-red-400 text-sm mt-1"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
+                role="alert"
               >
                 {emailError}
               </motion.p>
@@ -242,13 +238,16 @@ function SignInPageView() {
               value={password}
               onChange={(e) => handlePasswordChange(e.target.value)}
               className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+              aria-describedby={passwordError ? 'password-error' : undefined}
             />
             {passwordError && (
               <motion.p
+                id="password-error"
                 className="text-red-400 text-sm mt-1"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
+                role="alert"
               >
                 {passwordError}
               </motion.p>
@@ -258,7 +257,8 @@ function SignInPageView() {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold"
+            className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold hover:bg-[#7f5fb7] focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+            aria-label="Log in with email and password"
           >
             Log In
           </button>
@@ -290,10 +290,11 @@ function SignInPageView() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
+              aria-label="Sign in with Google"
             >
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
+                alt="Google logo"
                 className="w-5 h-5"
               />
               Google
@@ -307,10 +308,11 @@ function SignInPageView() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
+              aria-label="Sign in with Apple"
             >
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg"
-                alt="Apple"
+                alt="Apple logo"
                 className="w-5 h-5"
               />
               Apple
@@ -326,6 +328,8 @@ function SignInPageView() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closePopup}
+            aria-modal="true"
+            role="dialog"
           >
             <motion.div
               className="bg-[#2c2638] p-10 rounded-lg max-w-sm w-full"
@@ -350,10 +354,11 @@ function SignInPageView() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
+                    aria-label="Sign in with Google"
                   >
                     <img
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
-                      alt="Google"
+                      alt="Google logo"
                       className="w-5 h-5"
                     />
                     Sign in with Google
@@ -365,6 +370,7 @@ function SignInPageView() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
+                    aria-label="Cancel Google sign-in"
                   >
                     Cancel
                   </motion.button>
@@ -384,6 +390,7 @@ function SignInPageView() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
+                    aria-label="Close Apple sign-in popup"
                   >
                     Exit
                   </motion.button>

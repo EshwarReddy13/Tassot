@@ -1,17 +1,35 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from './components/global widgets/user_provider.jsx';
+import { useEffect } from 'react';
 
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold mb-4">Welcome to Project Management</h1>
-      <Link
-        to="/login"
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Go to Login
-      </Link>
-    </div>
-  );
-}
+const App = () => {
+  const { userData, loading } = useUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading) {
+      if (userData && userData.emailVerified) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [loading, userData, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1f1e25] font-poppins">
+        <div
+          className="w-[2.5rem] h-[2.5rem] border-[0.25rem] border-t-[#9674da] border-[#ffffff33] rounded-full animate-spin"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading"
+        ></div>
+      </div>
+    );
+  }
+
+  return null; 
+};
 
 export default App;
