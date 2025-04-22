@@ -18,7 +18,7 @@ const Navbar = () => {
     >
       {icons.map((icon) => (
         <motion.button
-          key={icon.id}
+          key={icon.id} 
           className={icon.id === 'logo' ? 'p-2 rounded-md text-white' : 'p-2 rounded-md text-white hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da] focus:ring-offset-2 focus:ring-offset-[#161616]'}
           aria-label={icon.label}
           title={icon.label}

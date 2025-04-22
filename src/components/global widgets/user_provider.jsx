@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { auth, db } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 const UserContext = createContext();
 
@@ -13,53 +13,129 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      async (user) => {
-        if (!isMounted) return;
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (!isMounted) return;
 
-        try {
-          if (user) {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-              const data = userDoc.data();
-              if (!data.firstName || !data.lastName || !data.email || !data.provider) {
-                throw new Error('Incomplete user data in Firestore');
-              }
-              setUserData({ uid: user.uid, ...data, emailVerified: user.emailVerified });
+      setLoading(true);
+      setError('');
+
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const unsubscribeSnapshot = onSnapshot(
+          userDocRef,
+          (doc) => {
+            if (doc.exists()) {
+              const data = doc.data();
+              setUserData({
+                uid: user.uid,
+                ...data,
+                projects: data.projects || [],
+                emailVerified: user.emailVerified,
+              });
             } else {
-              throw new Error('User document not found in Firestore');
+              setUserData({ uid: user.uid, emailVerified: user.emailVerified });
             }
-          } else {
-            setUserData(null);
+            setLoading(false);
+          },
+          (err) => {
+            console.error('Error fetching user data:', err);
+            setError('Failed to fetch user data');
+            setUserData({ uid: user.uid, emailVerified: user.emailVerified });
+            setLoading(false);
           }
-        } catch (err) {
-          console.error('UserProvider error:', err);
-          setError(`Failed to load user data: ${err.message}`);
-          setUserData(null);
-        } finally {
-          if (isMounted) setLoading(false);
-        }
-      },
-      (err) => {
-        console.error('Auth state error:', err);
-        setError(`Authentication error: ${err.message}`);
-        if (isMounted) setLoading(false);
+        );
+        return unsubscribeSnapshot;
+      } else {
+        setUserData(null);
+        setLoading(false);
       }
-    );
+    });
 
     return () => {
       isMounted = false;
-      unsubscribe();
+      unsubscribeAuth();
     };
   }, []);
 
-  return (
-    <UserContext.Provider value={{ userData, loading, error }}>
-      {children}
-    </UserContext.Provider>
+  const createUser = async (uid, userInfo) => {
+    if (!uid) throw new Error('User ID is required');
+    if (!userInfo.firstName || !userInfo.lastName || !userInfo.email || !userInfo.provider) {
+      throw new Error('First name, last name, email, and provider are required');
+    }
+
+    try {
+      const userDocRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userDocRef);
+      const userData = {
+        firstName: userInfo.firstName.trim(),
+        lastName: userInfo.lastName.trim(),
+        email: userInfo.email,
+        provider: userInfo.provider,
+        projects: userInfo.projects || [],
+      };
+
+      if (userDoc.exists()) {
+        // Merge new data, preserving existing projects
+        await setDoc(
+          userDocRef,
+          {
+            ...userData,
+            projects: userDoc.data().projects || userInfo.projects || [],
+          },
+          { merge: true }
+        );
+      } else {
+        // Create new document
+        await setDoc(userDocRef, userData);
+      }
+
+      // onSnapshot updates userData automatically
+    } catch (err) {
+      console.error('Error creating user:', err);
+      throw new Error(`Failed to create user: ${err.message}`);
+    }
+  };
+
+  const updateUser = async (uid, updates) => {
+    if (!uid) throw new Error('User ID is required');
+    try {
+      const userDocRef = doc(db, 'users', uid);
+      await updateDoc(userDocRef, updates);
+      // onSnapshot updates userData automatically
+    } catch (err) {
+      console.error('Error updating user:', err);
+      throw new Error(`Failed to update user: ${err.message}`);
+    }
+  };
+
+  const accessUser = async (uid) => {
+    if (!uid) throw new Error('User ID is required');
+    try {
+      const userDocRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        return {
+          uid,
+          ...data,
+          projects: data.projects || [],
+          emailVerified: auth.currentUser?.emailVerified || false,
+        };
+      } else {
+        throw new Error('User document not found');
+      }
+    } catch (err) {
+      console.error('Error accessing user:', err);
+      throw new Error(`Failed to access user: ${err.message}`);
+    }
+  };
+
+  const contextValue = useMemo(
+    () => ({ userData, createUser, updateUser, accessUser, loading, error }),
+    [userData, loading, error]
   );
+
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => useContext(UserContext);

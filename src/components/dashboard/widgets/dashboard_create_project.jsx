@@ -1,19 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDocuments } from '../../global widgets/document_provider.jsx'; // Adjust path as needed
+import { useUser } from '../../global widgets/user_provider.jsx'; // Adjust path as needed
 
-// Utility to generate random project ID
 const generateProjectId = (projectName) => {
   const randomChars = Math.random().toString(36).substring(2, 12);
   return `${projectName.toLowerCase().replace(/\s+/g, '-')}-${randomChars}`;
 };
 
-// Email validation function
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const CreateProjectDrawer = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const [step, setStep] = useState('create'); // Track current step: 'create' or 'invite'
+  const { createProject, error: documentError, loading } = useDocuments();
+  const { userData } = useUser();
+  const [step, setStep] = useState('create');
   const [projectName, setProjectName] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -22,7 +24,7 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
 
   const handleNext = () => {
     if (projectName) {
-      setStep('invite'); // Switch to invite users step
+      setStep('invite');
     }
   };
 
@@ -37,7 +39,7 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     }
     setEmailError('');
     setPopup({ show: true, message: `Email sent to ${email} successfully` });
-    setEmail(''); // Clear the email input
+    setEmail('');
   };
 
   const handleEmailChange = (value) => {
@@ -51,22 +53,33 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleCreate = () => {
-    // Here you would typically save the project and invited users
-    // For now, we'll just close the drawer
-    onClose();
+  const handleCreate = async () => {
+    if (!userData?.uid) {
+      setPopup({ show: true, message: 'You must be logged in to create a project' });
+      return;
+    }
+
+    try {
+      await createProject(projectId, projectName, userData.uid);
+      setPopup({ show: true, message: 'Project created successfully!' });
+      setTimeout(() => {
+        handleClose();
+        navigate(`/projects/${projectId}`); // Fixed to match App.jsx route
+      }, 2000);
+    } catch (err) {
+      setPopup({ show: true, message: documentError || 'Failed to create project' });
+    }
   };
 
   const handleClose = () => {
-    setProjectName(''); // Reset project name
-    setEmail(''); // Reset email
-    setEmailError(''); // Reset email error
-    setPopup({ show: false, message: '' }); // Reset popup
-    setStep('create'); // Reset to initial step
-    onClose(); // Call the original onClose
+    setProjectName('');
+    setEmail('');
+    setEmailError('');
+    setPopup({ show: false, message: '' });
+    setStep('create');
+    onClose();
   };
 
-  // Auto-dismiss popup after 3 seconds
   useEffect(() => {
     if (popup.show) {
       const timer = setTimeout(() => {
@@ -76,14 +89,12 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     }
   }, [popup.show]);
 
-  // Animation variants for fields
   const fieldVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
     exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
   };
 
-  // Animation variants for popup
   const popupVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
@@ -94,17 +105,14 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-        className="fixed inset-0 z-50 pointer-events-none font-poppins"
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      >
-          {/* Drawer Content */}
+          className="fixed inset-0 z-50 pointer-events-none font-poppins"
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        >
           <div className="flex h-full bg-[#292830] ml-[5rem] pointer-events-auto">
-            {/* Left Column: Project Details or Invite Users */}
             <div className="w-1/2 flex flex-col pt-6 pl-6 pr-4 relative">
-              {/* Close Button */}
               <button
                 className="text-white text-2xl mb-5 self-start"
                 onClick={handleClose}
@@ -129,7 +137,6 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       Start your collaborative journey by setting up a new project.
                     </p>
 
-                    {/* Project Name Input */}
                     <div className="mb-4">
                       <label
                         htmlFor="project-name"
@@ -148,7 +155,6 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       />
                     </div>
 
-                    {/* Project ID (Tag Style) */}
                     <div className="mb-6">
                       <label
                         htmlFor="project-id"
@@ -165,7 +171,6 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       </div>
                     </div>
 
-                    {/* Join Project Link and Next Button in Same Row */}
                     <div className="flex items-center gap-4">
                       <p className="text-gray-400 text-lg text-left">
                         Already have a project?{' '}
@@ -216,7 +221,6 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       Invite team members to collaborate on your project
                     </p>
 
-                    {/* Email Input and Add Button */}
                     <div className="mb-10 flex items-center gap-2">
                       <div>
                         <label
@@ -260,7 +264,6 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       </motion.button>
                     </div>
 
-                    {/* Create Button and Hint Text */}
                     <div className="flex items-center gap-4">
                       <p className="text-gray-400 text-lg">
                         You can always add users later on
@@ -270,9 +273,10 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                         onClick={handleCreate}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={loading}
                         aria-label="Create project and send invitations"
                       >
-                        Create
+                        {loading ? 'Creating...' : 'Create'}
                         <img
                           src="https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/arrow_circle_left/materialsymbolsoutlined/arrow_circle_left_24px.svg"
                           alt="Arrow icon for create step"
@@ -290,11 +294,12 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                 )}
               </AnimatePresence>
 
-              {/* Popup for Email Sent Confirmation */}
               <AnimatePresence>
                 {popup.show && (
                   <motion.div
-                    className="absolute bottom-4 left-6 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg"
+                    className={`absolute bottom-4 left-6 px-4 py-2 rounded-lg shadow-lg ${
+                      popup.message.includes('Failed') ? 'bg-red-600' : 'bg-green-600'
+                    } text-white`}
                     variants={popupVariants}
                     initial="initial"
                     animate="animate"
@@ -307,7 +312,6 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
               </AnimatePresence>
             </div>
 
-            {/* Right Column: Placeholder Image */}
             <div className="w-1/2">
               <div
                 className="h-full bg-gray-700 flex items-center justify-center"

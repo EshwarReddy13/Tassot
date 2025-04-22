@@ -1,12 +1,16 @@
 import { motion } from 'framer-motion';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const subMenuItems = [
-  { id: 'recent', label: 'Recent Projects', path: '/recent' },
-  { id: 'favorites', label: 'Favorites', path: '/favorites' },
-  { id: 'archive', label: 'Archived', path: '/archive' },
+  { id: 'recent', label: 'Recent Activity', path: 'recent' },
+  { id: 'favorites', label: 'Favorites', path: 'favorites' },
+  { id: 'archive', label: 'Archived', path: 'archive' },
 ];
 
-const DashboardNavbar = () => {
+const ProjectNavbar = () => {
+  const navigate = useNavigate();
+  const { projectId } = useParams();
+
   return (
     <nav
       className="fixed top-0 left-[4rem] h-screen w-[12rem] bg-[#292830] p-4 flex flex-col space-y-2"
@@ -19,7 +23,7 @@ const DashboardNavbar = () => {
           aria-label={item.label}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => window.location.href = item.path} // Replace with React Router navigation if needed
+          onClick={() => navigate(`/project/${projectId}/${item.path}`)}
         >
           {item.label}
         </motion.button>
@@ -28,4 +32,4 @@ const DashboardNavbar = () => {
   );
 };
 
-export default DashboardNavbar;
+export default ProjectNavbar;

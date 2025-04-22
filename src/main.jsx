@@ -11,6 +11,12 @@ import Signup from './components/login/signup_page.jsx';
 import VerifyEmailPage from './components/login/verify_email_page.jsx';
 
 import Dashboard from './components/dashboard/dashboard_page.jsx';
+
+import Projects from './components/projects/projects_page.jsx';
+import ProjectPage from './components/projects/project_view.jsx';
+
+import SettingsPage from './components/settings/settings_page.jsx';
+
 import Layout from './layout.jsx';
 
 import './index.css';
@@ -30,6 +36,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route element={<Layout />}>
               <Route path="/" element={<App />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/projects/:projectId" element={<ProjectPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               {/* Add other pages here like /projects, /settings */}
             </Route>
           </Routes>
