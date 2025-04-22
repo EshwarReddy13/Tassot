@@ -4,7 +4,7 @@
 /* Set base font and colors */
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: #2c2638;
+  background-color: #292830;
   color: #ffffff;
 }
 
@@ -42,7 +42,7 @@ body {
 .animated-gradient-text {
   background: linear-gradient(270deg, #6B21A8, #8B5CF6, #EC4899, #D946EF);
   background-size: 400% 400%;
-  animation: gradient 18s ease infinite;
+  animation: gradient 20s ease infinite;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

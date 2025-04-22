@@ -4,15 +4,27 @@ import { auth, db } from '../../firebase';
 import { sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-
+import { useUser } from '../global widgets/user_provider.jsx';
 import login_background from '../../assets/login_background.webp';
 
 function VerifyEmailPage() {
+  const { userData, loading } = useUser();
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
+
+  // Redirect if already verified or not logged in
+  if (!loading && userData) {
+    if (userData.emailVerified) {
+      navigate('/dashboard', { replace: true });
+      return null;
+    }
+  } else if (!loading && !userData) {
+    navigate('/login', { replace: true });
+    return null;
+  }
 
   // Cooldown timer effect
   useEffect(() => {
@@ -45,6 +57,7 @@ function VerifyEmailPage() {
         setError('No user is signed in. Please sign up or log in again.');
       }
     } catch (err) {
+      console.error('Resend email error:', err.code, err.message);
       if (err.code === 'auth/too-many-requests') {
         setError('Too many attempts. Please wait a few minutes before trying again.');
       } else {
@@ -69,14 +82,13 @@ function VerifyEmailPage() {
           const provider = providerData.some((data) => data.providerId === 'google.com')
             ? 'google'
             : 'email';
-          console.log('User provider:', provider);
 
           // Add user to Firestore 'users' collection with provider
           await setDoc(doc(db, 'users', user.uid), {
             firstName,
             lastName,
             email: user.email,
-            provider, // Add provider field
+            provider,
           });
 
           // Navigate to dashboard after successful Firestore write
@@ -97,13 +109,26 @@ function VerifyEmailPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1f1e25] font-poppins">
+        <div
+          className="w-[2.5rem] h-[2.5rem] border-[0.25rem] border-t-[#9674da] border-[#ffffff33] rounded-full animate-spin"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading"
+        ></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
       {/* Left Image Section */}
       <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
         <img
           src={login_background}
-          alt="Verify Email Background"
+          alt="Decorative verify email background"
           className="w-full h-full object-cover rounded-lg scale-100 transition-none"
         />
       </div>
@@ -118,6 +143,7 @@ function VerifyEmailPage() {
         <div className="w-full max-w-md mx-auto">
           <motion.h2
             className="text-5xl font-bold text-white mb-6 text-center"
+            style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -127,6 +153,7 @@ function VerifyEmailPage() {
 
           <motion.p
             className="mt-3 mb-8 text-center text-sm text-white"
+            style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
@@ -140,6 +167,7 @@ function VerifyEmailPage() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
+              role="alert"
             >
               {error}
             </motion.p>
@@ -151,6 +179,7 @@ function VerifyEmailPage() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
+              role="status"
             >
               {message}
             </motion.p>
@@ -162,18 +191,20 @@ function VerifyEmailPage() {
               className={`w-full p-2 rounded-md font-bold text-white ${
                 isResendDisabled
                   ? 'bg-[#2c2638] outline-1 outline-[#9500ff]'
-                  : 'bg-[#9674da]'
+                  : 'bg-[#9674da] hover:bg-[#7f5fb7] focus:outline-none focus:ring-2 focus:ring-[#9500ff]'
               }`}
               onClick={handleResendEmail}
               disabled={isResendDisabled}
+              aria-label={isResendDisabled ? `Resend email in ${cooldown} seconds` : 'Resend verification email'}
             >
               {isResendDisabled ? `Resend Email (${cooldown}s)` : 'Resend Verification Email'}
             </button>
 
             <button
               type="button"
-              className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold"
+              className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold hover:bg-[#7f5fb7] focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
               onClick={handleCheckVerification}
+              aria-label="Check email verification status"
             >
               I've Verified My Email
             </button>

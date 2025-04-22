@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-const DashboardHeader = () => {
+const ProjectHeader = ({ projectName }) => {
   return (
     <header className="fixed top-0 left-[16rem] right-0 h-[4rem] bg-[#292830] flex items-center justify-between px-6">
       {/* Project Name */}
@@ -11,7 +11,7 @@ const DashboardHeader = () => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Project Alpha
+        {projectName || 'Project'}
       </motion.h1>
 
       {/* Utility Icons */}
@@ -87,7 +87,7 @@ const DashboardHeader = () => {
 
         {/* Profile Button */}
         <motion.button
-          className="p-2 rounded-md text-white hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+          className="p-2 rounded-md text-White hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
           aria-label="Profile"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -104,4 +104,4 @@ const DashboardHeader = () => {
   );
 };
 
-export default DashboardHeader;
+export default ProjectHeader;
