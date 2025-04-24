@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { db } from '../../firebase';
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, Timestamp, collection, getDocs } from 'firebase/firestore';
 
 const DocumentContext = createContext();
 
@@ -19,6 +19,7 @@ export const DocumentProvider = ({ children }) => {
         users: [userId],
         createdBy: userId,
         createdAt: Timestamp.fromDate(new Date()),
+        boards: ['To Do', 'In Progress', 'Done'], // Default boards
       });
 
       const userDocRef = doc(db, 'users', userId);
@@ -43,9 +44,16 @@ export const DocumentProvider = ({ children }) => {
       const projectDocRef = doc(db, 'projects', projectId);
       const projectDoc = await getDoc(projectDocRef);
       if (projectDoc.exists()) {
-        const data = projectDoc.data();
-        console.log('getProject success:', data);
-        return data;
+        const projectData = projectDoc.data();
+        // Fetch tasks from subcollection
+        const tasksCollectionRef = collection(db, 'projects', projectId, 'tasks');
+        const tasksSnapshot = await getDocs(tasksCollectionRef);
+        const tasks = tasksSnapshot.docs.map((doc) => ({
+          taskId: doc.id,
+          ...doc.data(),
+        }));
+        console.log('getProject success:', { projectData, tasks });
+        return { ...projectData, tasks };
       } else {
         console.error('getProject failed: Project not found', { projectId });
         throw new Error('Project not found');

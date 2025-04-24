@@ -102,7 +102,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#1f1e25]">
+    <div className="min-h-screen bg-[#292830]">
       <main
         className="ml-[4rem] mr-4 pt-6 pb-4 px-6 min-h-[calc(100vh)]"
         aria-label="Settings"
@@ -167,7 +167,7 @@ const SettingsPage = () => {
                 type="text"
                 value={form.firstName}
                 onChange={handleChange}
-                className="w-full bg-[#292830] text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                className="w-full bg-[#17171b] text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]"
                 placeholder="Enter first name"
                 aria-required="true"
                 aria-describedby={errors.firstName ? 'firstName-error' : undefined}
@@ -199,7 +199,7 @@ const SettingsPage = () => {
                 type="text"
                 value={form.lastName}
                 onChange={handleChange}
-                className="w-full bg-[#292830] text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                className="w-full bg-[#17171b] text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]"
                 placeholder="Enter last name"
                 aria-required="true"
                 aria-describedby={errors.lastName ? 'lastName-error' : undefined}

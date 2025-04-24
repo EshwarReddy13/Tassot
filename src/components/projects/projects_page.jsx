@@ -166,7 +166,7 @@ const ProjectsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#1f1e25]">
+    <div className="min-h-screen bg-[#292830]">
       <main
         className="ml-[4rem] mr-4 pt-6 pb-4 px-6 min-h-[calc(100vh)]"
         aria-label="Projects list"
@@ -258,7 +258,7 @@ const ProjectsPage = () => {
                   animate="animate"
                   exit="exit"
                   transition={{ delay: index * 0.1 }}
-                  className="bg-[#292830] rounded-lg p-4 hover:bg-[#3a3344] cursor-pointer"
+                  className="bg-[#17171b] rounded-lg p-4 hover:bg-[#3a3344] cursor-pointer"
                   onClick={() => handleProjectClick(project.projectId)}
                   role="button"
                   tabIndex={0}
