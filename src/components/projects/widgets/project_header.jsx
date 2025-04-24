@@ -1,9 +1,32 @@
 import { motion } from 'framer-motion';
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useDocuments } from '../../global widgets/document_provider.jsx';
 
-const ProjectHeader = ({ projectName }) => {
+const ProjectHeader = () => {
+  const { projectId } = useParams();
+  const { getProject, error, loading } = useDocuments();
+  const [projectName, setProjectName] = useState('Project');
+
+  useEffect(() => {
+    if (projectId) {
+      const fetchProjectName = async () => {
+        try {
+          const projectData = await getProject(projectId);
+          setProjectName(projectData.projectName || 'Project');
+        } catch (err) {
+          console.error('Failed to fetch project name:', err);
+          setProjectName('Project');
+        }
+      };
+      fetchProjectName();
+    } else {
+      setProjectName('Project');
+    }
+  }, [projectId, getProject]);
+
   return (
-    <header className="fixed top-0 left-[16rem] right-0 h-[4rem] bg-[#292830] flex items-center justify-between px-6">
-      {/* Project Name */}
+    <header className="fixed top-0 left-0 ml-[17rem] right-0 h-[4rem] bg-[#292830] flex items-center justify-between px-6">
       <motion.h1
         className="text-white text-xl font-bold"
         style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}
@@ -11,12 +34,10 @@ const ProjectHeader = ({ projectName }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {projectName || 'Project'}
+        {loading ? 'Loading...' : projectName}
       </motion.h1>
 
-      {/* Utility Icons */}
       <div className="flex items-center space-x-4">
-        {/* Search Bar with Filter Icon */}
         <motion.div
           className="relative"
           initial={{ opacity: 0, y: -10 }}
@@ -25,7 +46,7 @@ const ProjectHeader = ({ projectName }) => {
         >
           <input
             type="search"
-            className="w-[12rem] pl-8 pr-2 py-1 rounded-md bg-[#3a3344] text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+            className="w-[12rem] pl-8 pr-2 py-1 rounded-md bg-[#17171b] text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9674da]"
             placeholder="Search..."
             aria-label="Search projects"
           />
@@ -40,7 +61,6 @@ const ProjectHeader = ({ projectName }) => {
           </svg>
         </motion.div>
 
-        {/* Filter Button */}
         <motion.button
           className="p-2 rounded-md text-white hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
           aria-label="Filter projects"
@@ -55,7 +75,6 @@ const ProjectHeader = ({ projectName }) => {
           </svg>
         </motion.button>
 
-        {/* Help Button */}
         <motion.button
           className="p-2 rounded-md text-white hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
           aria-label="Help"
@@ -70,7 +89,6 @@ const ProjectHeader = ({ projectName }) => {
           </svg>
         </motion.button>
 
-        {/* Notifications Button */}
         <motion.button
           className="p-2 rounded-md text-white hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
           aria-label="Notifications"
@@ -85,9 +103,8 @@ const ProjectHeader = ({ projectName }) => {
           </svg>
         </motion.button>
 
-        {/* Profile Button */}
         <motion.button
-          className="p-2 rounded-md text-White hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+          className="p-2 rounded-md text-white hover:bg-[#9674da] focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
           aria-label="Profile"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
