@@ -10,7 +10,7 @@ const Layout = () => {
   const isProjectsRoute = location.pathname.startsWith('/projects/');
 
   // Calculate the navbar's width (same as in navbarVariants, including ml-2)
-  const navbarWidth = isProjectsRoute ? '16.5rem' : '2.5rem'; // Expanded: 16.5rem, Collapsed: 5rem
+  const navbarWidth = isProjectsRoute ? '16.5rem' : '2rem'; // Expanded: 16.5rem, Collapsed: 5rem
   const marginLeft = `calc(${navbarWidth})`; // ml-2 is already included in navbarWidth
 
   return (
