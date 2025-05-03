@@ -5,7 +5,7 @@
 @theme {
   --color-bg-primary: #292830; /* Main background (e.g., page background) */
   --color-bg-secondary: #3a3a44; /* Secondary background (e.g., Kanban columns) */
-  --color-bg-card: #4a4a56; /* Cards or buttons (e.g., task cards) */
+  --color-bg-card: #17171b; /* Cards or buttons (e.g., task cards) */
   --color-bg-dark: #17171b; /* Dark input fields */
   
   /* Accent colors */

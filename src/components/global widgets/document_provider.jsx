@@ -160,6 +160,49 @@ export const DocumentProvider = ({ children }) => {
     }
   }, []);
 
+  const updateColumnName = useCallback(async (projectId, oldBoardName, newBoardName) => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log('Updating column name:', { projectId, oldBoardName, newBoardName });
+
+      const projectRef = doc(db, 'projects', projectId);
+      const projectDoc = await getDoc(projectRef);
+      if (!projectDoc.exists()) {
+        throw new Error('Project not found');
+      }
+
+      const projectData = projectDoc.data();
+      const updatedBoards = projectData.boards.map(board =>
+        board === oldBoardName ? newBoardName : board
+      );
+
+      await updateDoc(projectRef, {
+        boards: updatedBoards,
+      });
+      console.log('Column name updated:', { projectId, oldBoardName, newBoardName });
+
+      // Update task statuses
+      const tasksCollectionRef = collection(db, 'projects', projectId, 'tasks');
+      const tasksSnapshot = await getDocs(tasksCollectionRef);
+      const updateTasksPromises = tasksSnapshot.docs
+        .filter(doc => doc.data().status === oldBoardName)
+        .map(doc =>
+          updateDoc(doc.ref, {
+            status: newBoardName,
+          })
+        );
+      await Promise.all(updateTasksPromises);
+      console.log('Task statuses updated:', { projectId, oldBoardName, newBoardName });
+    } catch (err) {
+      console.error('Error updating column name:', err);
+      setError(`Failed to update column name: ${err.message}`);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const updateProjectName = useCallback(async (projectId, newProjectName) => {
     setLoading(true);
     setError('');
@@ -243,10 +286,21 @@ export const DocumentProvider = ({ children }) => {
   }, []);
 
   return (
-    <DocumentContext.Provider value={{ createProject, deleteProject, getProject, updateProject, updateProjectName, createTask, updateTask, error, loading }}>
+    <DocumentContext.Provider value={{
+      createProject,
+      deleteProject,
+      getProject,
+      updateProject,
+      updateColumnName,
+      updateProjectName,
+      createTask,
+      updateTask,
+      error,
+      loading
+    }}>
       {children}
     </DocumentContext.Provider>
   );
 };
 
-export const useDocuments = () => useContext(DocumentContext);
+export const useDocuments = () => useContext(DocumentContext);  
