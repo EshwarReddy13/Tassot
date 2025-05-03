@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDocuments } from '../../global widgets/document_provider.jsx';
-import { useUser } from '../../global widgets/user_provider.jsx';
+import { useDocuments } from '../../global widgets/document_provider.jsx'; // Adjust path as needed
+import { useUser } from '../../global widgets/user_provider.jsx'; // Adjust path as needed
 
 const generateProjectId = (projectName) => {
   const randomChars = Math.random().toString(36).substring(2, 12);
@@ -10,7 +10,6 @@ const generateProjectId = (projectName) => {
 };
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const isValidKey = (key) => /^[A-Z0-9_-]{1,10}$/.test(key);
 
 const CreateProjectDrawer = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -18,43 +17,14 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
   const { userData } = useUser();
   const [step, setStep] = useState('create');
   const [projectName, setProjectName] = useState('');
-  const [key, setKey] = useState('');
-  const [keyError, setKeyError] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [popup, setPopup] = useState({ show: false, message: '' });
-  const [showTooltip, setShowTooltip] = useState(false);
   const projectId = projectName ? generateProjectId(projectName) : '';
 
   const handleNext = () => {
-    if (!projectName) {
-      setPopup({ show: true, message: 'Project name is required' });
-      return;
-    }
-    if (!key) {
-      setKeyError('Project key is required');
-      return;
-    }
-    if (!isValidKey(key)) {
-      setKeyError('Key must be 1-10 characters, using letters, numbers, hyphens, or underscores');
-      return;
-    }
-    setStep('invite');
-  };
-
-  const handleBack = () => {
-    setStep('create');
-  };
-
-  const handleKeyChange = (value) => {
-    const upperValue = value.toUpperCase();
-    setKey(upperValue);
-    if (!upperValue) {
-      setKeyError('Project key is required');
-    } else if (!isValidKey(upperValue)) {
-      setKeyError('Key must be 1-10 characters, using letters, numbers, hyphens, or underscores');
-    } else {
-      setKeyError('');
+    if (projectName) {
+      setStep('invite');
     }
   };
 
@@ -90,14 +60,11 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     }
 
     try {
-      await createProject(projectId, projectName, userData.uid, key);
-      setPopup({
-        show: true,
-        message: 'Project created with boards (To Do, In Progress, Done) and initial task "First to do"!',
-      });
+      await createProject(projectId, projectName, userData.uid);
+      setPopup({ show: true, message: 'Project created successfully!' });
       setTimeout(() => {
         handleClose();
-        navigate(`/projects/${projectId}`);
+        navigate(`/projects/${projectId}`); // Fixed to match App.jsx route
       }, 2000);
     } catch (err) {
       setPopup({ show: true, message: documentError || 'Failed to create project' });
@@ -106,12 +73,9 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     setProjectName('');
-    setKey('');
-    setKeyError('');
     setEmail('');
     setEmailError('');
     setPopup({ show: false, message: '' });
-    setShowTooltip(false);
     setStep('create');
     onClose();
   };
@@ -147,41 +111,15 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
           exit={{ x: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <div className="flex h-full bg-bg-primary ml-[6rem] pointer-events-auto">
+          <div className="flex h-full bg-[#292830] ml-[5rem] pointer-events-auto">
             <div className="w-1/2 flex flex-col pt-6 pl-6 pr-4 relative">
-              <div className="flex items-center mb-5">
-                {step === 'invite' && (
-                  <motion.button
-                    className="text-text-primary text-2xl mr-2"
-                    onClick={handleBack}
-                    aria-label="Go back to project creation"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <svg
-                      className="w-8 h-8"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </motion.button>
-                )}
-                <button
-                  className="text-text-primary text-2xl self-start"
-                  onClick={handleClose}
-                  aria-label="Close drawer"
-                >
-                  ✕
-                </button>
-              </div>
+              <button
+                className="text-white text-2xl mb-5 self-start"
+                onClick={handleClose}
+                aria-label="Close drawer"
+              >
+                ✕
+              </button>
 
               <AnimatePresence mode="wait">
                 {step === 'create' ? (
@@ -192,17 +130,17 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                     animate="animate"
                     exit="exit"
                   >
-                    <h2 className="text-text-primary text-4xl font-bold mb-2 mt-5 text-left">
+                    <h2 className="text-white text-4xl font-bold mb-2 mt-5 text-left">
                       Create Your Project
                     </h2>
-                    <p className="text-text-secondary text-xl mb-10 text-left">
+                    <p className="text-gray-400 text-xl mb-25 text-left">
                       Start your collaborative journey by setting up a new project.
                     </p>
 
                     <div className="mb-4">
                       <label
                         htmlFor="project-name"
-                        className="text-text-primary text-xl font-medium mb-4 text-left"
+                        className="block text-white text-xl font-medium mb-2 text-left"
                       >
                         Enter your new Project Name
                       </label>
@@ -211,114 +149,61 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                         type="text"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
-                        className="w-100 h-13 mt-2 bg-bg-dark text-text-primary rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                        className="w-100 h-13 bg-[#161616] text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]"
                         placeholder="Enter project name"
                         aria-required="true"
                       />
                     </div>
 
-                    <div className="mb-6 relative">
-                      <label
-                        htmlFor="project-key"
-                        className="text-text-primary text-xl font-medium mb-2 text-left flex items-center"
-                      >
-                        Project Key
-                        <span
-                          className="ml-2 text-text-secondary text-sm cursor-help"
-                          onMouseEnter={() => setShowTooltip(true)}
-                          onMouseLeave={() => setShowTooltip(false)}
-                        >
-                          ⓘ
-                        </span>
-                      </label>
-                      {showTooltip && (
-                        <div className="absolute z-10 p-3 bg-bg-secondary border-3 border-accent-primary text-text-primary text-sm rounded-lg shadow-lg w-60 top-8 left-30">
-                          Select a short prefix (e.g., PROJ) to identify tasks in this project.
-                        </div>
-                      )}
-                      <input
-                        id="project-key"
-                        type="text"
-                        value={key}
-                        onChange={(e) => handleKeyChange(e.target.value)}
-                        className="w-70 h-13 bg-bg-dark text-text-primary rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                        placeholder="Enter project key (e.g., PROJ)"
-                        aria-required="true"
-                        aria-describedby={keyError ? 'key-error' : undefined}
-                      />
-                      {keyError && (
-                        <motion.p
-                          id="key-error"
-                          className="text-error text-sm mt-1"
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, ease: 'easeOut' }}
-                          role="alert"
-                        >
-                          {keyError}
-                        </motion.p>
-                      )}
-                    </div>
-
                     <div className="mb-6">
                       <label
                         htmlFor="project-id"
-                        className="text-text-primary text-lg font-medium mb-1 text-left"
+                        className="block text-white text-lg font-medium mb-1 text-left"
                       >
-                        Project ID:
+                        Project ID
                       </label>
                       <div
                         id="project-id"
-                        className="inline-block ml-2 text-sm bg-bg-dark text-text-secondary rounded-full px-4 py-2 cursor-not-allowed"
+                        className="inline-block text-lg bg-[#161616] text-gray-400 rounded-full px-4 py-2 cursor-not-allowed"
                         aria-readonly="true"
                       >
                         {projectId || 'Generated after entering project name'}
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-4">
-                      <p className="text-text-secondary text-lg text-left">
+                    <div className="flex items-center gap-4">
+                      <p className="text-gray-400 text-lg text-left">
                         Already have a project?{' '}
                         <button
-                          className="text-accent-primary hover:underline"
+                          className="text-[#9674da] hover:underline"
                           onClick={() => navigate('/join-project')}
                           aria-label="Join an existing project"
                         >
                           <u>Join a project</u>
                         </button>
                       </p>
-                      <div className="flex justify-end gap-2">
-                        <motion.button
-                          className="border-2 border-accent-primary mr-2 bg-bg-dark text-text-primary text-lg py-2 px-6 rounded-lg font-semibold"
-                          onClick={handleClose}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          aria-label="Cancel project creation"
-                        >
-                          Cancel
-                        </motion.button>
-                        <motion.button
-                          className="bg-accent-primary text-text-primary text-lg py-2 px-6 rounded-lg font-semibold disabled:bg-bg-card disabled:cursor-not-allowed flex items-center gap-2"
-                          onClick={handleNext}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          disabled={!projectName || !key || keyError}
-                          aria-label="Proceed to invite users"
-                        >
-                          Next
-                          <img
-                            src="https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/arrow_circle_left/materialsymbolsoutlined/arrow_circle_left_24px.svg"
-                            alt="Arrow icon for next step"
-                            className="w-8 h-8 invert scale-x-[-1]"
-                            style={{ filter: 'invert(100%)' }}
-                            onError={(e) => {
-                              console.error('Failed to load arrow icon');
-                              e.target.src = 'https://api.iconify.design/mdi:alert-circle.svg';
-                              e.target.style.filter = 'invert(100%)';
-                            }}
-                          />
-                        </motion.button>
-                      </div>
+                      <div className="ml-15"></div>
+                      <motion.button
+                        className="w-30 bg-[#9674da] text-white text-lg py-2 px-4 rounded-lg font-semibold hover:bg-[#7e5cb7] disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center gap-2"
+                        onClick={handleNext}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={!projectName}
+                        aria-label="Proceed to invite users"
+                      >
+                        Next
+                        <img
+                          src="https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/arrow_circle_left/materialsymbolsoutlined/arrow_circle_left_24px.svg"
+                          alt="Arrow icon for next step"
+                          className="w-8 h-8 invert scale-x-[-1]"
+                          style={{ filter: 'invert(100%)' }}
+                          onError={(e) => {
+                            console.error('Failed to load arrow icon');
+                            e.target.src = 'https://api.iconify.design/mdi:alert-circle.svg';
+                            e.target.style.filter = 'invert(100%)';
+                          }}
+                        />
+                      </motion.button>
                     </div>
                   </motion.div>
                 ) : (
@@ -329,18 +214,18 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                     animate="animate"
                     exit="exit"
                   >
-                    <h2 className="text-text-primary text-4xl font-bold mb-2 mt-5 text-left">
+                    <h2 className="text-white text-4xl font-bold mb-2 mt-5 text-left">
                       Invite Users
                     </h2>
-                    <p className="text-text-secondary text-xl mb-10 text-left">
+                    <p className="text-gray-400 text-xl mb-25 text-left">
                       Invite team members to collaborate on your project
                     </p>
 
-                    <div className="mb-10 flex items-start gap-2">
-                      <div className="flex flex-col min-h-[5rem]">
+                    <div className="mb-10 flex items-center gap-2">
+                      <div>
                         <label
                           htmlFor="email"
-                          className="text-text-primary text-xl font-medium mb-2 text-left"
+                          className="block text-white text-xl font-medium mb-2 text-left"
                         >
                           Enter Email Address
                         </label>
@@ -349,7 +234,7 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                           type="email"
                           value={email}
                           onChange={(e) => handleEmailChange(e.target.value)}
-                          className="w-130 h-13 bg-bg-dark text-text-primary rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                          className="w-130 h-13 bg-[#161616] text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]"
                           placeholder="Enter an email address"
                           aria-required="false"
                           aria-describedby={emailError ? 'email-error' : undefined}
@@ -357,7 +242,7 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                         {emailError && (
                           <motion.p
                             id="email-error"
-                            className="text-error text-sm mt-1"
+                            className="text-red-400 text-sm mt-1"
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -368,7 +253,7 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                         )}
                       </div>
                       <motion.button
-                        className="bg-accent-primary h-13 text-text-primary text-lg py-2 px-4 rounded-lg font-semibold disabled:bg-bg-card disabled:cursor-not-allowed mt-9"
+                        className="mt-8 bg-[#9674da] h-13 text-lg text-white py-2 px-4 rounded-lg font-semibold hover:bg-[#7e5cb7] disabled:bg-gray-600 disabled:cursor-not-allowed"
                         onClick={handleAddEmail}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -379,42 +264,31 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       </motion.button>
                     </div>
 
-                    <div className="flex flex-col gap-4">
-                      <p className="text-text-secondary text-lg">
+                    <div className="flex items-center gap-4">
+                      <p className="text-gray-400 text-lg">
                         You can always add users later on
                       </p>
-                      <div className="flex justify-end gap-2">
-                        <motion.button
-                          className="border-2 border-accent-primary bg-bg-dark text-text-primary text-lg py-2 px-6 rounded-lg font-semibold"
-                          onClick={handleClose}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          aria-label="Cancel project creation"
-                        >
-                          Cancel
-                        </motion.button>
-                        <motion.button
-                          className="w-32 bg-accent-primary ml-2 text-text-primary py-2 px-6 rounded-lg font-semibold disabled:bg-bg-card flex items-center gap-2"
-                          onClick={handleCreate}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          disabled={loading}
-                          aria-label="Create project and send invitations"
-                        >
-                          {loading ? 'Create' : 'Create'}
-                          <img
-                            src="https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/arrow_circle_left/materialsymbolsoutlined/arrow_circle_left_24px.svg"
-                            alt="Arrow icon for create step"
-                            className="w-8 h-8 invert scale-x-[-1]"
-                            style={{ filter: 'invert(100%)' }}
-                            onError={(e) => {
-                              console.error('Failed to load arrow icon');
-                              e.target.src = 'https://api.iconify.design/mdi:alert-circle.svg';
-                              e.target.style.filter = 'invert(100%)';
-                            }}
-                          />
-                        </motion.button>
-                      </div>
+                      <motion.button
+                        className="w-32 bg-[#9674da] text-white py-2 px-4 rounded-lg font-semibold hover:bg-[#7e5cb7] flex items-center gap-2"
+                        onClick={handleCreate}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={loading}
+                        aria-label="Create project and send invitations"
+                      >
+                        {loading ? 'Creating...' : 'Create'}
+                        <img
+                          src="https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/arrow_circle_left/materialsymbolsoutlined/arrow_circle_left_24px.svg"
+                          alt="Arrow icon for create step"
+                          className="w-8 h-8 invert scale-x-[-1]"
+                          style={{ filter: 'invert(100%)' }}
+                          onError={(e) => {
+                            console.error('Failed to load arrow icon');
+                            e.target.src = 'https://api.iconify.design/mdi:alert-circle.svg';
+                            e.target.style.filter = 'invert(100%)';
+                          }}
+                        />
+                      </motion.button>
                     </div>
                   </motion.div>
                 )}
@@ -423,9 +297,9 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
               <AnimatePresence>
                 {popup.show && (
                   <motion.div
-                    className={`absolute bottom-4 left-6 px-4 py-2 rounded-lg shadow-lg text-text-primary ${
-                      popup.message.includes('Failed') ? 'bg-error' : 'bg-success'
-                    }`}
+                    className={`absolute bottom-4 left-6 px-4 py-2 rounded-lg shadow-lg ${
+                      popup.message.includes('Failed') ? 'bg-red-600' : 'bg-green-600'
+                    } text-white`}
                     variants={popupVariants}
                     initial="initial"
                     animate="animate"
@@ -440,11 +314,11 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
 
             <div className="w-1/2">
               <div
-                className="h-full bg-bg-card flex items-center justify-center"
+                className="h-full bg-gray-700 flex items-center justify-center"
                 role="img"
                 aria-label="Placeholder image for project creation"
               >
-                <span className="text-text-secondary text-lg">Image Placeholder</span>
+                <span className="text-gray-400 text-lg">Image Placeholder</span>
               </div>
             </div>
           </div>

@@ -99,7 +99,7 @@ const Navbar = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 h-screen flex flex-col items-start ml-1 bg-[#292830]"
+      className="fixed top-0 left-0 h-screen flex flex-col items-start ml-2 bg-[#292830]"
       initial="collapsed"
       animate={isProjectsRoute && isSubmenuOpen ? 'expanded' : 'collapsed'}
       variants={navbarVariants}
@@ -107,14 +107,14 @@ const Navbar = () => {
     >
       {/* Main Navigation and Submenu Container */}
       <div
-        className={`flex flex-row h-full w-full bg-bg-dark p-2.5 rounded-xl ${
+        className={`flex flex-row h-full w-full bg-[#17171b] p-2.5 rounded-xl ${
           isProjectsRoute && isSubmenuOpen ? 'mr-2' : 'mr-0'
         } mt-2 mb-2`}
       >
         {/* Main Navigation Icons */}
         <div
           className={`flex flex-col items-center w-[4rem] py-4 space-y-4 ${
-            isProjectsRoute && isSubmenuOpen ? 'mr-2' : 'mr-1'
+            isProjectsRoute && isSubmenuOpen ? 'mr-4' : 'mr-1'
           } flex-shrink-0`}
         >
           {icons.map((icon) => (
@@ -125,7 +125,7 @@ const Navbar = () => {
                     ? 'p-2 rounded-md text-white'
                     : `p-2 rounded-md text-white hover:bg-[#9674da] ${
                         selectedIcon === icon.id
-                          ? 'bg-[#9674da]'
+                          ? 'bg-[#9674da] ring-2 ring-[#9674da] ring-offset-2 ring-offset-[#292830]'
                           : ''
                       } focus:outline-none focus:ring-2 focus:ring-[#9674da] focus:ring-offset-2 focus:ring-offset-[#292830]`
                 }
@@ -138,7 +138,7 @@ const Navbar = () => {
                 <img
                   src={icon.url}
                   alt={`${icon.label} icon`}
-                  className={icon.id === 'logo' ? 'w-12 h-12' : 'w-8 h-8'}
+                  className={icon.id === 'logo' ? 'w-12 h-12' : 'w-7 h-7'}
                   style={{
                     ...(icon.id === 'logo' ? {} : { filter: 'invert(100%)' }),
                     minWidth: icon.id === 'logo' ? '48px' : '28px',
@@ -154,7 +154,7 @@ const Navbar = () => {
               {/* Tooltip for label on hover */}
               <span
                 className="
-                  absolute left-full top-1/2 -translate-y-1/2 ml-5
+                  absolute left-full top-1/2 -translate-y-1/2 ml-4
                   bg-[#670089] text-white text-sm font-medium
                   px-2 py-1 rounded-md
                   opacity-0 group-hover:opacity-100

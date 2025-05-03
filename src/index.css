@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
 @import "tailwindcss";
 
+<<<<<<< HEAD
 @theme {
   --color-bg-primary: #292830; /* Main background (e.g., page background) */
   --color-bg-secondary: #3a3a44; /* Secondary background (e.g., Kanban columns) */
@@ -25,6 +25,8 @@
 }
 
 
+=======
+>>>>>>> parent of 85eaf54 (Added the ability to add tasks. You can also delete projects and edit them)
 /* Set base font and colors */
 body {
   font-family: 'Poppins', sans-serif;

@@ -3,13 +3,18 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocuments } from '../../global widgets/document_provider.jsx';
 import { useUser } from '../../global widgets/user_provider.jsx';
-import KanbanBoard from './kanban_board.jsx';
-import { TaskPopup, ColumnPopup } from './Popups.jsx';
+
+// Map standardized status values to board names (for future task mapping)
+const statusToBoardMap = {
+  to_do: 'To Do',
+  in_progress: 'In Progress',
+  done: 'Done',
+};
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
-  const { getProject, updateProject, updateColumnName, createTask, updateTask, error: providerError, loading: providerLoading } = useDocuments();
-  const { userData, accessUser, loading: userLoading } = useUser();
+  const { getProject, error: providerError, loading: providerLoading } = useDocuments();
+  const { userData, loading: userLoading } = useUser();
   const [state, setState] = useState({
     project: null,
     tasks: [],
@@ -17,33 +22,10 @@ const ProjectDetails = () => {
     isLoading: false,
     error: '',
   });
-  const [newColumn, setNewColumn] = useState({
-    name: '',
-    isAdding: false,
-    error: '',
-  });
-  const [taskPopup, setTaskPopup] = useState({
-    show: false,
-    mode: 'add', // 'add', 'view', 'edit'
-    task: null,
-    board: null,
-    taskName: '',
-    notes: '',
-    createdByName: '',
-    error: '',
-  });
-  const [columnPopup, setColumnPopup] = useState({
-    show: false,
-    board: null,
-    columnName: '',
-    error: '',
-  });
   const fetchedProjectIdRef = useRef(null);
   const mountCountRef = useRef(0);
   const lastMountTimeRef = useRef(0);
   const fetchTimeoutRef = useRef(null);
-  const inputRef = useRef(null);
-  const userNameCache = useRef(new Map());
 
   useEffect(() => {
     mountCountRef.current += 1;
@@ -117,9 +99,10 @@ const ProjectDetails = () => {
         console.log('getProject result:', projectData);
         if (isMounted) {
           if (projectData && projectData.users && projectData.users.includes(userData.uid)) {
+            // Generate columns from boards array
             const columns = [
               ...(projectData.boards || []).map((board, index) => ({
-                id: `board-${board.toLowerCase().replace(/\s+/g, '_')}-${index}`,
+                id: `board-${board.toLowerCase().replace(/\s+/g, '_')}-${index}`, // Normalize for unique ID
                 title: board,
               })),
               { id: 'add-column', title: 'Add Column' },
@@ -171,229 +154,37 @@ const ProjectDetails = () => {
     };
   }, [projectId, getProject, userData?.uid, userLoading]);
 
-  const handleAddColumnClick = () => {
-    setNewColumn({ ...newColumn, isAdding: true, error: '' });
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 0);
-  };
-
-  const handleColumnNameChange = (e) => {
-    const value = e.target.value;
-    setNewColumn({ ...newColumn, name: value, error: value ? '' : 'Column name is required' });
-  };
-
-  const handleAddColumn = async () => {
-    if (!newColumn.name.trim()) {
-      setNewColumn({ ...newColumn, error: 'Column name is required' });
-      return;
-    }
-
-    try {
-      await updateProject(projectId, newColumn.name.trim());
-      const projectData = await getProject(projectId);
-      if (projectData && projectData.users && projectData.users.includes(userData.uid)) {
-        const columns = [
-          ...(projectData.boards || []).map((board, index) => ({
-            id: `board-${board.toLowerCase().replace(/\s+/g, '_')}-${index}`,
-            title: board,
-          })),
-          { id: 'add-column', title: 'Add Column' },
-        ];
-        setState((prev) => ({
-          ...prev,
-          project: projectData,
-          tasks: projectData.tasks,
-          columns,
-          error: '',
-        }));
-        console.log('Columns updated:', columns);
-      }
-      setNewColumn({ name: '', isAdding: false, error: '' });
-    } catch (err) {
-      setNewColumn({ ...newColumn, error: 'Failed to add column' });
-    }
-  };
-
-  const handleCancelAddColumn = () => {
-    setNewColumn({ name: '', isAdding: false, error: '' });
-  };
-
-  const handleEditColumnClick = (board) => {
-    setColumnPopup({
-      show: true,
-      board,
-      columnName: board.title,
-      error: '',
-    });
-  };
-
-  const handleColumnNameEditChange = (e) => {
-    const value = e.target.value;
-    setColumnPopup((prev) => ({
-      ...prev,
-      columnName: value,
-      error: value ? '' : 'Column name is required',
-    }));
-  };
-
-  const handleEditColumnSubmit = async () => {
-    if (!columnPopup.columnName.trim()) {
-      setColumnPopup((prev) => ({ ...prev, error: 'Column name is required' }));
-      return;
-    }
-
-    try {
-      await updateColumnName(projectId, columnPopup.board.title, columnPopup.columnName.trim());
-      const projectData = await getProject(projectId);
-      if (projectData && projectData.users && projectData.users.includes(userData.uid)) {
-        const columns = [
-          ...(projectData.boards || []).map((board, index) => ({
-            id: `board-${board.toLowerCase().replace(/\s+/g, '_')}-${index}`,
-            title: board,
-          })),
-          { id: 'add-column', title: 'Add Column' },
-        ];
-        setState((prev) => ({
-          ...prev,
-          project: projectData,
-          tasks: projectData.tasks,
-          columns,
-          error: '',
-        }));
-        console.log('Columns updated:', columns);
-      }
-      setColumnPopup({ show: false, board: null, columnName: '', error: '' });
-    } catch (err) {
-      setColumnPopup((prev) => ({ ...prev, error: 'Failed to update column name' }));
-    }
-  };
-
-  const handleEditColumnCancel = () => {
-    setColumnPopup({ show: false, board: null, columnName: '', error: '' });
-  };
-
-  const handleAddTaskClick = (board) => {
-    setTaskPopup({
-      show: true,
-      mode: 'add',
-      task: null,
-      board,
-      taskName: '',
-      notes: '',
-      createdByName: '',
-      error: '',
-    });
-  };
-
-  const handleTaskClick = async (task) => {
-    try {
-      let createdByName = userNameCache.current.get(task.createdBy);
-      if (!createdByName) {
-        console.log('Fetching user name:', { uid: task.createdBy });
-        const user = await accessUser(task.createdBy);
-        createdByName = `${user.firstName} ${user.lastName}`.trim();
-        userNameCache.current.set(task.createdBy, createdByName);
-        console.log('User name cached:', { uid: task.createdBy, name: createdByName });
-      } else {
-        console.log('Using cached user name:', { uid: task.createdBy, name: createdByName });
-      }
-      setTaskPopup({
-        show: true,
-        mode: 'view',
-        task,
-        board: null,
-        taskName: task.taskName,
-        notes: task.notes,
-        createdByName,
-        error: '',
-      });
-    } catch (err) {
-      console.error('Error fetching user name:', err);
-      setTaskPopup({
-        show: true,
-        mode: 'view',
-        task,
-        board: null,
-        taskName: task.taskName,
-        notes: task.notes,
-        createdByName: 'Unknown User',
-        error: 'Failed to fetch user name',
-      });
-    }
-  };
-
-  const handleEditTask = () => {
-    setTaskPopup((prev) => ({ ...prev, mode: 'edit' }));
-  };
-
-  const handleTaskSubmit = async () => {
-    if (!taskPopup.taskName.trim()) {
-      setTaskPopup((prev) => ({ ...prev, error: 'Task name is required' }));
-      return;
-    }
-
-    try {
-      if (taskPopup.mode === 'add') {
-        const taskData = {
-          key: state.project.key,
-          taskName: taskPopup.taskName.trim(),
-          notes: taskPopup.notes.trim(),
-          status: taskPopup.board.title,
-          createdBy: userData.uid,
-        };
-        const newTask = await createTask(projectId, taskData);
-        setState((prev) => ({
-          ...prev,
-          tasks: [...prev.tasks, newTask],
-          error: '',
-        }));
-      } else if (taskPopup.mode === 'edit') {
-        const updates = {
-          taskName: taskPopup.taskName.trim(),
-          notes: taskPopup.notes.trim(),
-        };
-        await updateTask(projectId, taskPopup.task.taskId, updates);
-        setState((prev) => ({
-          ...prev,
-          tasks: prev.tasks.map((t) =>
-            t.taskId === taskPopup.task.taskId ? { ...t, ...updates } : t
-          ),
-          error: '',
-        }));
-      }
-      setTaskPopup({ show: false, mode: 'add', task: null, board: null, taskName: '', notes: '', createdByName: '', error: '' });
-    } catch (err) {
-      setTaskPopup((prev) => ({ ...prev, error: 'Failed to save task' }));
-    }
-  };
-
-  const handleTaskCancel = () => {
-    setTaskPopup({ show: false, mode: 'add', task: null, board: null, taskName: '', notes: '', createdByName: '', error: '' });
-  };
+  console.log('ProjectDetails render state:', {
+    isLoading: state.isLoading,
+    error: state.error,
+    project: state.project,
+    tasks: state.tasks,
+    columns: state.columns,
+    providerLoading,
+    userLoading,
+    providerError,
+  });
 
   return (
     <main
-      className="mt-[4rem] p-6 bg-bg-primary rounded-lg min-h-[calc(100vh-4rem)]"
+      className="mt-[4rem] p-6 bg-[#292830] rounded-lg min-h-[calc(100vh-4rem)]"
       aria-label="Project details and Kanban board"
     >
-      {(state.error || providerError || newColumn.error || taskPopup.error || columnPopup.error) && (
+      {(state.error || providerError) && (
         <motion.p
-          className="text-error text-sm mb-4 text-center"
+          className="text-red-400 text-sm mb-4 text-center"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
           role="alert"
         >
-          {state.error || providerError || newColumn.error || taskPopup.error || columnPopup.error}
+          {state.error || providerError}
         </motion.p>
       )}
 
       {(state.isLoading || providerLoading || userLoading) && (
         <motion.p
-          className="text-text-primary text-lg text-center"
+          className="text-white text-lg text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -404,36 +195,69 @@ const ProjectDetails = () => {
 
       {!state.isLoading && !providerLoading && !userLoading && state.project && userData && (
         <div className="space-y-8">
-          <motion.h1
-            className="text-3xl font-bold text-text-primary mb-6"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {state.project.projectName}
-          </motion.h1>
-          <KanbanBoard
-            columns={state.columns}
-            tasks={state.tasks}
-            newColumn={newColumn}
-            onAddColumnClick={handleAddColumnClick}
-            onColumnNameChange={handleColumnNameChange}
-            onAddColumn={handleAddColumn}
-            onCancelAddColumn={handleCancelAddColumn}
-            onEditColumnClick={handleEditColumnClick}
-            onAddTaskClick={handleAddTaskClick}
-            onTaskClick={handleTaskClick}
-            inputRef={inputRef}
-            updateTask={updateTask}
-            projectId={projectId}
-            setTasks={(tasks) => setState((prev) => ({ ...prev, tasks }))}
-          />
+          {/* Kanban Board */}
+          <section aria-label="Kanban board">
+            <div
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fit, minmax(15rem, 1fr))',
+                maxWidth: '100%',
+                margin: '0 auto',
+              }}
+            >
+              {state.columns.map((column) => (
+                <motion.div
+                  key={column.id} // Unique key for each column
+                  className="bg-[#3a3a44] rounded-lg p-4 min-h-[20rem]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  role="region"
+                  aria-label={`${column.title} column`}
+                >
+                  <h3
+                    className="text-white font-semibold mb-4 text-center"
+                    style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}
+                  >
+                    {column.title}
+                  </h3>
+                  {column.id === 'add-column' ? (
+                    <button
+                      className="w-full h-32 flex justify-center items-center bg-[#4a4a56] rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      onClick={() => alert('Add new column (functionality to be implemented)')}
+                      aria-label="Add new column"
+                    >
+                      <svg
+                        className="w-12 h-12 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      {/* Placeholder for tasks */}
+                      <p
+                        className="text-white text-sm text-center"
+                        style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+                      >
+                        Tasks will be displayed here
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </section>
         </div>
       )}
 
       {!state.isLoading && !providerLoading && !userLoading && !state.project && !state.error && !providerError && (
         <motion.p
-          className="text-text-secondary text-lg text-center"
+          className="text-yellow-400 text-lg text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -441,39 +265,6 @@ const ProjectDetails = () => {
           No project data available
         </motion.p>
       )}
-
-      <TaskPopup
-        show={taskPopup.show}
-        mode={taskPopup.mode}
-        task={taskPopup.task}
-        board={taskPopup.board}
-        taskName={taskPopup.taskName}
-        notes={taskPopup.notes}
-        createdByName={taskPopup.createdByName}
-        error={taskPopup.error}
-        projectKey={state.project?.key}
-        taskCount={state.tasks.length}
-        onTaskNameChange={(e) => setTaskPopup((prev) => ({ ...prev, taskName: e.target.value }))}
-        onNotesChange={(e) => setTaskPopup((prev) => ({ ...prev, notes: e.target.value }))}
-        onEditTask={handleEditTask}
-        onSubmit={handleTaskSubmit}
-        onCancel={handleTaskCancel}
-        updateTask={updateTask}
-        projectId={projectId}
-        setTasks={(tasks) => setState((prev) => ({ ...prev, tasks }))}
-        columns={state.columns}
-        onClose={() => setTaskPopup({ show: false, mode: 'add', task: null, board: null, taskName: '', notes: '', createdByName: '', error: '' })}
-      />
-
-      <ColumnPopup
-        show={columnPopup.show}
-        board={columnPopup.board}
-        columnName={columnPopup.columnName}
-        error={columnPopup.error}
-        onColumnNameChange={handleColumnNameEditChange}
-        onSubmit={handleEditColumnSubmit}
-        onCancel={handleEditColumnCancel}
-      />
     </main>
   );
 };
