@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useUser } from '../global widgets/userProvider.jsx';
+import { useUser } from '../../contexts/userContext.jsx';
 import ProjectHeader from './widgets/projectHeader.jsx';
 import ProjectDetails from './widgets/projectDetails.jsx';
 

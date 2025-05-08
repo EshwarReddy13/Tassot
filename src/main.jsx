@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import App from './App.jsx';
-import { UserProvider } from './components/global widgets/userProvider.jsx';
+import { UserProvider } from './contexts/userContext.jsx'; 
 import { DocumentProvider } from './components/global widgets/documentProvider.jsx';
 
 import Login from './components/login/loginPage.jsx';

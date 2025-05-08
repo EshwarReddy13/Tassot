@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDocuments } from '../../global widgets/documentProvider.jsx'; // Adjust path as needed
-import { useUser } from '../../global widgets/userProvider.jsx'; // Adjust path as needed
+import { useUser } from '../../../contexts/userContext.jsx'; // Adjust path as needed
 
 const generateProjectId = (projectName) => {
   const randomChars = Math.random().toString(36).substring(2, 12);

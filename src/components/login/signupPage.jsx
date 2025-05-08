@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, s
 import { auth, googleProvider, db } from '../../firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-import { useUser } from '../global widgets/userProvider.jsx';
+import { useUser } from '../../contexts/userContext.jsx';
 import login_background from '../../assets/login_background.webp';
 
 function SignUpPageView() {

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocuments } from '../../global widgets/documentProvider.jsx';
-import { useUser } from '../../global widgets/userProvider.jsx';
+import { useUser } from '../../../contexts/userContext.jsx';
 
 // Map standardized status values to board names (for future task mapping)
 const statusToBoardMap = {

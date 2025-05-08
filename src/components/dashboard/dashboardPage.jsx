@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-import { useUser } from '../global widgets/userProvider.jsx';
+import { useUser } from '../../contexts/userContext.jsx';
 import CreateProjectDrawer from './widgets/dashboardCreateProject.jsx';
 import BackgroundImage from '../../assets/dashboard_background.png';
 

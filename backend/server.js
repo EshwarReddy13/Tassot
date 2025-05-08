@@ -4,9 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 // Route modules
-import loginRoutes from './routes/login/loginRoutes.js';
-// import userRoutes from './routes/users/userRoutes.js';
-// import dashboardRoutes from './routes/dashboard/dashboardRoutes.js';
+import userRoutes from './routes/users/userRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -19,9 +17,7 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 // Mount feature routers under /api
-app.use('/api/login', loginRoutes);
-// app.use('/api/users', userRoutes);
-// app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/users', userRoutes);
 
 // Healthcheck endpoint
 app.get('/health', (_req, res) => res.send('ok'));

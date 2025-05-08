@@ -1,56 +1,54 @@
+// src/views/LoginPageView.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
-import { auth, googleProvider, db } from '../../firebase.js';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  updateProfile
+} from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase.js';
 import { motion } from 'framer-motion';
-import { useUser } from '../global widgets/userProvider.jsx';
+import { useUser } from '../../contexts/userContext.jsx';
 import login_background from '../../assets/login_background.webp';
 
-function LoginPageView() {
-  const { userData, createUser } = useUser();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function LoginPageView() {
+  const { firebaseUser } = useUser();
+  const [email, setEmail]           = useState('');
+  const [password, setPassword]     = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [authError, setAuthError] = useState('');
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupType, setPopupType] = useState(''); // 'google', 'apple', or 'google-provider'
+  const [authError, setAuthError]   = useState('');
+  const [showPopup, setShowPopup]   = useState(false);
+  const [popupType, setPopupType]   = useState(''); // only used for Apple
 
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // Redirect once we have a signed-in user
   useEffect(() => {
-    if (userData) {
-      navigate(userData.emailVerified ? '/dashboard' : '/verify-email', { replace: true });
+    if (firebaseUser) {
+      navigate(
+        firebaseUser.emailVerified ? '/dashboard' : '/verify-email',
+        { replace: true }
+      );
     }
-  }, [userData, navigate]);
+  }, [firebaseUser, navigate]);
 
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidEmail = (em) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
 
-  const handleEmailChange = (value) => {
-    setEmail(value);
-    if (!value) {
-      setEmailError('Please fill in this field');
-    } else if (!isValidEmail(value)) {
-      setEmailError('Incorrect email format');
-    } else {
-      setEmailError('');
-    }
+  const handleEmailChange = (val) => {
+    setEmail(val);
+    if (!val) setEmailError('Please fill in this field');
+    else if (!isValidEmail(val)) setEmailError('Incorrect email format');
+    else setEmailError('');
   };
 
   const handlePasswordChange = (val) => {
     setPassword(val);
-    if (!val) {
-      setPasswordError('Please fill in this field');
-    } else {
-      setPasswordError('');
-    }
+    setPasswordError(val ? '' : 'Please fill in this field');
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     let hasError = false;
 
     if (!email) {
@@ -59,53 +57,28 @@ function LoginPageView() {
     } else if (!isValidEmail(email)) {
       setEmailError('Incorrect email format');
       hasError = true;
-    } else {
-      setEmailError('');
     }
 
     if (!password) {
       setPasswordError('Please fill in this field');
       hasError = true;
-    } else {
-      setPasswordError('');
     }
 
     if (hasError) return;
 
     try {
-      // Check if user exists in Firestore by email
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', email));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0].data();
-        if (userDoc.provider === 'google') {
-          setPopupType('google-provider');
-          setShowPopup(true);
-          setAuthError('');
-          return;
-        }
-      }
-
-      // Proceed with email/password login
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      if (user.emailVerified) {
-        navigate('/dashboard');
-      } else {
-        setAuthError('Please verify your email before logging in.');
-        navigate('/verify-email');
-      }
+      setAuthError('');
+      await signInWithEmailAndPassword(auth, email, password);
+      // redirect happens in useEffect
     } catch (err) {
       console.error('Login error:', err.code, err.message);
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
+      if (
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found'
+      ) {
         setAuthError('Invalid email or password.');
       } else if (err.code === 'auth/too-many-requests') {
         setAuthError('Too many attempts. Please try again later.');
-      } else if (err.code === 'permission-denied') {
-        console.error('Firestore permission denied:', err);
-        setAuthError('Unable to verify account. Please try again.');
       } else {
         setAuthError(err.message || 'Failed to sign in.');
       }
@@ -119,34 +92,11 @@ function LoginPageView() {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Ensure displayName is set
+      // Ensure displayName exists
       if (!user.displayName) {
         await updateProfile(user, { displayName: 'User' });
       }
-
-      // Create user document if it doesn't exist
-      try {
-        await createUser(user.uid, {
-          firstName: user.displayName?.split(' ')[0] || 'User',
-          lastName: user.displayName?.split(' ')[1] || '',
-          email: user.email,
-          provider: 'google',
-          projects: [],
-        });
-      } catch (err) {
-        // Ignore if user already exists
-        if (err.message.includes('User document already exists')) {
-          console.log('User already exists, skipping creation');
-        } else {
-          throw err;
-        }
-      }
-
-      if (user.emailVerified) {
-        navigate('/dashboard');
-      } else {
-        navigate('/verify-email');
-      }
+      // UserProvider will upsert & fetch your profile
     } catch (err) {
       console.error('Google Sign-In Error:', err);
       setAuthError(err.message || 'Failed to sign in with Google');
@@ -336,6 +286,7 @@ function LoginPageView() {
               Apple
             </motion.button>
           </motion.div>
+
         </form>
 
         {/* Popup Modal */}
@@ -357,81 +308,14 @@ function LoginPageView() {
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {popupType === 'google' ? (
-                <>
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">
-                    Use Google Sign-In
-                  </h3>
-                  <p className="text-white text-sm mb-6 text-center">
-                    This account was created with Google. Please sign in using Google.
-                  </p>
-                  <motion.button
-                    type="button"
-                    className="w-full flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-                    onClick={handleGoogleSignIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Sign in with Google"
-                  >
-                    <img
-                      src="https://www.svgrepo.com/show/475656/google-color.svg"
-                      alt="Google logo"
-                      className="w-5 h-5"
-                    />
-                    Sign in with Google
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    className="w-full mt-2 text-white text-sm underline"
-                    onClick={closePopup}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Cancel Google sign-in"
-                  >
-                    Cancel
-                  </motion.button>
-                </>
-              ) : popupType === 'google-provider' ? (
-                <>
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">
-                    Google Sign-In Required
-                  </h3>
-                  <p className="text-white text-sm mb-6 text-center">
-                    This account uses Google Sign-In. Please use the Google button to log in.
-                  </p>
-                  <motion.button
-                    type="button"
-                    className="w-full flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-                    onClick={handleGoogleSignIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Sign in with Google"
-                  >
-                    <img
-                      src="https://www.svgrepo.com/show/475656/google-color.svg"
-                      alt="Google logo"
-                      className="w-5 h-5"
-                    />
-                    Sign in with Google
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    className="w-full mt-2 text-white text-sm underline"
-                    onClick={closePopup}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Cancel Google sign-in"
-                  >
-                    Cancel
-                  </motion.button>
-                </>
-              ) : (
+              {popupType === 'apple' && (
                 <>
                   <h3 className="text-xl font-bold text-white mb-4 text-center">
                     Apple Sign-In Not Available
                   </h3>
                   <p className="text-white text-sm mb-6 text-center">
-                    We are still working on setting up Apple sign-in. For now, use Google or create an account with email.
+                    We are still working on setting up Apple sign-in. For now, use
+                    Google or email.
                   </p>
                   <motion.button
                     type="button"
@@ -452,5 +336,3 @@ function LoginPageView() {
     </div>
   );
 }
-
-export default LoginPageView;

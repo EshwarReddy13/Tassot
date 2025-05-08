@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../global widgets/userProvider.jsx';
+import { useUser } from '../../contexts/userContext.jsx';
 import { useDocuments } from '../global widgets/documentProvider.jsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase.js';
