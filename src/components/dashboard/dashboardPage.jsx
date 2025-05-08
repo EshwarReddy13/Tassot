@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-import { useUser } from '../global widgets/user_provider.jsx';
-import CreateProjectDrawer from './widgets/dashboard_create_project.jsx';
+import { useUser } from '../global widgets/userProvider.jsx';
+import CreateProjectDrawer from './widgets/dashboardCreateProject.jsx';
 import BackgroundImage from '../../assets/dashboard_background.png';
 
 const DashboardPage = () => {

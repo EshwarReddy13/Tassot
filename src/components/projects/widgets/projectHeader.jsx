@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useDocuments } from '../../global widgets/document_provider.jsx';
+import { useDocuments } from '../../global widgets/documentProvider.jsx';
 
 const ProjectHeader = () => {
   const { projectId } = useParams();

@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../global widgets/user_provider.jsx'; // Adjust path
-import { auth } from '../../firebase'; // Adjust path
+import { useUser } from '../global widgets/userProvider.jsx'; // Adjust path
+import { auth } from '../../firebase.js'; // Adjust path
 import { signOut } from 'firebase/auth';
 
 const SettingsPage = () => {

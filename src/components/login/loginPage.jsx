@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
-import { auth, googleProvider, db } from '../../firebase';
+import { auth, googleProvider, db } from '../../firebase.js';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-import { useUser } from '../global widgets/user_provider.jsx';
+import { useUser } from '../global widgets/userProvider.jsx';
 import login_background from '../../assets/login_background.webp';
 
 function LoginPageView() {

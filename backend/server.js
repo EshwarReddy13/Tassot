@@ -1,30 +1,32 @@
+// server.js
 import express from 'express';
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
+import cors from 'cors';
 
+// Route modules
+import loginRoutes from './routes/login/loginRoutes.js';
+// import userRoutes from './routes/users/userRoutes.js';
+// import dashboardRoutes from './routes/dashboard/dashboardRoutes.js';
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
+// Enable CORS for local frontend
+app.use(cors({ origin: 'http://localhost:5173' }));
+// Parse JSON bodies
 app.use(express.json());
 
-// Choose the Neon URL based on NODE_ENV
-const isProd = process.env.NODE_ENV === 'production';
-const connectionString = isProd
-  ? process.env.NEON_PSQL_URL_PRODUCTION
-  : process.env.NEON_PSQL_URL_DEVELOPMENT;
+// Mount feature routers under /api
+app.use('/api/login', loginRoutes);
+// app.use('/api/users', userRoutes);
+// app.use('/api/dashboard', dashboardRoutes);
 
-// Set up Postgres pool
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false }
-});
-
+// Healthcheck endpoint
 app.get('/health', (_req, res) => res.send('ok'));
 
-// … your other routes …
-
-const PORT = process.env.PORT || 4000;
+// Start server\const PORT = process.env.PORT || 4000;
+const isProd = process.env.NODE_ENV === 'production';
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT} in ${isProd ? 'production' : 'development'} mode`);
 });

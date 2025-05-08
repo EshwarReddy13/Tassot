@@ -3,19 +3,19 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import App from './App.jsx';
-import { UserProvider } from './components/global widgets/user_provider.jsx';
-import { DocumentProvider } from './components/global widgets/document_provider.jsx';
+import { UserProvider } from './components/global widgets/userProvider.jsx';
+import { DocumentProvider } from './components/global widgets/documentProvider.jsx';
 
-import Login from './components/login/login_page.jsx';
-import Signup from './components/login/signup_page.jsx';
-import VerifyEmailPage from './components/login/verify_email_page.jsx';
+import Login from './components/login/loginPage.jsx';
+import Signup from './components/login/signupPage.jsx';
+import VerifyEmailPage from './components/login/verifyEmailPage.jsx';
 
-import Dashboard from './components/dashboard/dashboard_page.jsx';
+import Dashboard from './components/dashboard/dashboardPage.jsx';
 
-import Projects from './components/projects/projects_page.jsx';
-import ProjectPage from './components/projects/project_view.jsx';
+import Projects from './components/projects/projectsPage.jsx';
+import ProjectPage from './components/projects/projectView.jsx';
 
-import SettingsPage from './components/settings/settings_page.jsx';
+import SettingsPage from './components/settings/settingsPage.jsx';
 
 import Layout from './layout.jsx';
 

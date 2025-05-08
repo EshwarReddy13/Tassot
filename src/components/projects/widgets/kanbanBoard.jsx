@@ -2,8 +2,8 @@ import { motion } from 'framer-motion';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
-import TaskCard from './task_card.jsx';
-import { AddColumnForm } from './Popups.jsx';
+import TaskCard from './taskCard.jsx';
+import { AddColumnForm } from './popups.jsx';
 
 const KanbanBoard = ({
   columns,
