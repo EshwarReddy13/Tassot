@@ -1,6 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-bg-primary: #292830; /* Main background (e.g., page background) */
+  --color-bg-secondary: #3a3a44; /* Secondary background (e.g., Kanban columns) */
+  --color-bg-card: #17171b; /* Cards or buttons (e.g., task cards) */
+  --color-bg-dark: #17171b; /* Dark input fields */
+  
+  /* Accent colors */
+  --color-accent-primary: #9674da; /* Primary purple (e.g., buttons) */
+  --color-accent-hover: #7e5cb7; /* Hover state for purple */
+  
+  /* Text colors */
+  --color-text-primary: #ffffff; /* Main text (white) */
+  --color-text-secondary: #a0a0a0; /* Secondary text (gray) */
+  --color-text-placeholder: #6b7280; /* Placeholder text */
+  
+  /* Feedback colors */
+  --color-error: #f87171; /* Red for errors */
+  --color-warning: #f87171; /* Yellow for warnings */
+  --color-info: #3b82f6; /* Blue for informational messages */
+  --color-success: #34d399; /* Green for success messages */
+}
+
+
 /* Set base font and colors */
 body {
   font-family: 'Poppins', sans-serif;

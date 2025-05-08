@@ -33,6 +33,15 @@ dist-ssr
 .env.development
 .env.test
 .env.production
+backend/.env
+backend/.env.*
+backend/.env.local
+backend/.env.development.local
+backend/.env.test.local
+backend/.env.production.local
+backend/.env.development
+backend/.env.test
+backend/.env.production
 
 # Firebase Hosting/Emulator
 .firebase/

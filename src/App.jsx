@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useUser } from './components/global widgets/user_provider.jsx';
+import { useUser } from './components/global widgets/userProvider.jsx';
 import { useEffect } from 'react';
 
 const App = () => {
