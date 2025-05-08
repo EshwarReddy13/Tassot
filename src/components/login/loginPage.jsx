@@ -6,7 +6,7 @@ import {
   signInWithPopup,
   updateProfile
 } from 'firebase/auth';
-import { auth, googleProvider } from '../../firebase.js';
+import { auth, googleProvider } from '../../firebase';
 import { motion } from 'framer-motion';
 import { useUser } from '../../contexts/userContext.jsx';
 import login_background from '../../assets/login_background.webp';

@@ -5,10 +5,11 @@ import cors from 'cors';
 
 // Route modules
 import userRoutes from './routes/users/userRoutes.js';
+import projectRoutes from './routes/projects/projectRoutes.js';
 
 // Load environment variables
 dotenv.config();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT;
 
 const app = express();
 // Enable CORS for local frontend
@@ -18,11 +19,12 @@ app.use(express.json());
 
 // Mount feature routers under /api
 app.use('/api/users', userRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Healthcheck endpoint
 app.get('/health', (_req, res) => res.send('ok'));
 
-// Start server\const PORT = process.env.PORT || 4000;
+// Start server\const PORT = process.env.PORT;
 const isProd = process.env.NODE_ENV === 'production';
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT} in ${isProd ? 'production' : 'development'} mode`);

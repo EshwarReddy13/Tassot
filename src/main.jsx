@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import App from './App.jsx';
 import { UserProvider } from './contexts/userContext.jsx'; 
-import { DocumentProvider } from './components/global widgets/documentProvider.jsx';
+import { ProjectProvider } from './contexts/projectContext.jsx';
 
 import Login from './components/login/loginPage.jsx';
 import Signup from './components/login/signupPage.jsx';
@@ -24,7 +24,7 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <UserProvider>
-      <DocumentProvider>
+      <ProjectProvider>
         <BrowserRouter>
           <Routes>
             {/* Public routes (no navbar) */}
@@ -43,7 +43,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             </Route>
           </Routes>
         </BrowserRouter>
-      </DocumentProvider>
+      </ProjectProvider>
     </UserProvider>
   </React.StrictMode>
 );

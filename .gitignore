@@ -43,6 +43,9 @@ backend/.env.development
 backend/.env.test
 backend/.env.production
 
+backend/config/*.json
+backend/config/*.yaml
+
 # Firebase Hosting/Emulator
 .firebase/
 .firebaserc

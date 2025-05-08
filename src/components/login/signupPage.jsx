@@ -1,25 +1,39 @@
+// src/views/SignUpPageView.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider, db } from '../../firebase.js';
+import {
+  createUserWithEmailAndPassword,
+  updateProfile as updateFirebaseProfile, // Renamed to avoid confusion
+  sendEmailVerification,
+  signInWithPopup
+} from 'firebase/auth';
+import { auth, googleProvider, db } from '../../firebase.js'; // Assuming db is your Firestore instance
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { useUser } from '../../contexts/userContext.jsx';
 import login_background from '../../assets/login_background.webp';
 
-function SignUpPageView() {
-  const { userData, loading, createUser } = useUser();
+export default function SignUpPageView() {
+  const {
+    firebaseUser,
+    loading: contextLoading,
+    error: contextError,
+    createUserError: contextCreateUserError
+  } = useUser();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [authError, setAuthError] = useState('');
+
   const [passwordChecks, setPasswordChecks] = useState({
     length: false,
     uppercase: false,
@@ -28,51 +42,39 @@ function SignUpPageView() {
     specialChar: false,
   });
   const [showPopup, setShowPopup] = useState(false);
-  const [popupType, setPopupType] = useState(''); // 'apple' or 'google-provider'
+  const [popupType, setPopupType] = useState('');
 
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
-    if (!loading && userData) {
-      navigate(userData.emailVerified ? '/dashboard' : '/verify-email', { replace: true });
+    if (!contextLoading && firebaseUser) {
+      navigate(firebaseUser.emailVerified ? '/dashboard' : '/verify-email', { replace: true });
     }
-  }, [userData, loading, navigate]);
+  }, [firebaseUser, contextLoading, navigate]);
 
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
   const isValidName = (name) => /^[A-Za-z\s-]{1,50}$/.test(name);
 
   const handleFirstNameChange = (value) => {
     setFirstName(value);
-    if (!value) {
-      setFirstNameError('Please fill in this field');
-    } else if (!isValidName(value)) {
-      setFirstNameError('Only letters, spaces, and hyphens allowed');
-    } else {
-      setFirstNameError('');
-    }
+    if (!value) setFirstNameError('Please fill in this field');
+    else if (!isValidName(value)) setFirstNameError('Only letters, spaces, hyphens allowed (max 50).');
+    else setFirstNameError('');
   };
 
   const handleLastNameChange = (value) => {
     setLastName(value);
-    if (!value) {
-      setLastNameError('Please fill in this field');
-    } else if (!isValidName(value)) {
-      setLastNameError('Only letters, spaces, and hyphens allowed');
-    } else {
-      setLastNameError('');
-    }
+    if (!value) setLastNameError('Please fill in this field');
+    else if (!isValidName(value)) setLastNameError('Only letters, spaces, hyphens allowed (max 50).');
+    else setLastNameError('');
   };
 
   const handleEmailChange = (value) => {
     setEmail(value);
-    if (!value) {
-      setEmailError('Please fill in this field');
-    } else if (!isValidEmail(value)) {
-      setEmailError('Incorrect email format');
-    } else {
-      setEmailError('');
-    }
+    if (!value) setEmailError('Please fill in this field');
+    else if (!isValidEmail(value)) setEmailError('Incorrect email format');
+    else setEmailError('');
+    setAuthError('');
   };
 
   const handlePasswordChange = (val) => {
@@ -85,175 +87,119 @@ function SignUpPageView() {
       specialChar: /[^A-Za-z0-9]/.test(val),
     };
     setPasswordChecks(updatedChecks);
+
     if (!val) {
-      setPasswordError('Please fill in this field');
+        setPasswordError('Please fill in this field');
+    } else if (!Object.values(updatedChecks).every(Boolean)) {
+        setPasswordError('Password does not meet all requirements.');
     } else {
-      setPasswordError('');
+        setPasswordError('');
     }
+
     if (confirmPassword && val !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
+        setConfirmPasswordError('Passwords do not match');
     } else if (confirmPassword) {
-      setConfirmPasswordError('');
+        setConfirmPasswordError('');
     }
   };
 
   const handleConfirmPasswordChange = (val) => {
     setConfirmPassword(val);
-    if (!val) {
-      setConfirmPasswordError('Please fill in this field');
-    } else if (val !== password) {
-      setConfirmPasswordError('Passwords do not match');
-    } else {
-      setConfirmPasswordError('');
-    }
+    if (!val) setConfirmPasswordError('Please fill in this field');
+    else if (val !== password) setConfirmPasswordError('Passwords do not match');
+    else setConfirmPasswordError('');
   };
 
   const getPasswordStrength = () => {
     const score = Object.values(passwordChecks).filter(Boolean).length;
-    if (score === 0) return { width: '0%', color: 'transparent' };
-    if (score <= 2) return { width: '33%', color: 'red' };
-    if (score <= 4) return { width: '66%', color: 'orange' };
-    return { width: '100%', color: 'green' };
+    if (password.length === 0 && score === 0) return { width: '0%', color: 'transparent' };
+    if (score <= 2) return { width: `${(score / 5) * 100}%`, color: '#ef4444' }; // red-500
+    if (score <= 4) return { width: `${(score / 5) * 100}%`, color: '#f97316' }; // orange-500
+    return { width: '100%', color: '#22c55e' }; // green-500
   };
+  const passwordStrengthStyle = getPasswordStrength();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setAuthError('');
 
-    let hasError = false;
+    handleFirstNameChange(firstName);
+    handleLastNameChange(lastName);
+    handleEmailChange(email);
+    handlePasswordChange(password);
+    handleConfirmPasswordChange(confirmPassword);
 
-    if (!firstName) {
-      setFirstNameError('Please fill in this field');
-      hasError = true;
-    } else if (!isValidName(firstName)) {
-      setFirstNameError('Only letters, spaces, and hyphens allowed');
-      hasError = true;
-    }
-
-    if (!lastName) {
-      setLastNameError('Please fill in this field');
-      hasError = true;
-    } else if (!isValidName(lastName)) {
-      setLastNameError('Only letters, spaces, and hyphens allowed');
-      hasError = true;
-    }
-
-    if (!email) {
-      setEmailError('Please fill in this field');
-      hasError = true;
-    } else if (!isValidEmail(email)) {
-      setEmailError('Incorrect email format');
-      hasError = true;
-    }
-
-    if (!password) {
-      setPasswordError('Please fill in this field');
-      hasError = true;
-    } else {
-      const { length, uppercase, lowercase, number, specialChar } = passwordChecks;
-      if (!(length && uppercase && lowercase && number && specialChar)) {
+    const allPasswordChecksMet = Object.values(passwordChecks).every(Boolean);
+    if (!allPasswordChecksMet && password) { // Ensure password error is set if checks fail
         setPasswordError('Password does not meet all requirements');
-        hasError = true;
-      }
     }
 
-    if (!confirmPassword) {
-      setConfirmPasswordError('Please fill in this field');
-      hasError = true;
-    } else if (confirmPassword !== password) {
-      setConfirmPasswordError('Passwords do not match');
-      hasError = true;
-    }
 
-    if (hasError) return;
+    if (firstNameError || lastNameError || emailError || passwordError || confirmPasswordError || !allPasswordChecksMet || (password && password !== confirmPassword)) {
+      return;
+    }
 
     try {
-      // Check if email already exists in Firestore
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', email));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0].data();
-        if (userDoc.provider === 'google') {
-          setPopupType('google-provider');
-          setShowPopup(true);
-          setAuthError('');
-          return;
-        } else {
-          setAuthError('This email is already registered. Please log in or use a different email.');
-          return;
+      if (db) {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0].data();
+          if (userDoc.provider === 'google') {
+            setPopupType('google-provider');
+            setShowPopup(true);
+            return;
+          } else {
+            setAuthError('This email is already registered. Please log in or use a different email.');
+            return;
+          }
         }
       }
 
-      // Proceed with email/password signup
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      await updateProfile(user, {
-        displayName: `${firstName} ${lastName}`,
+      await updateFirebaseProfile(user, {
+        displayName: `${firstName} ${lastName}`.trim(),
       });
-      await createUser(user.uid, {
-        firstName,
-        lastName,
-        email: user.email,
-        provider: 'email',
-        projects: [],
-      });
+
       await sendEmailVerification(user);
-      setAuthError('A verification email has been sent. Please verify your email before logging in.');
       navigate('/verify-email');
+
     } catch (err) {
       console.error('Sign-up error:', err.code, err.message);
       if (err.code === 'auth/email-already-in-use') {
-        setAuthError('This email is already registered. Please log in or use a different email.');
-      } else if (err.code === 'permission-denied') {
+        setAuthError('This email is already registered with Firebase. Please log in or use a different email.');
+      } else if (err.code === 'permission-denied' && db) {
         console.error('Firestore permission denied:', err);
-        setAuthError('Unable to verify account. Please try again.');
+        setAuthError('Unable to verify account details. Please try again.');
       } else {
-        setAuthError(err.message || 'Failed to sign up');
+        setAuthError(err.message || 'Failed to sign up. Please try again.');
       }
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setAuthError('');
     try {
-      setAuthError('');
       setShowPopup(false);
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Ensure displayName is set
-      if (!user.displayName) {
-        await updateProfile(user, { displayName: 'User' });
+      if (!user.displayName || user.displayName.trim() === '' || user.displayName.toLowerCase() === 'user') {
+        const nameFromEmail = user.email ? user.email.split('@')[0] : 'New User';
+        await updateFirebaseProfile(user, { displayName: nameFromEmail });
       }
-
-      // Create user document if it doesn't exist
-      try {
-        const displayName = user.displayName || 'User';
-        const [firstName, lastName = ''] = displayName.split(' ');
-        await createUser(user.uid, {
-          firstName,
-          lastName,
-          email: user.email,
-          provider: 'google',
-          projects: [],
-        });
-      } catch (err) {
-        // Ignore if user already exists
-        if (err.message.includes('User document already exists')) {
-          console.log('User already exists, skipping creation');
-        } else {
-          throw err;
-        }
-      }
-
-      if (user.emailVerified) {
-        navigate('/dashboard');
-      } else {
-        navigate('/verify-email');
-      }
+      // Redirection handled by useEffect
     } catch (err) {
       console.error('Google Sign-In Error:', err);
-      setAuthError(err.message || 'Failed to sign in with Google');
+      if (err.code === 'auth/popup-closed-by-user') {
+        setAuthError('Sign-in process was cancelled.');
+      } else if (err.code === 'auth/account-exists-with-different-credential') {
+         setAuthError('An account already exists with this email. Please sign in using the original method.');
+      } else {
+        setAuthError(err.message || 'Failed to sign in with Google.');
+      }
     }
   };
 
@@ -268,9 +214,7 @@ function SignUpPageView() {
     setPopupType('');
   };
 
-  const passwordStrength = getPasswordStrength();
-
-  if (loading) {
+  if (contextLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#2c2638] font-poppins">
         <div
@@ -285,8 +229,7 @@ function SignUpPageView() {
 
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
-      {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+      <div className="w-full md:w-1/2 h-full bg-[#2c2638] p-4 hidden md:flex items-center justify-center transition-none min-w-0 flex-shrink-0">
         <img
           src={login_background}
           alt="Decorative signup background"
@@ -294,16 +237,15 @@ function SignUpPageView() {
         />
       </div>
 
-      {/* Right Form Section */}
       <motion.div
-        className="w-1/2 h-full flex flex-col justify-center px-12 bg-[#2c2638] min-w-0 flex-shrink-0"
+        className="w-full md:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 bg-[#2c2638] min-w-0 flex-shrink-0 overflow-y-auto py-8"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <motion.h2
-          className="text-5xl font-bold text-white mb-6 text-center"
-          style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
+          className="text-4xl sm:text-5xl font-bold text-white mb-4 sm:mb-6 text-center"
+          style={{ fontSize: 'clamp(2.2rem, 5vw, 3.0rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -312,8 +254,8 @@ function SignUpPageView() {
         </motion.h2>
 
         <motion.p
-          className="mt-3 mb-8 text-center text-sm text-white"
-          style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+          className="mt-2 sm:mt-3 mb-6 sm:mb-8 text-center text-xs sm:text-sm text-white"
+          style={{ fontSize: 'clamp(0.8rem, 1.5vw, 0.9rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -327,20 +269,41 @@ function SignUpPageView() {
         {authError && (
           <motion.p
             className="text-red-400 text-sm mb-4 text-center"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
             role="alert"
           >
             {authError}
           </motion.p>
         )}
+        {contextCreateUserError && !authError && (
+          <motion.p
+            className="text-red-400 text-sm mb-4 text-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            role="alert"
+          >
+            Error creating profile on backend: {contextCreateUserError}
+          </motion.p>
+        )}
+        {contextError && !authError && !contextCreateUserError && (
+          <motion.p
+            className="text-red-400 text-sm mb-4 text-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            role="alert"
+          >
+            System error: {contextError}
+          </motion.p>
+        )}
 
-        <form onSubmit={handleSignup} className="space-y-4 w-full max-w-md mx-auto">
-          {/* First Name and Last Name */}
-          <div className="flex gap-4">
+        <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4 w-full max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
-              <label htmlFor="firstName" className="block text-xl font-medium text-white text-left">
+              <label htmlFor="firstName" className="block text-base sm:text-lg font-medium text-white text-left">
                 First Name
               </label>
               <input
@@ -348,13 +311,14 @@ function SignUpPageView() {
                 id="firstName"
                 value={firstName}
                 onChange={(e) => handleFirstNameChange(e.target.value)}
-                className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da] disabled:opacity-70"
                 aria-describedby={firstNameError ? 'firstName-error' : undefined}
+                disabled={contextLoading}
               />
               {firstNameError && (
                 <motion.p
                   id="firstName-error"
-                  className="text-red-400 text-sm mt-1"
+                  className="text-red-400 text-xs mt-1"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -365,7 +329,7 @@ function SignUpPageView() {
               )}
             </div>
             <div className="flex-1">
-              <label htmlFor="lastName" className="block text-xl font-medium text-white text-left">
+              <label htmlFor="lastName" className="block text-base sm:text-lg font-medium text-white text-left">
                 Last Name
               </label>
               <input
@@ -373,13 +337,14 @@ function SignUpPageView() {
                 id="lastName"
                 value={lastName}
                 onChange={(e) => handleLastNameChange(e.target.value)}
-                className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da] disabled:opacity-70"
                 aria-describedby={lastNameError ? 'lastName-error' : undefined}
+                disabled={contextLoading}
               />
               {lastNameError && (
                 <motion.p
                   id="lastName-error"
-                  className="text-red-400 text-sm mt-1"
+                  className="text-red-400 text-xs mt-1"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -391,9 +356,8 @@ function SignUpPageView() {
             </div>
           </div>
 
-          {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-xl font-medium text-white text-left">
+            <label htmlFor="email" className="block text-base sm:text-lg font-medium text-white text-left">
               Email
             </label>
             <input
@@ -401,13 +365,14 @@ function SignUpPageView() {
               id="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da] disabled:opacity-70"
               aria-describedby={emailError ? 'email-error' : undefined}
+              disabled={contextLoading}
             />
             {emailError && (
               <motion.p
                 id="email-error"
-                className="text-red-400 text-sm mt-1"
+                className="text-red-400 text-xs mt-1"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -418,9 +383,8 @@ function SignUpPageView() {
             )}
           </div>
 
-          {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-xl font-medium text-white text-left">
+            <label htmlFor="password" className="block text-base sm:text-lg font-medium text-white text-left">
               Password
             </label>
             <input
@@ -428,13 +392,14 @@ function SignUpPageView() {
               id="password"
               value={password}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da] disabled:opacity-70"
               aria-describedby={passwordError ? 'password-error' : undefined}
+              disabled={contextLoading}
             />
             {passwordError && (
               <motion.p
                 id="password-error"
-                className="text-red-400 text-sm mt-1"
+                className="text-red-400 text-xs mt-1"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -445,47 +410,36 @@ function SignUpPageView() {
             )}
             {password && (
               <>
-                <div className="w-full h-2 mt-5 bg-[#4a4952] rounded-md">
+                <div className="w-full h-1.5 sm:h-2 mt-2 bg-[#4a4952] rounded-full overflow-hidden">
                   <motion.div
                     style={{
-                      width: passwordStrength.width,
-                      backgroundColor: passwordStrength.color,
+                      width: passwordStrengthStyle.width,
+                      backgroundColor: passwordStrengthStyle.color,
                     }}
-                    className="h-2 rounded-md transition-all duration-300"
+                    className="h-full rounded-full transition-all duration-300"
                     initial={{ width: '0%' }}
-                    animate={{ width: passwordStrength.width }}
+                    animate={{ width: passwordStrengthStyle.width }}
                     transition={{ duration: 0.3 }}
                   />
                 </div>
                 <motion.div
-                  className="mt-2 flex flex-wrap gap-2 text-xs text-white"
+                  className="mt-1.5 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-1 text-[0.7rem] sm:text-xs text-white"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.3 }}
                 >
-                  <span className={passwordChecks.uppercase ? 'text-green-400' : 'text-red-400'}>
-                    {passwordChecks.uppercase ? '✔️' : '❌'} Uppercase
-                  </span>
-                  <span className={passwordChecks.lowercase ? 'text-green-400' : 'text-red-400'}>
-                    {passwordChecks.lowercase ? '✔️' : '❌'} Lowercase
-                  </span>
-                  <span className={passwordChecks.number ? 'text-green-400' : 'text-red-400'}>
-                    {passwordChecks.number ? '✔️' : '❌'} Number
-                  </span>
-                  <span className={passwordChecks.specialChar ? 'text-green-400' : 'text-red-400'}>
-                    {passwordChecks.specialChar ? '✔️' : '❌'} Special
-                  </span>
-                  <span className={passwordChecks.length ? 'text-green-400' : 'text-red-400'}>
-                    {passwordChecks.length ? '✔️' : '❌'} 8+ chars
-                  </span>
+                  <span className={passwordChecks.uppercase ? 'text-green-400' : 'text-red-400'}>{passwordChecks.uppercase ? '✓' : '✗'} Uppercase</span>
+                  <span className={passwordChecks.lowercase ? 'text-green-400' : 'text-red-400'}>{passwordChecks.lowercase ? '✓' : '✗'} Lowercase</span>
+                  <span className={passwordChecks.number ? 'text-green-400' : 'text-red-400'}>{passwordChecks.number ? '✓' : '✗'} Number</span>
+                  <span className={passwordChecks.specialChar ? 'text-green-400' : 'text-red-400'}>{passwordChecks.specialChar ? '✓' : '✗'} Special</span>
+                  <span className={passwordChecks.length ? 'text-green-400' : 'text-red-400'}>{passwordChecks.length ? '✓' : '✗'} 8+ Chars</span>
                 </motion.div>
               </>
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-xl font-medium text-white text-left">
+            <label htmlFor="confirmPassword" className="block text-base sm:text-lg font-medium text-white text-left">
               Confirm Password
             </label>
             <input
@@ -493,13 +447,14 @@ function SignUpPageView() {
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da] disabled:opacity-70"
               aria-describedby={confirmPasswordError ? 'confirmPassword-error' : undefined}
+              disabled={contextLoading}
             />
             {confirmPasswordError && (
               <motion.p
                 id="confirmPassword-error"
-                className="text-red-400 text-sm mt-1"
+                className="text-red-400 text-xs mt-1"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -510,27 +465,25 @@ function SignUpPageView() {
             )}
           </div>
 
-          {/* Terms Checkbox */}
           <motion.div
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 pt-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.3 }}
           >
-            <motion.input
+            <input
               type="checkbox"
               id="terms"
               required
-              className="h-4 w-4 text-[#9674da] border-[#4a4952] rounded focus:ring-2 focus:ring-[#9674da]"
+              className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#9674da] border-[#4a4952] rounded focus:ring-offset-0 focus:ring-2 focus:ring-[#9674da] bg-[#3a3942] disabled:opacity-70 appearance-none checked:bg-[#9674da] checked:border-transparent"
               aria-label="Agree to Terms & Conditions"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              disabled={contextLoading}
             />
-            <label htmlFor="terms" className="text-sm text-white">
+            <label htmlFor="terms" className="text-xs sm:text-sm text-white">
               I agree to the{' '}
               <a
-                href="/terms"
-                className="underline text-[#9674da]"
+                href="/terms" // Replace with your actual terms page link
+                className="underline text-[#9674da] hover:text-[#7e5cb7]"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -539,42 +492,41 @@ function SignUpPageView() {
             </label>
           </motion.div>
 
-          {/* Submit Button */}
           <motion.button
             type="submit"
-            className="w-full bg-[#9674da] text-white p-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="w-full bg-[#9674da] text-white p-2.5 sm:p-3 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#9674da] disabled:opacity-50"
+            whileHover={!contextLoading ? { scale: 1.02 } : {}}
+            whileTap={!contextLoading ? { scale: 0.98 } : {}}
+            disabled={contextLoading}
             aria-label="Sign up with email and password"
           >
-            Sign Up
+            {contextLoading ? 'Processing...' : 'Sign Up'}
           </motion.button>
 
-          {/* Divider */}
           <motion.div
-            className="flex items-center my-6"
+            className="flex items-center my-4 sm:my-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.3 }}
           >
             <div className="flex-grow border-t border-gray-600" />
-            <span className="mx-4 text-sm text-gray-400">or sign up with</span>
+            <span className="mx-3 sm:mx-4 text-xs sm:text-sm text-gray-400">or sign up with</span>
             <div className="flex-grow border-t border-gray-600" />
           </motion.div>
 
-          {/* OAuth Buttons */}
           <motion.div
-            className="flex gap-4"
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.3 }}
           >
             <motion.button
               type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               onClick={handleGoogleSignIn}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-full flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 px-3 sm:px-4 rounded-md font-semibold hover:bg-[#4a4952] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#9674da] disabled:opacity-50"
+              whileHover={!contextLoading ? { scale: 1.02 } : {}}
+              whileTap={!contextLoading ? { scale: 0.98 } : {}}
+              disabled={contextLoading}
               aria-label="Sign up with Google"
             >
               <img
@@ -582,30 +534,30 @@ function SignUpPageView() {
                 alt="Google logo"
                 className="w-5 h-5"
               />
-              Google
+              {contextLoading ? 'Processing...' : 'Google'}
             </motion.button>
             <motion.button
               type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               onClick={handleAppleSignIn}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-full flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 px-3 sm:px-4 rounded-md font-semibold hover:bg-[#4a4952] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#9674da] disabled:opacity-50"
+              whileHover={!contextLoading ? { scale: 1.02 } : {}}
+              whileTap={!contextLoading ? { scale: 0.98 } : {}}
+              disabled={contextLoading}
               aria-label="Sign up with Apple"
             >
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg"
                 alt="Apple logo"
-                className="w-5 h-5"
+                className="w-5 h-5 filter brightness-0 invert" // Ensure Apple logo is white
               />
-              Apple
+              {contextLoading ? 'Processing...' : 'Apple'}
             </motion.button>
           </motion.div>
         </form>
 
-        {/* Popup Modal */}
         {showPopup && (
           <motion.div
-            className="fixed inset-0 bg-[#000]/40 backdrop-blur-sm flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -614,67 +566,68 @@ function SignUpPageView() {
             role="dialog"
           >
             <motion.div
-              className="bg-[#2c2638] p-10 rounded-lg max-w-sm w-full"
-              initial={{ scale: 0.8, opacity: 0 }}
+              className="bg-[#353142] border-2 border-[#4a4952] p-6 sm:p-8 rounded-lg max-w-xs sm:max-w-sm w-full shadow-xl"
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
             >
               {popupType === 'google-provider' ? (
                 <>
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">
-                    Google Sign-In Required
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-center">
+                    Google Sign-In Recommended
                   </h3>
-                  <p className="text-white text-sm mb-6 text-center">
-                    This email is registered with Google. Please use the Google button to sign up.
+                  <p className="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6 text-center">
+                    This email address seems to be associated with a Google account. For a smoother experience, please sign up or log in using the Google button.
                   </p>
                   <motion.button
                     type="button"
-                    className="w-full flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                    className="w-full flex items-center justify-center gap-2 bg-[#4285F4] text-white py-2.5 px-4 rounded-md font-semibold hover:bg-[#3578E5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#353142] focus:ring-[#4285F4]"
                     onClick={handleGoogleSignIn}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     aria-label="Sign in with Google"
+                    disabled={contextLoading}
                   >
                     <img
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
                       alt="Google logo"
                       className="w-5 h-5"
                     />
-                    Sign in with Google
+                    {contextLoading ? 'Processing...' : 'Use Google Sign-In'}
                   </motion.button>
                   <motion.button
                     type="button"
-                    className="w-full mt-2 text-white text-sm underline"
+                    className="w-full mt-3 text-sm text-gray-400 hover:text-white underline"
                     onClick={closePopup}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                     aria-label="Cancel Google sign-in"
+                     disabled={contextLoading}
                   >
                     Cancel
                   </motion.button>
                 </>
-              ) : (
+              ) : popupType === 'apple' ? (
                 <>
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-center">
                     Apple Sign-In Not Available
                   </h3>
-                  <p className="text-white text-sm mb-6 text-center">
-                    We are still working on setting up Apple sign-in. For now, use Google or create an account with email.
+                  <p className="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6 text-center">
+                    We are still working on setting up Apple sign-in. For now, please use Google or create an account with email.
                   </p>
                   <motion.button
                     type="button"
-                    className="w-full bg-[#9674da] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                    className="w-full bg-[#9674da] text-white py-2.5 px-4 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#353142] focus:ring-[#9674da]"
                     onClick={closePopup}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     aria-label="Close Apple sign-in popup"
+                     disabled={contextLoading}
                   >
                     Exit
                   </motion.button>
                 </>
-              )}
+              ) : null}
             </motion.div>
           </motion.div>
         )}
@@ -682,5 +635,3 @@ function SignUpPageView() {
     </div>
   );
 }
-
-export default SignUpPageView;

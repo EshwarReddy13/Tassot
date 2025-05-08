@@ -1,32 +1,47 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { auth, db } from '../../firebase.js';
+// Import auth object if still needed for direct use, or rely solely on firebaseUser from context
+import { auth } from '../../firebase.js'; // Adjust path as needed
+// Import only the necessary auth function
 import { sendEmailVerification } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+// REMOVE: Firestore imports are no longer needed here
+// import { doc, setDoc } from 'firebase/firestore';
+// import { db } from '../../firebase.js';
 import { motion } from 'framer-motion';
-import { useUser } from '../../contexts/userContext.jsx';
-import login_background from '../../assets/login_background.webp';
+// Import useUser hook
+import { useUser } from '../../contexts/userContext.jsx'; // Adjust path as needed
+import login_background from '../../assets/login_background.webp'; // Adjust path as needed
 
 function VerifyEmailPage() {
-  const { userData, loading } = useUser();
+  // Destructure firebaseUser, userData, loading from context
+  const { firebaseUser, userData, loading } = useUser();
+  // Keep local state variables as they were
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
 
-  // Redirect if already verified or not logged in
-  if (!loading && userData) {
-    if (userData.emailVerified) {
-      navigate('/dashboard', { replace: true });
-      return null;
+  // UPDATE: Redirect logic based on firebaseUser status
+  useEffect(() => {
+    if (!loading) {
+      if (firebaseUser?.emailVerified) {
+        // If Firebase user exists and email is verified, go to dashboard
+        console.log('VerifyEmailPage: Redirecting to /dashboard (verified)');
+        navigate('/dashboard', { replace: true });
+      } else if (!firebaseUser) {
+        // If no Firebase user and not loading, redirect to login
+        console.log('VerifyEmailPage: Redirecting to /login (no firebaseUser)');
+        navigate('/login', { replace: true });
+      }
+      // If firebaseUser exists but is not verified, stay on this page
     }
-  } else if (!loading && !userData) {
-    navigate('/login', { replace: true });
-    return null;
-  }
+    // Note: We don't redirect based on userData directly here anymore,
+    // rely on firebaseUser for auth state and verification status.
+  }, [firebaseUser, loading, navigate]);
 
-  // Cooldown timer effect
+
+  // Keep original cooldown timer effect
   useEffect(() => {
     let timer;
     if (cooldown > 0) {
@@ -43,19 +58,21 @@ function VerifyEmailPage() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
+  // UPDATE: Use firebaseUser from context
   const handleResendEmail = async () => {
+    // Use firebaseUser from context instead of auth.currentUser
+    const user = firebaseUser;
+    if (!user) {
+      setError('No user is signed in. Please sign up or log in again.');
+      return;
+    }
+
     try {
-      const user = auth.currentUser;
-      if (user) {
-        await sendEmailVerification(user);
-        setMessage('Verification email resent. Please check your inbox or spam folder.');
-        setError('');
-        // Start 60-second cooldown
-        setIsResendDisabled(true);
-        setCooldown(60);
-      } else {
-        setError('No user is signed in. Please sign up or log in again.');
-      }
+      await sendEmailVerification(user);
+      setMessage('Verification email resent. Please check your inbox or spam folder.');
+      setError('');
+      setIsResendDisabled(true);
+      setCooldown(60); // Start 60-second cooldown
     } catch (err) {
       console.error('Resend email error:', err.code, err.message);
       if (err.code === 'auth/too-many-requests') {
@@ -67,48 +84,41 @@ function VerifyEmailPage() {
     }
   };
 
+  // UPDATE: Use firebaseUser and remove Firestore logic
   const handleCheckVerification = async () => {
+    // Use firebaseUser from context instead of auth.currentUser
+    const user = firebaseUser;
+     if (!user) {
+      setError('No user is signed in. Please sign up or log in again.');
+      return;
+    }
+
+    setError(''); // Clear previous errors
+
     try {
-      const user = auth.currentUser;
-      if (user) {
-        // Reload user to get updated emailVerified status
-        await user.reload();
-        if (user.emailVerified) {
-          // Extract firstName and lastName from displayName
-          const displayName = user.displayName || 'User';
-          const [firstName, lastName = ''] = displayName.split(' ');
-          // Determine provider from providerData
-          const providerData = user.providerData || [];
-          const provider = providerData.some((data) => data.providerId === 'google.com')
-            ? 'google'
-            : 'email';
+      // Reload user to get updated emailVerified status from Firebase servers
+      await user.reload();
 
-          // Add user to Firestore 'users' collection with provider
-          await setDoc(doc(db, 'users', user.uid), {
-            firstName,
-            lastName,
-            email: user.email,
-            provider,
-          });
+      // Re-check the emailVerified status *after* reload
+      if (user.emailVerified) {
+        setMessage('Email verified successfully! Redirecting...');
+        // REMOVED: Firestore write logic - UserContext handles DB sync
+        // await setDoc(doc(db, 'users', user.uid), { ... });
 
-          // Navigate to dashboard after successful Firestore write
-          navigate('/dashboard');
-        } else {
-          setError('Email is not yet verified. Please check your email.');
-        }
+        // Navigate to dashboard after verification is confirmed
+        // A slight delay might allow UserContext to fetch updated userData if needed,
+        // but the redirect in useEffect should also catch the verified state.
+        setTimeout(() => navigate('/dashboard'), 500);
       } else {
-        setError('No user is signed in. Please sign up or log in again.');
+        setError('Email is not yet verified. Please check your email and click the verification link.');
       }
     } catch (err) {
-      console.error('Verification error:', err.code, err.message);
-      if (err.code === 'firestore/permission-denied' || err.code.includes('firestore')) {
-        setError('Failed to save user data. Please try again.');
-      } else {
-        setError('Error: ' + err.message);
-      }
+      console.error('Verification check error:', err.code, err.message);
+      setError('Error checking verification status: ' + err.message);
     }
   };
 
+  // Keep original loading state UI
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#1f1e25] font-poppins">
@@ -122,10 +132,11 @@ function VerifyEmailPage() {
     );
   }
 
+  // --- RETURN JSX (Keep original structure and UI) ---
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
       {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+      <div className="w-1/2 h-full bg-[#2c2638] p-4 hidden md:flex items-center justify-center transition-none min-w-0 flex-shrink-0"> {/* Hidden on small screens */}
         <img
           src={login_background}
           alt="Decorative verify email background"
@@ -134,16 +145,16 @@ function VerifyEmailPage() {
       </div>
 
       {/* Right Content Section */}
-      <motion.div
-        className="w-1/2 h-full flex items-center justify-center px-12 bg-[#2c2638] min-w-0 flex-shrink-0 overflow-y-auto"
+       <motion.div
+        className="w-full md:w-1/2 h-full flex items-center justify-center px-6 sm:px-12 bg-[#2c2638] min-w-0 flex-shrink-0 overflow-y-auto" // Adjusted padding for smaller screens
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <div className="w-full max-w-md mx-auto">
           <motion.h2
-            className="text-5xl font-bold text-white mb-6 text-center"
-            style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
+            className="text-4xl sm:text-5xl font-bold text-white mb-4 sm:mb-6 text-center" // Adjusted sizes
+            style={{ fontSize: 'clamp(2.2rem, 5vw, 3.0rem)' }} // Adjusted clamp
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -152,20 +163,23 @@ function VerifyEmailPage() {
           </motion.h2>
 
           <motion.p
-            className="mt-3 mb-8 text-center text-sm text-white"
-            style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+            className="mt-2 sm:mt-3 mb-6 sm:mb-8 text-center text-sm text-gray-300" // Adjusted sizes and color
+            style={{ fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)' }} // Adjusted clamp
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            A verification email has been sent to your email address. Please check your inbox or spam folder and follow the link to verify your email.
+            A verification email has been sent to{' '}
+            <strong className="text-white">{firebaseUser?.email || 'your email address'}</strong>.
+            Please check your inbox or spam folder and click the link inside.
           </motion.p>
 
+          {/* Keep original error display */}
           {error && (
             <motion.p
               className="text-red-400 text-sm mb-4 text-center"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: -10 }} // Use y instead of x
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
               role="alert"
             >
@@ -173,11 +187,12 @@ function VerifyEmailPage() {
             </motion.p>
           )}
 
+          {/* Keep original message display */}
           {message && (
             <motion.p
               className="text-green-400 text-sm mb-4 text-center"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: -10 }} // Use y instead of x
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
               role="status"
             >
@@ -185,13 +200,14 @@ function VerifyEmailPage() {
             </motion.p>
           )}
 
+           {/* Keep original button layout */}
           <div className="space-y-4">
             <button
               type="button"
-              className={`w-full p-2 rounded-md font-bold text-white ${
+              className={`w-full p-2.5 sm:p-3 rounded-md font-semibold text-white transition-colors duration-200 ${ // Adjusted padding and font-weight
                 isResendDisabled
-                  ? 'bg-[#2c2638] outline-1 outline-[#9500ff]'
-                  : 'bg-[#9674da] hover:bg-[#7f5fb7] focus:outline-none focus:ring-2 focus:ring-[#9500ff]'
+                  ? 'bg-gray-600 cursor-not-allowed text-gray-400' // More distinct disabled style
+                  : 'bg-[#9674da] hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#9674da]' // Added focus rings
               }`}
               onClick={handleResendEmail}
               disabled={isResendDisabled}
@@ -202,22 +218,23 @@ function VerifyEmailPage() {
 
             <button
               type="button"
-              className="w-full bg-[#9674da] text-white p-2 rounded-md font-bold hover:bg-[#7f5fb7] focus:outline-none focus:ring-2 focus:ring-[#9500ff]"
+              className="w-full bg-[#7e5cb7] text-white p-2.5 sm:p-3 rounded-md font-semibold hover:bg-[#6a4a9a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#7e5cb7] transition-colors duration-200" // Different color, adjusted padding/font-weight
               onClick={handleCheckVerification}
-              aria-label="Check email verification status"
+              aria-label="Check if email has been verified"
             >
               I've Verified My Email
             </button>
           </div>
 
+          {/* Keep original log in link */}
           <motion.p
-            className="mt-6 text-center text-sm text-white"
+            className="mt-6 text-center text-xs sm:text-sm text-gray-400" // Adjusted color and size
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
           >
             Already verified?{' '}
-            <Link to="/login" className="underline font-bold text-[#9500ff]">
+            <Link to="/login" className="underline font-semibold text-[#9674da] hover:text-[#7e5cb7]"> {/* Adjusted color and weight */}
               Log In
             </Link>
           </motion.p>
