@@ -10,6 +10,7 @@ import loginRoutes from './routes/login/loginRoutes.js';
 
 // Load environment variables
 dotenv.config();
+const PORT = process.env.PORT || 4000;
 
 const app = express();
 // Enable CORS for local frontend
