@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useUser } from './contexts/userContext.jsx';
+import { useUser } from './contexts/UserContext.jsx';
 import { useEffect } from 'react';
 
 const App = () => {

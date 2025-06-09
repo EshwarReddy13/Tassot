@@ -1,120 +1,148 @@
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { forwardRef } from 'react';
+import { HiX } from 'react-icons/hi';
 
-// Animation variants for the form popup
-const formVariants = {
-  initial: { opacity: 0, scale: 0.95, y: 10 },
-  animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3 } },
-  exit: { opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } },
-};
+export const AddColumnForm = ({
+  isAdding,
+  name,
+  error,
+  onAddColumnClick,
+  onColumnNameChange,
+  onAddColumn,
+  onCancelAddColumn,
+  inputRef,
+}) => {
+  const formVariants = {
+    hidden: { opacity: 0, height: 0, y: -10 },
+    visible: { opacity: 1, height: 'auto', y: 0, transition: { duration: 0.3 } },
+  };
 
-// AddColumnForm component for adding a new column to the Kanban board
-const AddColumnForm = forwardRef(
-  ({ isAdding, name, error, onAddColumnClick, onColumnNameChange, onAddColumn, onCancelAddColumn }, ref) => {
-    if (!isAdding) {
-      return (
-        <motion.button
-          className="w-full h-32 flex justify-center items-center bg-[#4a4a56] rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white text-text-primary hover:bg-[#5a5a66] transition-colors duration-200"
-          onClick={onAddColumnClick}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          aria-label="Add new column"
-        >
-          <svg
-            className="w-12 h-12"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </motion.button>
-      );
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onAddColumn();
     }
+    if (e.key === 'Escape') {
+      onCancelAddColumn();
+    }
+  };
 
+  if (!isAdding) {
     return (
-      <AnimatePresence>
-        <motion.div
-          className="bg-bg-card p-4 rounded-lg w-full max-w-[20rem] mx-auto"
-          variants={formVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          role="dialog"
-          aria-label="Add new column form"
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onAddColumn();
-            }}
-            className="space-y-4"
-          >
-            <div>
-              <label
-                htmlFor="column-name"
-                className="block text-text-primary font-medium mb-1"
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-              >
-                Column Name
-              </label>
-              <input
-                id="column-name"
-                ref={ref}
-                type="text"
-                value={name}
-                onChange={(e) => onColumnNameChange(e.target.value)}
-                className="w-full p-2 rounded-lg bg-bg-secondary text-text-primary border border-[#4a4a56] focus-visible:outline-2 focus-visible:outline-accent-primary"
-                placeholder="Enter column name"
-                aria-label="Enter new column name"
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-                required
-              />
-            </div>
-
-            {error && (
-              <motion.p
-                className="text-red-400 text-sm text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                role="alert"
-              >
-                {error}
-              </motion.p>
-            )}
-
-            <div className="flex justify-between gap-2">
-              <motion.button
-                type="button"
-                onClick={onCancelAddColumn}
-                className="flex-1 p-2 bg-[#4a4a56] text-text-primary rounded-lg hover:bg-[#5a5a66] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-                aria-label="Cancel adding new column"
-              >
-                Cancel
-              </motion.button>
-              <motion.button
-                type="submit"
-                className="flex-1 p-2 bg-accent-primary text-text-primary rounded-lg hover:bg-[#7a5ac4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors duration-200"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-                aria-label="Add new column"
-              >
-                Add
-              </motion.button>
-            </div>
-          </form>
-        </motion.div>
-      </AnimatePresence>
+      <motion.button
+        onClick={onAddColumnClick}
+        className="w-full h-full flex items-center justify-center p-4 rounded-lg text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        aria-label="Add a new column"
+      >
+        <span className="font-semibold text-lg">+ Add New Column</span>
+      </motion.button>
     );
   }
-);
 
-AddColumnForm.displayName = 'AddColumnForm';
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="w-full"
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+        variants={formVariants}
+      >
+        <div className="bg-bg-card p-3 rounded-lg shadow-md w-full">
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={onColumnNameChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter column name..."
+            className="w-full bg-bg-primary text-text-primary placeholder-text-placeholder p-2 rounded-md border-2 border-transparent focus:border-accent-primary focus:outline-none"
+            aria-label="New column name"
+          />
+          {error && (
+            <p className="text-error text-sm mt-2 px-1">{error}</p>
+          )}
+          <div className="flex items-center justify-start space-x-2 mt-3">
+            <button
+              onClick={onAddColumn}
+              className="px-4 py-2 bg-accent-primary text-text-primary font-semibold rounded-md hover:bg-accent-hover transition-colors duration-200"
+              aria-label="Save new column"
+            >
+              Save
+            </button>
+            <button
+              onClick={onCancelAddColumn}
+              className="p-2 text-text-secondary hover:text-text-primary rounded-full"
+              aria-label="Cancel adding column"
+            >
+              <HiX className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
 
-export { AddColumnForm };
+export const AddTaskForm = ({
+  taskName,
+  onTaskNameChange,
+  onSave,
+  onCancel,
+  inputRef,
+  error
+}) => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSave();
+    }
+    if (e.key === 'Escape') {
+      onCancel();
+    }
+  };
+
+  return (
+    <motion.div
+      className="w-full mt-2"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="bg-bg-card p-2 rounded-lg">
+        <textarea
+          ref={inputRef}
+          value={taskName}
+          onChange={onTaskNameChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter a title for this task..."
+          className="w-full bg-bg-secondary text-text-primary placeholder-text-placeholder p-2 rounded-md border-2 border-transparent focus:border-accent-primary focus:outline-none resize-none"
+          aria-label="New task name"
+          rows={2}
+        />
+        {error && <p className="text-error text-sm mt-1 px-1">{error}</p>}
+        <div className="flex items-center space-x-2 mt-2">
+          <button
+            onClick={onSave}
+            className="px-3 py-1.5 bg-accent-primary text-text-primary text-sm font-semibold rounded-md hover:bg-accent-hover transition-colors"
+            aria-label="Save new task"
+          >
+            Save Task
+          </button>
+          <button
+            onClick={onCancel}
+            className="p-2 text-text-secondary hover:text-text-primary rounded-full"
+            aria-label="Cancel adding task"
+          >
+            <HiX className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};

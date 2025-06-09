@@ -1,42 +1,37 @@
-// src/controllers/project/getProjectsController.js
-import pool from '../../db.js'; // Adjust path to your PostgreSQL pool instance
+import pool from '../../db.js';
 
-/**
- * @description Fetch all projects associated with the authenticated user
- * @route GET /api/projects
- * @access Private (Requires Authentication)
- */
 export const getProjectsController = async (req, res) => {
-  // Assumes authentication middleware has run and attached user info (esp. PostgreSQL user ID) to req.user
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({ error: 'Authentication required.' });
-  }
-  const userId = req.user.id; // The PostgreSQL UUID of the logged-in user
+  const userId = req.user.id; // from your requireAuth middleware
 
   try {
-    const query = `
-      SELECT
-        p.id,
-        p.project_key AS "projectKey",
-        p.project_name AS "projectName",
-        p.owner_id AS "ownerId",
-        p.created_at AS "createdAt"
-      FROM projects p
-      JOIN project_users pu ON p.id = pu.project_id
-      WHERE pu.user_id = $1
-      ORDER BY p.created_at DESC;
-    `;
-    // Note: Selecting specific columns and aliasing them to camelCase (e.g., "projectKey")
-    // makes it easier to work with the data directly on the frontend.
+    const { rows } = await pool.query(
+      `SELECT p.id,
+              p.project_url,
+              p.project_key,
+              p.project_name,
+              p.owner_id,
+              p.created_at
+         FROM projects p
+    INNER JOIN project_users pu
+            ON pu.project_id = p.id
+        WHERE pu.user_id = $1
+          AND pu.project_id IS NOT NULL
+     ORDER BY p.created_at DESC`,
+      [userId]
+    );
 
-    const { rows } = await pool.query(query, [userId]);
+    const projects = rows.map(r => ({
+      id:           r.id,
+      projectUrl:   r.project_url,
+      projectKey:   r.project_key,
+      projectName:  r.project_name,
+      ownerId:      r.owner_id,
+      createdAt:    r.created_at
+    }));
 
-    // Return the array of projects (will be empty if user has no projects)
-    res.status(200).json(rows);
-
+    res.json(projects);
   } catch (err) {
-    console.error('Error fetching user projects:', err);
-    res.status(500).json({ error: 'Failed to fetch projects due to server error.' });
+    console.error('getProjectsController error', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  // No need for client.release() if pool.query is used directly (it handles release)
 };

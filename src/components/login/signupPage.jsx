@@ -10,7 +10,7 @@ import {
 import { auth, googleProvider, db } from '../../firebase.js'; // Assuming db is your Firestore instance
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-import { useUser } from '../../contexts/userContext.jsx';
+import { useUser } from '../../contexts/UserContext.jsx';
 import login_background from '../../assets/login_background.webp';
 
 export default function SignUpPageView() {

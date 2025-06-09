@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { useUser } from '../../contexts/userContext.jsx';
-import ProjectHeader from './widgets/projectHeader.jsx';
+import { useUser } from '../../contexts/UserContext.jsx';
+// import ProjectHeader from './widgets/projectHeader.jsx';
 import ProjectDetails from './widgets/projectDetails.jsx';
 
 const ProjectView = () => {
@@ -25,7 +25,7 @@ const ProjectView = () => {
 
   return (
     <div className="min-h-screen bg-[#292830]">
-      <ProjectHeader />
+      {/* <ProjectHeader /> */}
       <ProjectDetails />
     </div>
   );

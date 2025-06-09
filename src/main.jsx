@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import App from './App.jsx';
-import { UserProvider } from './contexts/userContext.jsx'; 
-import { ProjectProvider } from './contexts/projectContext.jsx';
+import { UserProvider } from './contexts/UserContext.jsx'; 
+import { ProjectProvider } from './contexts/ProjectContext.jsx';
 
 import Login from './components/login/loginPage.jsx';
 import Signup from './components/login/signupPage.jsx';
@@ -37,7 +37,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
               <Route path="/" element={<App />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />
-              <Route path="/projects/:projectId" element={<ProjectPage />} />
+              <Route path="/projects/:projectUrl" element={<ProjectPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               {/* Add other pages here like /projects, /settings */}
             </Route>

@@ -9,7 +9,7 @@ import { sendEmailVerification } from 'firebase/auth';
 // import { db } from '../../firebase.js';
 import { motion } from 'framer-motion';
 // Import useUser hook
-import { useUser } from '../../contexts/userContext.jsx'; // Adjust path as needed
+import { useUser } from '../../contexts/UserContext.jsx'; // Adjust path as needed
 import login_background from '../../assets/login_background.webp'; // Adjust path as needed
 
 function VerifyEmailPage() {
