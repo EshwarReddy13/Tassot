@@ -28,7 +28,7 @@ export const getProjectDetailsController = async (req, res) => {
         (
           SELECT json_agg(t_agg)
           FROM (
-            SELECT t.id, t.board_id, t.task_key, t.task_name, t.status, t.notes, t.created_at
+            SELECT t.id, t.board_id, t.task_key, t.task_name, t.status, t.notes, t.created_at, t.created_by -- THIS IS THE FIX
             FROM tasks t
             JOIN boards b ON t.board_id = b.id
             WHERE b.project_id = p.id

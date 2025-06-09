@@ -4,11 +4,12 @@ import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
 import KanbanBoard from './kanbanBoard.jsx';
+import TaskDetailsModal from './taskDetails.jsx';
 
 const ProjectDetails = () => {
-  const { projectUrl } = useParams(); // We already have the projectUrl here
+  const { projectUrl } = useParams();
   const { getProjectDetails } = useProjects();
-  const { firebaseUser, userData, loading: userLoading } = useUser();
+  const { firebaseUser, userLoading } = useUser();
 
   const [state, setState] = useState({
     project: null,
@@ -20,6 +21,12 @@ const ProjectDetails = () => {
 
   const [newColumn, setNewColumn] = useState({ isAdding: false, name: '', error: '' });
   const [addingTask, setAddingTask] = useState({ boardId: null, name: '', error: '' });
+
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [taskCreator, setTaskCreator] = useState(null);
+
+  const [activeTask, setActiveTask] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const addColumnInputRef = useRef(null);
   const addTaskInputRef = useRef(null);
@@ -62,7 +69,6 @@ const ProjectDetails = () => {
     if (addingTask.boardId) addTaskInputRef.current?.focus();
   }, [addingTask.boardId]);
 
-  // --- Column Handlers ---
   const handleAddColumn = async () => {
     if (!newColumn.name.trim()) {
       setNewColumn(prev => ({ ...prev, error: 'Name cannot be empty.' }));
@@ -87,7 +93,6 @@ const ProjectDetails = () => {
     }
   };
 
-  // --- Task Handlers ---
   const handleShowAddTaskForm = (boardId) => {
     setAddingTask({ boardId, name: '', error: '' });
     setNewColumn({ isAdding: false, name: '', error: '' });
@@ -106,7 +111,6 @@ const ProjectDetails = () => {
 
     try {
       const token = await firebaseUser.getIdToken();
-      // **FIXED FETCH URL**: Include the projectUrl to match the backend route
       const res = await fetch(`/api/projects/${projectUrl}/boards/${addingTask.boardId}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -122,13 +126,85 @@ const ProjectDetails = () => {
     }
   };
 
-  if (state.isLoading) {
-    return <motion.p className="text-white text-lg text-center mt-20">Loading project...</motion.p>;
-  }
+  const handleTaskClick = async (task) => {
+    setSelectedTask(task);
+    setTaskCreator(null);
+    if (!task.created_by || !firebaseUser) return;
+    try {
+      const token = await firebaseUser.getIdToken();
+      const res = await fetch(`/api/users/id/${task.created_by}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Could not fetch task creator details.');
+      const creatorData = await res.json();
+      setTaskCreator(creatorData);
+    } catch (error) {
+      console.error("Failed to fetch task creator:", error);
+    }
+  };
 
-  if (state.error) {
-    return <motion.p className="text-red-400 text-sm mb-4 text-center mt-20" role="alert">{state.error}</motion.p>;
-  }
+  const handleCloseModal = () => {
+    setSelectedTask(null);
+    setTaskCreator(null);
+  };
+
+  const handleUpdateTask = async (updatedTaskData) => {
+    if (!firebaseUser) return;
+    const taskId = updatedTaskData.id;
+    if (!taskId) return;
+
+    try {
+      const token = await firebaseUser.getIdToken();
+      const res = await fetch(`/api/projects/${projectUrl}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(updatedTaskData),
+      });
+      const savedTask = await res.json();
+      if (!res.ok) throw new Error(savedTask.error || 'Failed to update task.');
+      setState(prev => ({ ...prev, tasks: prev.tasks.map(t => (t.id === savedTask.id ? savedTask : t)) }));
+      if (selectedTask && selectedTask.id === savedTask.id) {
+        setSelectedTask(savedTask);
+      }
+    } catch (err) {
+      console.error("Error updating task:", err);
+    }
+  };
+
+  const handleDragStart = (event) => {
+    setIsDragging(true);
+    const { active } = event;
+    const task = state.tasks.find(t => t.id === active.id);
+    setActiveTask(task);
+  };
+
+  const handleDragEnd = (event) => {
+    setIsDragging(false);
+    const { active, over } = event;
+    setActiveTask(null);
+    
+    // THE FIX: Check if dropped over a valid droppable area.
+    if (!over) return;
+    
+    const activeTaskId = active.id;
+    const overBoardId = over.id;
+
+    // THE FIX: Check if the 'over' ID corresponds to an actual column.
+    const isOverAColumn = state.columns.some(col => col.id === overBoardId);
+    if (!isOverAColumn) return;
+
+    const task = state.tasks.find(t => t.id === activeTaskId);
+    if (!task || task.board_id === overBoardId) return;
+
+    setState(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => t.id === activeTaskId ? { ...t, board_id: overBoardId } : t)
+    }));
+    handleUpdateTask({ id: activeTaskId, board_id: overBoardId });
+  };
+
+  if (state.isLoading) return <motion.p className="text-white text-lg text-center mt-20">Loading project...</motion.p>;
+  if (state.error) return <motion.p className="text-red-400 text-sm mb-4 text-center mt-20" role="alert">{state.error}</motion.p>;
 
   return (
     <main className="mt-[4rem] px-4 sm:px-6 lg:px-8 py-6 bg-bg-primary min-h-[calc(100vh-4rem)]" aria-label="Project Kanban Board">
@@ -136,6 +212,7 @@ const ProjectDetails = () => {
         <KanbanBoard
           columns={state.columns}
           tasks={state.tasks}
+          onTaskClick={handleTaskClick}
           newColumn={{
             isAdding: newColumn.isAdding,
             name: newColumn.name,
@@ -154,6 +231,20 @@ const ProjectDetails = () => {
             handleSave: handleCreateTask,
             inputRef: addTaskInputRef,
           }}
+          activeTask={activeTask}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          isDragging={isDragging}
+        />
+      )}
+      {selectedTask && (
+        <TaskDetailsModal
+          isOpen={!!selectedTask}
+          onClose={handleCloseModal}
+          task={selectedTask}
+          boards={state.columns}
+          onUpdateTask={handleUpdateTask}
+          creator={taskCreator}
         />
       )}
     </main>

@@ -1,73 +1,44 @@
-import { memo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import TaskCard from './taskCard.jsx';
+import KanbanColumn from './KanbanColumn.jsx';
 import { AddColumnForm, AddTaskForm } from './popups.jsx';
-
-const KanbanColumn = memo(({ column, children, tasks }) => {
-  return (
-    <motion.div
-      className="bg-bg-secondary rounded-lg p-4 min-h-[25rem] w-full flex flex-col"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      role="region"
-      aria-label={`${column.name} column`}
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-white font-semibold" style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>
-          {column.name}
-        </h3>
-        <span className="text-sm font-medium text-text-secondary bg-bg-primary px-2 py-1 rounded-full">
-          {tasks.length}
-        </span>
-      </div>
-      <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex-grow space-y-3 overflow-y-auto pr-1">
-          <AnimatePresence>
-            {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} onTaskClick={() => {}} />
-            ))}
-          </AnimatePresence>
-        </div>
-      </SortableContext>
-      {children}
-    </motion.div>
-  );
-});
 
 const KanbanBoard = ({
   columns,
   tasks,
-  newColumn, // Keep this as a single object prop
-  // Task adding props
+  onTaskClick,
+  newColumn,
   addingTask,
   onShowAddTaskForm,
   onCancelAddTask,
   onAddTask,
+  activeTask,
+  onDragStart,
+  onDragEnd,
+  isDragging,
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor)
   );
 
-  const handleDragEnd = (event) => {
-    // Drag and drop logic will be implemented later
-    console.log('Drag ended:', event);
-  };
-
   const columnsToRender = [...columns, { id: 'add-column-placeholder' }];
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext 
+      sensors={sensors} 
+      collisionDetection={closestCorners} 
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+    >
       <section aria-label="Kanban board">
         <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(18rem, 1fr))' }}>
           {columnsToRender.map((column) => {
             if (column.id === 'add-column-placeholder') {
               return (
                 <div key="add-column" className="min-h-[25rem]">
-                  {/* FIX: Use the properties from the 'newColumn' object prop */}
                   <AddColumnForm
                     isAdding={newColumn.isAdding}
                     name={newColumn.name}
@@ -85,7 +56,7 @@ const KanbanBoard = ({
             const columnTasks = tasks.filter(task => task.board_id === column.id);
 
             return (
-              <KanbanColumn key={column.id} column={column} tasks={columnTasks}>
+              <KanbanColumn key={column.id} column={column} tasks={columnTasks} onTaskClick={onTaskClick} isDragging={isDragging}>
                 <div className="mt-3">
                   <AnimatePresence>
                     {addingTask.boardId === column.id && (
@@ -116,6 +87,13 @@ const KanbanBoard = ({
           })}
         </div>
       </section>
+
+      {createPortal(
+        <DragOverlay>
+          {activeTask ? <TaskCard task={activeTask} isOverlay={true} /> : null}
+        </DragOverlay>,
+        document.body
+      )}
     </DndContext>
   );
 };

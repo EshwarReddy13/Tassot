@@ -7,6 +7,7 @@ import { deleteProjectController } from '../../controllers/projects/deleteProjec
 import { editProjectController } from '../../controllers/projects/editProjectController.js';
 import { createBoardController } from '../../controllers/projects/boards/createBoardController.js';
 import { createTaskController } from '../../controllers/projects/tasks/createTaskController.js';
+import { updateTaskController } from '../../controllers/projects/tasks/updateTaskController.js'; 
 
 // Import your authentication middleware
 import { requireAuth } from '../../auth/authMiddleware.js'; 
@@ -14,37 +15,33 @@ import { requireAuth } from '../../auth/authMiddleware.js';
 const router = express.Router();
 router.use(requireAuth);
 
-// === Routes ===
-
-// Apply authentication middleware to all project routes (or specific ones)
-// router.use(requireAuth); // Example: Apply auth to all routes below
+// === Project Routes ===
 
 // Create Project
-// POST /api/projects
-// The requireAuth middleware should run before createProjectController
 router.post('/', createProjectController);
 
-// Get User's Projects (Example for future use)
-// GET /api/projects
+// Get User's Projects
 router.get('/', getProjectsController);
 
 // Get Specific Project
-// GET /api/projects/:projectId
 router.get('/:projectUrl', getProjectDetailsController);
 
 // Edit Project
-// PUT /api/projects/:projectId 
 router.put('/:projectUrl', editProjectController);
 
 // Delete Project
-// DELETE /api/projects/:projectId
 router.delete('/:projectUrl', deleteProjectController);
 
 
-// Board-level routes (nested under projects)
+// === Board Routes ===
 router.post('/:projectUrl/boards', createBoardController);
 
+// === Task Routes ===
 // Create a new task within a board
 router.post('/:projectUrl/boards/:boardId/tasks', createTaskController);
+
+// Update a specific task
+router.put('/:projectUrl/tasks/:taskId', updateTaskController); // Add new route
+
 
 export default router;

@@ -2,42 +2,36 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary: #292830; /* Main background (e.g., page background) */
-  --color-bg-secondary: #3a3a44; /* Secondary background (e.g., Kanban columns) */
-  --color-bg-card: #17171b; /* Cards or buttons (e.g., task cards) */
-  --color-bg-dark: #17171b; /* Dark input fields */
+  --color-bg-primary: #292830;
+  --color-bg-secondary: #3a3a44;
+  --color-bg-card: #17171b;
+  --color-bg-dark: #17171b;
   
-  /* Accent colors */
-  --color-accent-primary: #9674da; /* Primary purple (e.g., buttons) */
-  --color-accent-hover: #7e5cb7; /* Hover state for purple */
+  --color-accent-primary: #9674da;
+  --color-accent-hover: #7e5cb7;
   
-  /* Text colors */
-  --color-text-primary: #ffffff; /* Main text (white) */
-  --color-text-secondary: #a0a0a0; /* Secondary text (gray) */
-  --color-text-placeholder: #6b7280; /* Placeholder text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a0a0a0;
+  --color-text-placeholder: #6b7280;
   
-  /* Feedback colors */
-  --color-error: #f87171; /* Red for errors */
-  --color-warning: #f87171; /* Yellow for warnings */
-  --color-info: #3b82f6; /* Blue for informational messages */
-  --color-success: #34d399; /* Green for success messages */
+  --color-error: #f87171;
+  --color-warning: #f87171;
+  --color-info: #3b82f6;
+  --color-success: #34d399;
 }
 
 
-/* Set base font and colors */
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #292830;
   color: #ffffff;
 }
 
-/* Focus styles for accessibility */
 :focus-visible {
   outline: 2px solid #9674da;
   outline-offset: 2px;
 }
 
-/* Spinner animation */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -47,7 +41,6 @@ body {
   animation: spin 1s linear infinite;
 }
 
-/* Gradient border animation */
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -75,11 +68,11 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  padding: 4px; /* Border thickness */
+  padding: 2px; /* Border thickness adjusted for a cleaner look */
   background: linear-gradient(270deg, #6B21A8, #8B5CF6, #EC4899, #D946EF);
   background-size: 400% 400%;
   animation: gradient 8s linear infinite;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem; /* THE FIX: Matches Tailwind's rounded-xl */
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -92,8 +85,6 @@ body {
   z-index: -1;
 }
 
-
-/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-spin,
   .gradient-border::before {

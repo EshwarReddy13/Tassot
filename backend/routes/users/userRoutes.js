@@ -3,6 +3,7 @@ import { createUser }  from '../../controllers/users/createUserController.js';
 import { getUser }     from '../../controllers/users/getUserController.js';
 import { updateUser }  from '../../controllers/users/updateUserController.js';
 import { getUsersController } from '../../controllers/users/getUsersController.js';
+import { getUserByIdController } from '../../controllers/users/getUserByIdController.js';
 
 const router = express.Router();
 
@@ -17,5 +18,8 @@ router.patch('/:uid', updateUser);
 
 // Get all users (for admin use)
 router.get('/', getUsersController);
+
+// Fetch user profile by Database UUID
+router.get('/id/:userId', getUserByIdController);
 
 export default router;

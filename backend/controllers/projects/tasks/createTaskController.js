@@ -67,7 +67,7 @@ export const createTaskController = async (req, res) => {
     const newTaskResult = await pool.query(
       `INSERT INTO tasks (board_id, task_key, task_name, status, created_by)
        VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, board_id, task_key, task_name, status, notes, created_at`,
+       RETURNING id, board_id, task_key, task_name, status, notes, created_at, created_by`, // THIS IS THE FIX
       [boardId, task_key, task_name.trim(), board_name, user_id]
     );
 
@@ -77,4 +77,3 @@ export const createTaskController = async (req, res) => {
     res.status(500).json({ error: 'Failed to create task.' });
   }
 };
-
