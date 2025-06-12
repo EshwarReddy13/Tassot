@@ -1,27 +1,25 @@
-// src/routes/userRoutes.js
 import express from 'express';
-import { createUser } from '../../controllers/users/createUserController.js';
-import { getUser } from '../../controllers/users/getUserController.js';
-import { updateUser } from '../../controllers/users/updateUserController.js';
+import { createUser }  from '../../controllers/users/createUserController.js';
+import { getUser }     from '../../controllers/users/getUserController.js';
+import { updateUser }  from '../../controllers/users/updateUserController.js';
+import { getUsersController } from '../../controllers/users/getUsersController.js';
+import { getUserByIdController } from '../../controllers/users/getUserByIdController.js';
 
 const router = express.Router();
 
-/**
- * POST /api/users
- * Creates a new user. Fails if firebase_uid already exists.
- */
+// Upsert user (always returns the user record)
 router.post('/', createUser);
 
-/**
- * GET /api/users/:uid
- * Fetches the user with firebase_uid = :uid
- */
+// Fetch user profile
 router.get('/:uid', getUser);
 
-/**
- * PATCH /api/users/:uid
- * Partially updates fields on the user with firebase_uid = :uid
- */
+// Partial update
 router.patch('/:uid', updateUser);
+
+// Get all users (for admin use)
+router.get('/', getUsersController);
+
+// Fetch user profile by Database UUID
+router.get('/id/:userId', getUserByIdController);
 
 export default router;

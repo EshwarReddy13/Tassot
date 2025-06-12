@@ -8,18 +8,18 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase.js';
 import { motion } from 'framer-motion';
-import { useUser } from '../../contexts/userContext.jsx';
+import { useUser } from '../../contexts/UserContext.jsx';
 import login_background from '../../assets/login_background.webp';
 
 export default function LoginPageView() {
   const { firebaseUser } = useUser();
-  const [email, setEmail]           = useState('');
-  const [password, setPassword]     = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
+  const [emailError, setEmailError]     = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [authError, setAuthError]   = useState('');
-  const [showPopup, setShowPopup]   = useState(false);
-  const [popupType, setPopupType]   = useState(''); // only used for Apple
+  const [authError, setAuthError]       = useState('');
+  const [showPopup, setShowPopup]       = useState(false);
+  const [popupType, setPopupType]       = useState(''); // only used for Apple
 
   const navigate = useNavigate();
 
@@ -69,7 +69,7 @@ export default function LoginPageView() {
     try {
       setAuthError('');
       await signInWithEmailAndPassword(auth, email, password);
-      // redirect happens in useEffect
+      // Redirect handled in useEffect
     } catch (err) {
       console.error('Login error:', err.code, err.message);
       if (
@@ -91,8 +91,6 @@ export default function LoginPageView() {
       setShowPopup(false);
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-
-      // Ensure displayName exists
       if (!user.displayName) {
         await updateProfile(user, { displayName: 'User' });
       }
@@ -170,7 +168,10 @@ export default function LoginPageView() {
         <form onSubmit={handleLogin} className="space-y-4 w-full max-w-md mx-auto">
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-xl font-medium text-white text-left">
+            <label
+              htmlFor="email"
+              className="block text-xl font-medium text-white text-left"
+            >
               Email
             </label>
             <input
@@ -197,7 +198,10 @@ export default function LoginPageView() {
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-xl font-medium text-white text-left">
+            <label
+              htmlFor="password"
+              className="block text-xl font-medium text-white text-left"
+            >
               Password
             </label>
             <input
@@ -286,7 +290,6 @@ export default function LoginPageView() {
               Apple
             </motion.button>
           </motion.div>
-
         </form>
 
         {/* Popup Modal */}

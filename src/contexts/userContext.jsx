@@ -1,4 +1,3 @@
-// src/contexts/UserContext.jsx
 import React, {
   createContext,
   useContext,
@@ -6,19 +5,12 @@ import React, {
   useEffect,
   useMemo
 } from 'react';
-import { auth } from '../firebase';               // your firebase init
+import { auth } from '../firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const UserContext = createContext();
 
-/**
- * UserProvider
- * • Listens to Firebase Auth state
- * • Ensures a corresponding Postgres user exists via /api/createUser
- * • Fetches the full user profile via GET /api/users/:uid
- * • Exposes firebaseUser, userData, loading, error, and updateUser()
- */
-export function UserProvider({ children }) {
+export const UserProvider = ({ children }) => {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [userData, setUserData]         = useState(null);
   const [loading, setLoading]           = useState(true);
@@ -26,7 +18,6 @@ export function UserProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
-
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!mounted) return;
       setLoading(true);
@@ -35,41 +26,36 @@ export function UserProvider({ children }) {
 
       if (fbUser) {
         try {
-          // 1) Ensure user exists (POST /api/createUser)
-          const createRes = await fetch('/api/createUser', {
+          const res = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               id:        fbUser.uid,
               email:     fbUser.email,
-              provider:  fbUser.providerData[0]?.providerId || '',
-              firstName: fbUser.displayName?.split(' ')[0] || '',
-              lastName:  fbUser.displayName?.split(' ').slice(-1)[0] || ''
+              provider:  fbUser.providerData[0]?.providerId || 'password',
+              firstName: fbUser.displayName?.split(' ')[0] || 'New',
+              lastName:  fbUser.displayName?.split(' ').slice(-1)[0] || 'User'
             })
           });
 
-          if (createRes.status !== 201 && createRes.status !== 409) {
-            // 409 means "already exists", which is fine
-            const errJson = await createRes.json().catch(() => ({}));
-            throw new Error(errJson.error || 'Failed to create user');
+          const profileData = await res.json();
+
+          if (!res.ok) {
+            throw new Error(profileData.error || 'Failed to sync user');
+          }
+          
+          if (mounted) {
+            setUserData(profileData);
           }
 
-          // 2) Fetch full profile (GET /api/users/:uid)
-          const getRes = await fetch(`/api/users/${fbUser.uid}`);
-          if (!getRes.ok) {
-            throw new Error('Failed to fetch user profile');
-          }
-          const profile = await getRes.json();
-          if (mounted) setUserData(profile);
         } catch (err) {
-          console.error(err);
+          console.error('UserContext error:', err);
           if (mounted) {
             setError(err.message);
             setUserData(null);
           }
         }
       } else {
-        // signed out
         setUserData(null);
       }
 
@@ -82,11 +68,6 @@ export function UserProvider({ children }) {
     };
   }, []);
 
-  /**
-   * updateUser(updates)
-   * • PATCH /api/users/:uid with any of { email, provider, firstName, lastName }
-   * • Returns the updated profile
-   */
   const updateUser = async (updates = {}) => {
     if (!firebaseUser) throw new Error('No authenticated user');
     setLoading(true);
@@ -103,15 +84,17 @@ export function UserProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      
+      const data = await res.json();
       if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || 'Failed to update user');
+        throw new Error(data.error || 'Failed to update user profile.');
       }
-      const updated = await res.json();
-      setUserData(updated);
-      return updated;
+
+      setUserData(data);
+      return data;
+
     } catch (err) {
-      console.error(err);
+      console.error('updateUser error:', err);
       setError(err.message);
       throw err;
     } finally {
@@ -119,23 +102,20 @@ export function UserProvider({ children }) {
     }
   };
 
-  const contextValue = useMemo(
+  const value = useMemo(
     () => ({ firebaseUser, userData, loading, error, updateUser }),
     [firebaseUser, userData, loading, error]
   );
 
   return (
-    <UserContext.Provider value={contextValue}>
+    <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );
-}
+};
 
-/** useUser — hook for consuming the user context */
-export function useUser() {
+export const useUser = () => {
   const ctx = useContext(UserContext);
-  if (!ctx) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
+  if (!ctx) throw new Error('useUser must be used within a UserProvider');
   return ctx;
-}
+};

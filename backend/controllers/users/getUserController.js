@@ -9,11 +9,14 @@ export async function getUser(req, res) {
 
   try {
     const { rows } = await pool.query(
-      `SELECT
-         id, firebase_uid, email, provider,
-         first_name, last_name, created_at, updated_at
-       FROM users
-       WHERE firebase_uid = $1;`,
+      `
+      SELECT
+        id, firebase_uid AS "uid", email, provider,
+        first_name AS "firstName", last_name AS "lastName",
+        created_at AS "createdAt", updated_at AS "updatedAt"
+      FROM users
+      WHERE firebase_uid = $1;
+      `,
       [uid]
     );
 
@@ -23,7 +26,7 @@ export async function getUser(req, res) {
 
     return res.json(rows[0]);
   } catch (err) {
-    console.error('Error fetching user:', err);
+    console.error('getUser error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
