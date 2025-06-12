@@ -8,6 +8,7 @@ import { editProjectController } from '../../controllers/projects/editProjectCon
 import { createBoardController } from '../../controllers/projects/boards/createBoardController.js';
 import { createTaskController } from '../../controllers/projects/tasks/createTaskController.js';
 import { updateTaskController } from '../../controllers/projects/tasks/updateTaskController.js'; 
+import { createInvitationController } from '../../controllers/invitations/createInvitationController.js';
 
 // Import your authentication middleware
 import { requireAuth } from '../../auth/authMiddleware.js'; 
@@ -36,12 +37,17 @@ router.delete('/:projectUrl', deleteProjectController);
 // === Board Routes ===
 router.post('/:projectUrl/boards', createBoardController);
 
+
 // === Task Routes ===
 // Create a new task within a board
 router.post('/:projectUrl/boards/:boardId/tasks', createTaskController);
 
 // Update a specific task
 router.put('/:projectUrl/tasks/:taskId', updateTaskController); // Add new route
+
+
+// === Invitation Routes ===
+router.post('/:projectUrl/invitations', createInvitationController);
 
 
 export default router;

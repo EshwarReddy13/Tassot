@@ -6,6 +6,9 @@ import cors from 'cors';
 // Route modules
 import userRoutes from './routes/users/userRoutes.js';
 import projectRoutes from './routes/projects/projectRoutes.js';
+import invitationRoutes from './routes/invitations/invitationRoutes.js';
+import commentRoutes from './routes/comments/commentRoutes.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -20,6 +23,8 @@ app.use(express.json());
 // Mount feature routers under /api
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/invitations', invitationRoutes);
+app.use('/api', commentRoutes);
 
 // Healthcheck endpoint
 app.get('/health', (_req, res) => res.send('ok'));

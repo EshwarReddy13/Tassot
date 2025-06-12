@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiX, HiOutlineNewspaper, HiOutlineCollection, HiOutlineUser } from 'react-icons/hi';
+import { HiX, HiOutlineNewspaper, HiOutlineCollection, HiOutlineUser, HiOutlineChatAlt2 } from 'react-icons/hi';
+import CommentList from './commentList'; // --- NEW IMPORT ---
 
 const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator }) => {
   const [updatedTask, setUpdatedTask] = useState(task);
@@ -46,7 +47,7 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="bg-bg-secondary rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+            className="bg-bg-secondary rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" // Increased width to max-w-4xl
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -68,7 +69,7 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
 
             {/* Body */}
             <div className="p-6 overflow-y-auto flex-grow">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2 space-y-6">
                   {/* Notes Section */}
                   <section>
@@ -85,11 +86,19 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                       aria-label="Task notes"
                     />
                   </section>
+                  
+                  {/* --- NEW COMMENTS SECTION --- */}
+                  <section>
+                    <h3 className="text-base font-semibold text-text-primary mb-2 flex items-center gap-2">
+                        <HiOutlineChatAlt2 className="w-5 h-5 text-text-secondary" />
+                        Comments
+                    </h3>
+                    <CommentList taskId={task.id} />
+                  </section>
                 </div>
 
                 {/* Sidebar */}
                 <aside className="space-y-6">
-                  {/* Board Selector */}
                   <section>
                     <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
                       <HiOutlineCollection className="w-5 h-5 text-text-secondary" />
@@ -108,7 +117,6 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                     </select>
                   </section>
                   
-                  {/* Creator Info */}
                   <section>
                      <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
                         <HiOutlineUser className="w-5 h-5 text-text-secondary" />
@@ -116,11 +124,7 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                       </h3>
                       {creator ? (
                         <div className="flex items-center gap-3">
-                          <img 
-                            src={creator.photo_url || `https://ui-avatars.com/api/?name=${creator.first_name}+${creator.last_name}&background=3a3a44&color=fff`} 
-                            alt={`${creator.first_name} ${creator.last_name}`}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
+                          <img src={creator.photo_url || `https://ui-avatars.com/api/?name=${creator.first_name}+${creator.last_name}&background=3a3a44&color=fff`} alt={`${creator.first_name} ${creator.last_name}`} className="w-10 h-10 rounded-full object-cover" />
                           <div>
                             <p className="font-semibold text-text-primary">{`${creator.first_name} ${creator.last_name}`}</p>
                             <p className="text-sm text-text-secondary">{creator.email}</p>
@@ -142,17 +146,8 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
 
             {/* Footer */}
             <footer className="flex items-center justify-end p-4 border-t border-bg-primary gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 rounded-md text-text-secondary hover:bg-bg-primary transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!hasChanges || isSaving}
-                className="px-6 py-2 rounded-md bg-accent-primary text-text-primary font-semibold transition-all duration-200 hover:bg-accent-hover disabled:bg-bg-primary disabled:text-text-secondary disabled:cursor-not-allowed"
-              >
+              <button onClick={onClose} className="px-4 py-2 rounded-md text-text-secondary hover:bg-bg-primary transition-colors">Cancel</button>
+              <button onClick={handleSave} disabled={!hasChanges || isSaving} className="px-6 py-2 rounded-md bg-accent-primary text-text-primary font-semibold transition-all duration-200 hover:bg-accent-hover disabled:bg-bg-primary disabled:text-text-secondary disabled:cursor-not-allowed">
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
             </footer>

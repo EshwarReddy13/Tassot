@@ -35,8 +35,12 @@ const KanbanColumn = memo(({ column, children, tasks, onTaskClick, isDragging })
         <div className="flex-grow space-y-3 overflow-y-auto pr-1">
           <AnimatePresence>
             {tasks.map((task) => (
-              // THE FIX: Pass the global isDragging state to each card
-              <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} isGlobalDragging={isDragging} />
+              <TaskCard 
+                key={task.id} 
+                task={task} 
+                onTaskClick={onTaskClick} 
+                isGlobalDragging={isDragging} 
+              />
             ))}
           </AnimatePresence>
         </div>

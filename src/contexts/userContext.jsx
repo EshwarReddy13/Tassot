@@ -26,10 +26,6 @@ export const UserProvider = ({ children }) => {
 
       if (fbUser) {
         try {
-          // *** FIX #1: Simplified Login Flow ***
-          // We only need one API call on login. The POST request to upsert the user
-          // already returns the full user profile we need.
-
           const res = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -48,7 +44,6 @@ export const UserProvider = ({ children }) => {
             throw new Error(profileData.error || 'Failed to sync user');
           }
           
-          // No need for a second fetch call. Just use the data from the POST.
           if (mounted) {
             setUserData(profileData);
           }
@@ -90,7 +85,6 @@ export const UserProvider = ({ children }) => {
         body: JSON.stringify(payload)
       });
       
-      // *** FIX #2: Read the response body only ONCE ***
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Failed to update user profile.');

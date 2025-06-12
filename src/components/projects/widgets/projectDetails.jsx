@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
@@ -8,59 +8,34 @@ import TaskDetailsModal from './taskDetails.jsx';
 
 const ProjectDetails = () => {
   const { projectUrl } = useParams();
-  const { getProjectDetails } = useProjects();
-  const { firebaseUser, userLoading } = useUser();
+  // --- REFACTORED: Consume data directly from the context ---
+  const { currentProject, loadingDetails } = useProjects();
+  const { firebaseUser } = useUser();
 
-  const [state, setState] = useState({
-    project: null,
-    tasks: [],
-    columns: [],
-    isLoading: true,
-    error: '',
-  });
-
+  // This state is now ONLY for UI interactions, not for storing core data
   const [newColumn, setNewColumn] = useState({ isAdding: false, name: '', error: '' });
   const [addingTask, setAddingTask] = useState({ boardId: null, name: '', error: '' });
-
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskCreator, setTaskCreator] = useState(null);
-
   const [activeTask, setActiveTask] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [columns, setColumns] = useState([]);
 
   const addColumnInputRef = useRef(null);
   const addTaskInputRef = useRef(null);
-  const fetchedProjectUrlRef = useRef(null);
-
-  const fetchProject = useCallback(async () => {
-    if (!projectUrl || userLoading) return;
-    if (fetchedProjectUrlRef.current === projectUrl) return;
-
-    fetchedProjectUrlRef.current = projectUrl;
-    setState(prev => ({ ...prev, isLoading: true, error: '' }));
-
-    try {
-      const projectData = await getProjectDetails(projectUrl);
-      if (!projectData) throw new Error('Project not found or you do not have access.');
-      
-      const sortedBoards = (projectData.boards || []).sort((a, b) => a.position - b.position);
-
-      setState({
-        project: projectData.project,
-        tasks: projectData.tasks || [],
-        columns: sortedBoards,
-        isLoading: false,
-        error: '',
-      });
-    } catch (err) {
-      setState(prev => ({ ...prev, isLoading: false, error: err.message || 'Failed to load project data.' }));
-    }
-  }, [projectUrl, getProjectDetails, userLoading]);
-
-  useEffect(() => {
-    fetchProject();
-  }, [fetchProject]);
   
+  // --- REFACTORED: Populate local state from context when it changes ---
+  useEffect(() => {
+    if (currentProject) {
+      setTasks(currentProject.tasks || []);
+      const sortedBoards = (currentProject.boards || []).sort((a, b) => a.position - b.position);
+      setColumns(sortedBoards);
+    }
+  }, [currentProject]);
+
+  // --- REMOVED: All old data-fetching logic (fetchProject, useState for project, etc.) ---
+
   useEffect(() => {
     if (newColumn.isAdding) addColumnInputRef.current?.focus();
   }, [newColumn.isAdding]);
@@ -86,7 +61,7 @@ const ProjectDetails = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create column.');
       
-      setState(prev => ({ ...prev, columns: [...prev.columns, data] }));
+      setColumns(prev => [...prev, data]);
       setNewColumn({ isAdding: false, name: '', error: '' });
     } catch (err) {
       setNewColumn(prev => ({ ...prev, error: err.message }));
@@ -119,7 +94,7 @@ const ProjectDetails = () => {
       const newTask = await res.json();
       if (!res.ok) throw new Error(newTask.error || 'Failed to create task.');
 
-      setState(prev => ({ ...prev, tasks: [...prev.tasks, newTask] }));
+      setTasks(prev => [...prev, newTask]);
       handleCancelAddTask();
     } catch (err) {
       setAddingTask(prev => ({ ...prev, error: err.message }));
@@ -162,7 +137,7 @@ const ProjectDetails = () => {
       });
       const savedTask = await res.json();
       if (!res.ok) throw new Error(savedTask.error || 'Failed to update task.');
-      setState(prev => ({ ...prev, tasks: prev.tasks.map(t => (t.id === savedTask.id ? savedTask : t)) }));
+      setTasks(prev => prev.map(t => (t.id === savedTask.id ? savedTask : t)));
       if (selectedTask && selectedTask.id === savedTask.id) {
         setSelectedTask(savedTask);
       }
@@ -174,7 +149,7 @@ const ProjectDetails = () => {
   const handleDragStart = (event) => {
     setIsDragging(true);
     const { active } = event;
-    const task = state.tasks.find(t => t.id === active.id);
+    const task = tasks.find(t => t.id === active.id);
     setActiveTask(task);
   };
 
@@ -183,35 +158,31 @@ const ProjectDetails = () => {
     const { active, over } = event;
     setActiveTask(null);
     
-    // THE FIX: Check if dropped over a valid droppable area.
     if (!over) return;
     
     const activeTaskId = active.id;
     const overBoardId = over.id;
 
-    // THE FIX: Check if the 'over' ID corresponds to an actual column.
-    const isOverAColumn = state.columns.some(col => col.id === overBoardId);
+    const isOverAColumn = columns.some(col => col.id === overBoardId);
     if (!isOverAColumn) return;
 
-    const task = state.tasks.find(t => t.id === activeTaskId);
+    const task = tasks.find(t => t.id === activeTaskId);
     if (!task || task.board_id === overBoardId) return;
 
-    setState(prev => ({
-      ...prev,
-      tasks: prev.tasks.map(t => t.id === activeTaskId ? { ...t, board_id: overBoardId } : t)
-    }));
+    setTasks(prev => prev.map(t => t.id === activeTaskId ? { ...t, board_id: overBoardId } : t));
     handleUpdateTask({ id: activeTaskId, board_id: overBoardId });
   };
 
-  if (state.isLoading) return <motion.p className="text-white text-lg text-center mt-20">Loading project...</motion.p>;
-  if (state.error) return <motion.p className="text-red-400 text-sm mb-4 text-center mt-20" role="alert">{state.error}</motion.p>;
+  // --- REMOVED: Local loading/error checks. Parent handles this. ---
+  if (loadingDetails || !currentProject) {
+     return <motion.p className="text-white text-lg text-center mt-20">Loading board...</motion.p>;
+  }
 
   return (
-    <main className="mt-[4rem] px-4 sm:px-6 lg:px-8 py-6 bg-bg-primary min-h-[calc(100vh-4rem)]" aria-label="Project Kanban Board">
-      {state.project && (
+    <div className="px-4 sm:px-6 lg:px-8 py-6 bg-bg-primary min-h-[calc(100vh-4rem)]" aria-label="Project Kanban Board">
         <KanbanBoard
-          columns={state.columns}
-          tasks={state.tasks}
+          columns={columns}
+          tasks={tasks}
           onTaskClick={handleTaskClick}
           newColumn={{
             isAdding: newColumn.isAdding,
@@ -236,18 +207,17 @@ const ProjectDetails = () => {
           onDragEnd={handleDragEnd}
           isDragging={isDragging}
         />
-      )}
       {selectedTask && (
         <TaskDetailsModal
           isOpen={!!selectedTask}
           onClose={handleCloseModal}
           task={selectedTask}
-          boards={state.columns}
+          boards={columns}
           onUpdateTask={handleUpdateTask}
           creator={taskCreator}
         />
       )}
-    </main>
+    </div>
   );
 };
 

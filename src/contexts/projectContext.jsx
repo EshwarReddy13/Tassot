@@ -6,32 +6,21 @@ const ProjectContext = createContext();
 export const ProjectProvider = ({ children }) => {
   const { firebaseUser } = useUser();
 
-  const [projects, setProjects]           = useState([]);
-  const [loadingFetch, setLoadingFetch]   = useState(false);
-  const [errorFetch, setErrorFetch]       = useState(null);
-  const [loadingCreate, setLoadingCreate] = useState(false);
-  const [errorCreate, setErrorCreate]     = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-  const [errorDetails, setErrorDetails]     = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [loadingFetch, setLoadingFetch] = useState(false);
+  const [errorFetch, setErrorFetch] = useState(null);
 
-  const createProject = useCallback(async (body) => {
-    if (!firebaseUser) throw new Error('Authentication required');
-    setLoadingCreate(true); setErrorCreate(null);
-    const token = await firebaseUser.getIdToken();
-    const res = await fetch('/api/projects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || res.statusText);
-    setLoadingCreate(false);
-    return data;
-  }, [firebaseUser]);
+  const [loadingCreate, setLoadingCreate] = useState(false);
+  const [errorCreate, setErrorCreate] = useState(null);
+
+  const [currentProject, setCurrentProject] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [errorDetails, setErrorDetails] = useState(null);
 
   const fetchUserProjects = useCallback(async () => {
     if (!firebaseUser) { setProjects([]); return; }
-    setLoadingFetch(true); setErrorFetch(null);
+    setLoadingFetch(true); 
+    setErrorFetch(null);
     try {
       const token = await firebaseUser.getIdToken();
       const res = await fetch('/api/projects', {
@@ -48,50 +37,83 @@ export const ProjectProvider = ({ children }) => {
     }
   }, [firebaseUser]);
 
-  const getProjectDetails = useCallback(async (projectUrl) => {
+  const createProject = useCallback(async (body) => {
     if (!firebaseUser) throw new Error('Authentication required');
-    setLoadingDetails(true); setErrorDetails(null);
+    setLoadingCreate(true);
+    setErrorCreate(null);
+    try {
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        fetchUserProjects(); 
+        return data;
+    } catch(err) {
+        setErrorCreate(err.message);
+        throw err;
+    } finally {
+        setLoadingCreate(false);
+    }
+  }, [firebaseUser, fetchUserProjects]);
+
+  const getProjectDetails = useCallback(async (projectUrl) => {
+    if (!firebaseUser) {
+        setErrorDetails('Authentication required to fetch project details.');
+        return;
+    }
+    setLoadingDetails(true);
+    setErrorDetails(null);
+    setCurrentProject(null);
     try {
       const token = await firebaseUser.getIdToken();
       const res = await fetch(`/api/projects/${projectUrl}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // **FIXED LOGIC ORDER**
-      // First, check if the response was successful.
+      const data = await res.json();
       if (!res.ok) {
-        // Try to parse error JSON, but fall back to status text if it fails.
-        let errorData;
-        try {
-          errorData = await res.json();
-        } catch (e) {
-          throw new Error(res.statusText);
-        }
-        throw new Error(errorData.error || res.statusText);
+        throw new Error(data.error || 'Failed to fetch project data.');
       }
       
-      // Only parse as JSON if the response is OK.
-      const data = await res.json();
+      setCurrentProject(data);
       return data;
 
     } catch (err) {
       setErrorDetails(err.message);
-      throw err;
+      setCurrentProject(null);
     } finally {
       setLoadingDetails(false);
     }
   }, [firebaseUser]);
 
   const value = useMemo(() => ({
-    projects, loadingFetch, errorFetch,
-    createProject, loadingCreate, errorCreate,
+    projects,
+    loadingFetch,
+    errorFetch,
+    createProject,
+    loadingCreate,
+    errorCreate,
+    currentProject,
+    loadingDetails,
+    errorDetails,
     fetchUserProjects,
-    getProjectDetails, loadingDetails, errorDetails
-  }), [
-    projects, loadingFetch, errorFetch,
-    createProject, loadingCreate, errorCreate,
-    fetchUserProjects,
-    getProjectDetails, loadingDetails, errorDetails
+    getProjectDetails,
+  }), 
+  // --- THIS IS THE FIX ---
+  // The memo should only depend on the DATA, not the already-stable functions.
+  [
+    projects,
+    loadingFetch,
+    errorFetch,
+    loadingCreate,
+    errorCreate,
+    currentProject,
+    loadingDetails,
+    errorDetails
   ]);
 
   return (
