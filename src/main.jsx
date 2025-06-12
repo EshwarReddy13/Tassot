@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 import App from './App.jsx';
-import { UserProvider } from './contexts/userContext.jsx'; 
-import { ProjectProvider } from './contexts/projectContext.jsx';
+import { UserProvider } from './contexts/UserContext.jsx'; 
+import { ProjectProvider } from './contexts/ProjectContext.jsx';
 
 import Login from './components/login/loginPage.jsx';
 import Signup from './components/login/signupPage.jsx';
