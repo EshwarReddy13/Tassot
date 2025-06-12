@@ -15,7 +15,7 @@ import AcceptInvitePage from './components/projects/acceptInvitePage.jsx';
 import Dashboard from './components/dashboard/dashboardPage.jsx';
 
 import Projects from './components/projects/projectsPage.jsx';
-import ProjectPage from './components/projects/ProjectView.jsx';
+import ProjectPage from './components/projects/projectView.jsx';
 
 import SettingsPage from './components/settings/settingsPage.jsx';
 
