@@ -9,7 +9,7 @@ const KanbanBoard = ({
   columns,
   tasks,
   onTaskClick,
-  newColumn,
+  newColumn, // <<< The prop is correctly accepted here now.
   addingTask,
   onShowAddTaskForm,
   onCancelAddTask,
@@ -18,6 +18,11 @@ const KanbanBoard = ({
   onDragStart,
   onDragEnd,
   isDragging,
+  onDeleteTask,
+  onUpdateTaskName,
+  isOwner,
+  onDeleteBoard,
+  onUpdateBoardName,
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -37,6 +42,7 @@ const KanbanBoard = ({
         <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(18rem, 1fr))' }}>
           {columnsToRender.map((column) => {
             if (column.id === 'add-column-placeholder') {
+              // Now that `newColumn` is received, its properties are correctly passed.
               return (
                 <div key="add-column" className="min-h-[25rem]">
                   <AddColumnForm
@@ -56,7 +62,18 @@ const KanbanBoard = ({
             const columnTasks = tasks.filter(task => task.board_id === column.id);
 
             return (
-              <KanbanColumn key={column.id} column={column} tasks={columnTasks} onTaskClick={onTaskClick} isDragging={isDragging}>
+              <KanbanColumn 
+                key={column.id} 
+                column={column} 
+                tasks={columnTasks} 
+                onTaskClick={onTaskClick} 
+                isDragging={isDragging}
+                onDeleteTask={onDeleteTask}
+                onUpdateTaskName={onUpdateTaskName}
+                isOwner={isOwner}
+                onDeleteBoard={onDeleteBoard}
+                onUpdateBoardName={onUpdateBoardName}
+              >
                 <div className="mt-3">
                   <AnimatePresence>
                     {addingTask.boardId === column.id && (
@@ -71,7 +88,7 @@ const KanbanBoard = ({
                     )}
                   </AnimatePresence>
 
-                  {addingTask.boardId !== column.id && (
+                  {addingTask.boardId !== column.id && !isDragging && (
                     <motion.button
                       onClick={() => onShowAddTaskForm(column.id)}
                       className="w-full text-left p-2 rounded-md text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-colors duration-200"

@@ -1,23 +1,29 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProjects } from '../../contexts/ProjectContext.jsx';
-import { useUser } from '../../contexts/UserContext.jsx'; // <-- Import useUser
+import { useUser } from '../../contexts/UserContext.jsx';
 import ProjectHeader from './widgets/projectHeader.jsx';
 import ProjectDetails from './widgets/projectDetails.jsx';
 
 const ProjectView = () => {
   const { projectUrl } = useParams();
   const { getProjectDetails, loadingDetails, errorDetails, currentProject } = useProjects();
-  const { loading: userLoading } = useUser(); // <-- Get user loading state
+  // We need BOTH loading state AND the final userData object
+  const { loading: userLoading, userData } = useUser(); 
 
   useEffect(() => {
     // --- THIS IS THE FIX ---
-    // Do not attempt to fetch until the user is loaded AND we have a projectUrl.
-    if (!userLoading && projectUrl) {
+    // The new condition `&& userData` is the crucial part.
+    // It forces this effect to wait until two things are true:
+    // 1. The initial user authentication is finished (`!userLoading`).
+    // 2. Your full user profile, including your database ID, has been successfully fetched (`userData`).
+    // Only then do we fetch the project details. This eliminates the race condition.
+    if (!userLoading && userData && projectUrl) {
       getProjectDetails(projectUrl);
     }
-    // Add userLoading to the dependency array
-  }, [projectUrl, userLoading, getProjectDetails]);
+    // We add `userData` to the dependency array so the effect re-evaluates
+    // when the user profile data finally arrives.
+  }, [projectUrl, userLoading, userData, getProjectDetails]);
 
   // Display a generic loading message while user or project is loading
   if (userLoading || loadingDetails) {
@@ -60,7 +66,7 @@ const ProjectView = () => {
     <div className="flex min-h-screen flex-col bg-bg-primary">
       <ProjectHeader />
       <main className="pt-[4rem]">
-        {/* Pass the loaded project data down to ProjectDetails */}
+        {/* ProjectDetails is now guaranteed to receive complete data */}
         <ProjectDetails />
       </main>
     </div>

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useUser } from '../../contexts/UserContext'; // Import the useUser hook
 
 // Define main navigation icons
 const icons = [
@@ -17,7 +18,7 @@ const subMenuItems = [
   { id: 'archive', label: 'Archived', path: 'archive' },
 ];
 
-// Animation variants for the navbar width (including ml-2 margin)
+// Animation variants for the navbar width
 const navbarVariants = {
   collapsed: { width: '5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
   expanded: { width: '16.5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
@@ -25,31 +26,9 @@ const navbarVariants = {
 
 // Animation variants for the subnavbar
 const subnavVariants = {
-  hidden: { 
-    opacity: 0, 
-    scale: 0.95, 
-    transition: { 
-      duration: 0.2, 
-      ease: [0.25, 0.1, 0.25, 1] // Use cubic-bezier instead of 'easeInOut'
-    } 
-  },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    transition: { 
-      duration: 0.2, 
-      ease: [0.25, 0.1, 0.25, 1], 
-      delay: 0.3 
-    } 
-  },
-  exit: { 
-    opacity: 0, 
-    scale: 0.95, 
-    transition: { 
-      duration: 0.2, 
-      ease: [0.25, 0.1, 0.25, 1] 
-    } 
-  },
+  hidden: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1], delay: 0.3 } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] } },
 };
 
 // Animation variants for submenu items (staggered)
@@ -62,73 +41,81 @@ const submenuItemVariants = {
   }),
 };
 
+// NEW: UserAvatar component for displaying profile picture or initials
+const UserAvatar = ({ user }) => {
+  if (!user) return null;
+
+  const getInitials = (firstName, lastName) => {
+    if (!firstName || !lastName) return 'U';
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  };
+
+  return (
+    <div className="relative group">
+      <div className="flex items-center justify-center w-10 h-10 overflow-hidden rounded-full cursor-pointer bg-accent-primary ring-2 ring-offset-2 ring-offset-bg-card ring-accent-hover">
+        {user.photo_url ? (
+          <img
+            src={user.photo_url}
+            alt="User profile"
+            className="object-cover w-full h-full"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <span className="text-base font-semibold text-text-primary">
+            {getInitials(user.first_name, user.last_name)}
+          </span>
+        )}
+      </div>
+       <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+        {user.first_name} {user.last_name}
+      </span>
+    </div>
+  );
+};
+
+
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userData } = useUser(); // Get user data from context
   const [selectedIcon, setSelectedIcon] = useState('home');
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
 
-  // Check if the current URL starts with /projects/
   const isProjectsRoute = location.pathname.startsWith('/projects/');
 
-  // Sync submenu state with route changes
   useEffect(() => {
+    setIsSubmenuOpen(isProjectsRoute);
     if (isProjectsRoute) {
-      setIsSubmenuOpen(true);
       setSelectedIcon('projects');
-    } else {
-      setIsSubmenuOpen(false);
     }
-  }, [isProjectsRoute]);
+  }, [location.pathname, isProjectsRoute]);
 
-  // Handle main icon click
   const handleIconClick = (icon) => {
     setSelectedIcon(icon.id);
     navigate(icon.path);
-    if (icon.id === 'projects') {
-      setIsSubmenuOpen(true);
-    } else {
-      setIsSubmenuOpen(false);
-    }
+    setIsSubmenuOpen(icon.id === 'projects');
   };
 
-  // Handle submenu item click
   const handleSubmenuClick = (item) => {
     navigate(`/projects/${item.path}`);
   };
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 h-screen flex flex-col items-start ml-2 bg-[#292830]"
+      className="fixed top-0 left-0 h-screen flex flex-col items-start ml-2 bg-bg-primary"
       initial="collapsed"
       animate={isProjectsRoute && isSubmenuOpen ? 'expanded' : 'collapsed'}
       variants={navbarVariants}
       aria-label="Primary navigation"
     >
-      {/* Main Navigation and Submenu Container */}
-      <div
-        className={`flex flex-row h-full w-full bg-[#17171b] p-2.5 rounded-xl ${
-          isProjectsRoute && isSubmenuOpen ? 'mr-2' : 'mr-0'
-        } mt-2 mb-2`}
-      >
-        {/* Main Navigation Icons */}
-        <div
-          className={`flex flex-col items-center w-[4rem] py-4 space-y-4 ${
-            isProjectsRoute && isSubmenuOpen ? 'mr-4' : 'mr-1'
-          } flex-shrink-0`}
-        >
+      <div className="flex flex-row h-full w-full bg-bg-card p-2.5 rounded-xl mt-2 mb-2">
+        <div className="flex flex-col items-center w-[4rem] py-4 space-y-4 flex-shrink-0">
           {icons.map((icon) => (
             <div key={icon.id} className="relative group flex-shrink-0">
               <motion.button
-                className={
-                  icon.id === 'logo'
-                    ? 'p-2 rounded-md text-white'
-                    : `p-2 rounded-md text-white hover:bg-[#9674da] ${
-                        selectedIcon === icon.id
-                          ? 'bg-[#9674da] ring-2 ring-[#9674da] ring-offset-2 ring-offset-[#292830]'
-                          : ''
-                      } focus:outline-none focus:ring-2 focus:ring-[#9674da] focus:ring-offset-2 focus:ring-offset-[#292830]`
-                }
+                className={`p-2 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card ${
+                  icon.id === 'logo' ? '' : 'hover:bg-accent-primary'
+                } ${selectedIcon === icon.id && icon.id !== 'logo' ? 'bg-accent-primary' : ''}`}
                 aria-label={icon.label}
                 title={icon.label}
                 whileHover={{ scale: 1.1 }}
@@ -140,75 +127,46 @@ const Navbar = () => {
                   alt={`${icon.label} icon`}
                   className={icon.id === 'logo' ? 'w-12 h-12' : 'w-7 h-7'}
                   style={{
-                    ...(icon.id === 'logo' ? {} : { filter: 'invert(100%)' }),
-                    minWidth: icon.id === 'logo' ? '48px' : '28px',
-                    minHeight: icon.id === 'logo' ? '48px' : '28px',
+                    filter: icon.id !== 'logo' ? 'invert(100%)' : undefined,
+                    minWidth: icon.id === 'logo' ? '3rem' : '1.75rem',
+                    minHeight: icon.id === 'logo' ? '3rem' : '1.75rem',
                   }}
                   onError={(e) => {
-                    console.error(`Failed to load icon: ${icon.url}`);
                     e.target.src = 'https://api.iconify.design/mdi:alert-circle.svg';
-                    e.target.style.filter = icon.id === 'logo' ? '' : 'invert(100%)';
                   }}
                 />
               </motion.button>
-              {/* Tooltip for label on hover */}
-              <span
-                className="
-                  absolute left-full top-1/2 -translate-y-1/2 ml-4
-                  bg-[#670089] text-white text-sm font-medium
-                  px-2 py-1 rounded-md
-                  opacity-0 group-hover:opacity-100
-                  transition-opacity duration-200
-                  pointer-events-none
-                  whitespace-nowrap
-                "
-              >
+              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
                 {icon.label}
               </span>
             </div>
           ))}
+          {/* User Avatar pushed to the bottom */}
+          <div className="mt-auto">
+            <UserAvatar user={userData} />
+          </div>
         </div>
 
-        {/* Submenu for Projects */}
         <AnimatePresence mode="wait">
           {isProjectsRoute && isSubmenuOpen && (
             <motion.div
               key="submenu"
-              className="h-full w-[12rem] p-4 flex flex-col space-y-2 bg-[#292830] rounded-lg"
+              className="h-full w-[12rem] p-4 flex flex-col space-y-2 bg-bg-secondary rounded-lg ml-2"
               variants={subnavVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
               aria-label="Secondary navigation"
             >
-              <motion.div
-                className="w-full rounded-lg px-2 py-1"
-                variants={submenuItemVariants}
-                custom={0}
-                initial="hidden"
-                animate="visible"
-              >
-                <h2
-                  className="text-white text-lg font-semibold"
-                  style={{ fontSize: 'clamp(1rem, 1.5vw, 1.2rem)' }}
-                >
+              <motion.div variants={submenuItemVariants} custom={0} initial="hidden" animate="visible">
+                <h2 className="text-text-primary text-lg font-semibold px-2 py-1" style={{ fontSize: 'clamp(1rem, 1.5vw, 1.2rem)' }}>
                   Projects
                 </h2>
               </motion.div>
               {subMenuItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  className="w-full rounded-lg px-2 py-2"
-                  variants={submenuItemVariants}
-                  custom={index + 1}
-                  initial="hidden"
-                  animate="visible"
-                >
+                <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
                   <motion.button
-                    className="
-                      w-full text-left p-2 rounded-lg text-white text-sm hover:bg-[#9674da]
-                      focus:bg-[#9674da] focus:outline-none focus:ring-2 focus:ring-[#9674da]
-                      focus:ring-offset-2 focus:ring-offset-[#3a3344]"
+                    className="w-full text-left p-2 rounded-lg text-text-secondary text-sm hover:bg-accent-primary hover:text-text-primary focus:bg-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-secondary"
                     style={{ fontSize: 'clamp(0.875rem, 1.2vw, 1rem)' }}
                     aria-label={item.label}
                     whileHover={{ scale: 1.05 }}
