@@ -2,8 +2,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import TaskCard from './taskCard.jsx';
-import KanbanColumn from './KanbanColumn.jsx';
-import { AddColumnForm } from './popups.jsx';
+import KanbanColumn from './kanbanColumn.jsx';
+import { AddColumnForm} from './popups.jsx';
 
 const KanbanBoard = ({
     columns,
