@@ -19,6 +19,8 @@ import ProjectPage from './components/projects/projectView.jsx';
 
 import SettingsPage from './components/settings/settingsPage.jsx';
 
+import ProjectUsersPage from './components/projects/projectUsersPage.jsx';
+
 import Layout from './layout.jsx';
 
 import './index.css';
@@ -65,7 +67,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
               <Route path="/" element={<App />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />
-              <Route path="/projects/:projectUrl" element={<ProjectPage />} />
+              <Route path="/projects/:projectUrl" element={<ProjectPage />}>
+                  <Route index element={null} /> {/* This handles the base `/projects/:projectUrl` path */}
+                  <Route path="users" element={<ProjectUsersPage />} />
+                  {/* You could add other nested project pages like "settings", "reports", etc. here later */}
+              </Route>
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Routes>

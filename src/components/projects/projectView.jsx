@@ -1,25 +1,21 @@
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Outlet } from 'react-router-dom'; // <-- [NEW] Import Outlet
 import { useProjects } from '../../contexts/ProjectContext.jsx';
-import { useUser } from '../../contexts/UserContext.jsx'; // <-- Import useUser
+import { useUser } from '../../contexts/UserContext.jsx';
 import ProjectHeader from './widgets/projectHeader.jsx';
 import ProjectDetails from './widgets/projectDetails.jsx';
 
 const ProjectView = () => {
   const { projectUrl } = useParams();
   const { getProjectDetails, loadingDetails, errorDetails, currentProject } = useProjects();
-  const { loading: userLoading } = useUser(); // <-- Get user loading state
+  const { loading: userLoading, userData } = useUser(); 
 
   useEffect(() => {
-    // --- THIS IS THE FIX ---
-    // Do not attempt to fetch until the user is loaded AND we have a projectUrl.
-    if (!userLoading && projectUrl) {
+    if (!userLoading && userData && projectUrl) {
       getProjectDetails(projectUrl);
     }
-    // Add userLoading to the dependency array
-  }, [projectUrl, userLoading, getProjectDetails]);
+  }, [projectUrl, userLoading, userData, getProjectDetails]);
 
-  // Display a generic loading message while user or project is loading
   if (userLoading || loadingDetails) {
     return (
       <div className="ml-[17rem] flex h-screen items-center justify-center bg-bg-primary">
@@ -55,13 +51,20 @@ const ProjectView = () => {
       </div>
     );
   }
+  
+  // To handle the Kanban board being the "index" or default view, we determine if a child route is active.
+  const location = window.location.pathname;
+  const showKanbanBoard = location.endsWith(projectUrl) || location.endsWith(`${projectUrl}/`);
 
   return (
     <div className="flex min-h-screen flex-col bg-bg-primary">
       <ProjectHeader />
       <main className="pt-[4rem]">
-        {/* Pass the loaded project data down to ProjectDetails */}
-        <ProjectDetails />
+        {/* --- MODIFIED --- */}
+        {/* If no sub-route is active (e.g. /users), show the kanban board */}
+        {showKanbanBoard && <ProjectDetails />}
+        {/* React Router will render the nested route component (ProjectUsersPage) here */}
+        <Outlet />
       </main>
     </div>
   );
