@@ -1,21 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useUser } from '../../contexts/UserContext'; // Import the useUser hook
+import { useUser } from '../../contexts/UserContext';
+import clsx from 'clsx'; // --- [THIS IS THE FIX] The missing import is now re-added ---
 
 // Define main navigation icons
 const icons = [
-  { id: 'logo', label: 'Logo', path: '/dashboard', url: '/favicon.svg' },
-  { id: 'home', label: 'Home', path: '/dashboard', url: 'https://api.iconify.design/mdi:home.svg' },
-  { id: 'projects', label: 'Projects', path: '/projects', url: 'https://api.iconify.design/mdi:folder.svg' },
-  { id: 'settings', label: 'Settings', path: '/settings', url: 'https://api.iconify.design/mdi:cog.svg' },
+    { id: 'logo', label: 'Logo', path: '/dashboard', url: '/favicon.svg' },
+    { id: 'home', label: 'Home', path: '/dashboard', url: 'https://api.iconify.design/mdi:home.svg' },
+    { id: 'projects', label: 'Projects', path: '/projects', url: 'https://api.iconify.design/mdi:folder.svg' },
+    { id: 'settings', label: 'Settings', path: '/settings', url: 'https://api.iconify.design/mdi:cog.svg' },
 ];
 
 // Define submenu items for Projects
 const subMenuItems = [
-  { id: 'recent', label: 'Recent Activity', path: 'recent' },
-  { id: 'favorites', label: 'Favorites', path: 'favorites' },
-  { id: 'archive', label: 'Archived', path: 'archive' },
+  { id: 'board', label: 'Board', path: '' }, 
+  { id: 'users', label: 'Users', path: 'users' },
 ];
 
 // Animation variants for the navbar width
@@ -41,7 +41,7 @@ const submenuItemVariants = {
   }),
 };
 
-// NEW: UserAvatar component for displaying profile picture or initials
+// UserAvatar component for displaying profile picture or initials
 const UserAvatar = ({ user }) => {
   if (!user) return null;
 
@@ -77,11 +77,13 @@ const UserAvatar = ({ user }) => {
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData } = useUser(); // Get user data from context
+  const { userData } = useUser();
   const [selectedIcon, setSelectedIcon] = useState('home');
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
 
   const isProjectsRoute = location.pathname.startsWith('/projects/');
+  const projectUrl = isProjectsRoute ? location.pathname.split('/')[2] : null;
+
 
   useEffect(() => {
     setIsSubmenuOpen(isProjectsRoute);
@@ -94,10 +96,6 @@ const Navbar = () => {
     setSelectedIcon(icon.id);
     navigate(icon.path);
     setIsSubmenuOpen(icon.id === 'projects');
-  };
-
-  const handleSubmenuClick = (item) => {
-    navigate(`/projects/${item.path}`);
   };
 
   return (
@@ -160,21 +158,18 @@ const Navbar = () => {
             >
               <motion.div variants={submenuItemVariants} custom={0} initial="hidden" animate="visible">
                 <h2 className="text-text-primary text-lg font-semibold px-2 py-1" style={{ fontSize: 'clamp(1rem, 1.5vw, 1.2rem)' }}>
-                  Projects
+                  Project
                 </h2>
               </motion.div>
               {subMenuItems.map((item, index) => (
                 <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
-                  <motion.button
-                    className="w-full text-left p-2 rounded-lg text-text-secondary text-sm hover:bg-accent-primary hover:text-text-primary focus:bg-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-secondary"
-                    style={{ fontSize: 'clamp(0.875rem, 1.2vw, 1rem)' }}
-                    aria-label={item.label}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleSubmenuClick(item)}
+                  <NavLink
+                      to={item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`} end
+                      className={({ isActive }) => clsx("w-full text-left p-2 rounded-lg text-text-secondary text-sm hover:bg-accent-primary hover:text-text-primary focus:bg-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-secondary", { 'bg-accent-primary text-text-primary': isActive })}
+                      style={{ fontSize: 'clamp(0.875rem, 1.2vw, 1rem)' }} aria-label={item.label}
                   >
-                    {item.label}
-                  </motion.button>
+                      {item.label}
+                  </NavLink>
                 </motion.div>
               ))}
             </motion.div>

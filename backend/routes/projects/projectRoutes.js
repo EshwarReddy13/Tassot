@@ -16,6 +16,9 @@ import { deleteTaskController } from '../../controllers/projects/tasks/deleteTas
 
 import { createInvitationController } from '../../controllers/invitations/createInvitationController.js';
 
+import { removeUserFromProjectController } from '../../controllers/users/removeUserFromProjectController.js';
+
+
 // Import your authentication middleware
 import { requireAuth } from '../../auth/authMiddleware.js'; 
 
@@ -63,6 +66,10 @@ router.delete('/:projectUrl/tasks/:taskId', deleteTaskController);
 
 // === Invitation Routes ===
 router.post('/:projectUrl/invitations', createInvitationController);
+
+// === User Management Routes ===
+// Remove a user from a project
+router.delete('/:projectUrl/members/:memberId', removeUserFromProjectController);
 
 
 export default router;

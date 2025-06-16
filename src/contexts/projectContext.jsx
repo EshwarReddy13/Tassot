@@ -23,9 +23,7 @@ export const ProjectProvider = ({ children }) => {
         setErrorFetch(null);
         try {
             const token = await firebaseUser.getIdToken();
-            const res = await fetch('/api/projects', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await fetch('/api/projects', { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || res.statusText);
             setProjects(data);
@@ -70,14 +68,9 @@ export const ProjectProvider = ({ children }) => {
         setCurrentProject(null);
         try {
             const token = await firebaseUser.getIdToken();
-            const res = await fetch(`/api/projects/${projectUrl}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
+            const res = await fetch(`/api/projects/${projectUrl}`, { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
-            if (!res.ok) {
-                throw new Error(data.error || 'Failed to fetch project data.');
-            }
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch project data.');
             setCurrentProject(data);
             return data;
         } catch (err) {
@@ -95,15 +88,8 @@ export const ProjectProvider = ({ children }) => {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
-
         if (res.status === 204) {
-            setCurrentProject(prev => {
-                if (!prev) return null;
-                return {
-                    ...prev,
-                    tasks: prev.tasks.filter(t => t.id !== taskId)
-                };
-            });
+            setCurrentProject(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== taskId) } : null);
             return;
         }
         const errorData = await res.json();
@@ -111,23 +97,14 @@ export const ProjectProvider = ({ children }) => {
     }, [firebaseUser]);
 
     const createTask = useCallback((newTask) => {
-        setCurrentProject(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                tasks: [...(prev.tasks || []), newTask]
-            };
-        });
+        setCurrentProject(prev => prev ? { ...prev, tasks: [...(prev.tasks || []), newTask] } : null);
     }, []);
 
     const updateTaskInContext = useCallback((updatedTask) => {
         setCurrentProject(prev => {
             if (!prev) return null;
             const newTasks = prev.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
-            return {
-                ...prev,
-                tasks: newTasks
-            };
+            return { ...prev, tasks: newTasks };
         });
     }, []);
 
@@ -160,9 +137,7 @@ export const ProjectProvider = ({ children }) => {
             body: JSON.stringify({ name }),
         });
         const updatedBoard = await res.json();
-        if (!res.ok) {
-            throw new Error(updatedBoard.error || "Failed to update board.");
-        }
+        if (!res.ok) throw new Error(updatedBoard.error || "Failed to update board.");
         setCurrentProject(prev => {
             if (!prev) return null;
             const newBoards = prev.boards.map(b => b.id === boardId ? { ...b, ...updatedBoard } : b);
@@ -170,34 +145,39 @@ export const ProjectProvider = ({ children }) => {
         });
         return updatedBoard;
     }, [firebaseUser]);
+    
+    // --- [NEW] Function to remove a user from a project ---
+    const removeUserFromProject = useCallback(async (projectUrl, memberId) => {
+        if (!firebaseUser) throw new Error("Authentication required");
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch(`/api/projects/${projectUrl}/members/${memberId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status === 204) {
+            setCurrentProject(prev => {
+                if (!prev) return null;
+                // Instantly update the members list in the context
+                const newMembers = prev.members.filter(m => m.id !== memberId);
+                return { ...prev, members: newMembers };
+            });
+            return;
+        }
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to remove member.");
+    }, [firebaseUser]);
+
 
     const value = useMemo(() => ({
-        projects,
-        loadingFetch,
-        errorFetch,
-        createProject,
-        loadingCreate,
-        errorCreate,
-        currentProject,
-        loadingDetails,
-        errorDetails,
-        fetchUserProjects,
-        getProjectDetails,
-        deleteTask,
-        createTask,
-        updateTaskInContext,
-        deleteBoard,
-        updateBoard,
+        projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate,
+        currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails,
+        deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard,
+        removeUserFromProject // <-- [NEW] Expose the new function
     }),
         [
-            projects,
-            loadingFetch,
-            errorFetch,
-            loadingCreate,
-            errorCreate,
-            currentProject,
-            loadingDetails,
-            errorDetails
+            projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject,
+            loadingDetails, errorDetails
         ]);
 
     return (
@@ -209,8 +189,6 @@ export const ProjectProvider = ({ children }) => {
 
 export const useProjects = () => {
     const ctx = useContext(ProjectContext);
-    if (!ctx) {
-        throw new Error('useProjects must be used within a ProjectProvider');
-    }
+    if (!ctx) throw new Error('useProjects must be used within a ProjectProvider');
     return ctx;
 };

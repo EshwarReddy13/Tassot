@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Outlet } from 'react-router-dom'; // <-- [NEW] Import Outlet
 import { useProjects } from '../../contexts/ProjectContext.jsx';
 import { useUser } from '../../contexts/UserContext.jsx';
 import ProjectHeader from './widgets/projectHeader.jsx';
@@ -8,24 +8,14 @@ import ProjectDetails from './widgets/projectDetails.jsx';
 const ProjectView = () => {
   const { projectUrl } = useParams();
   const { getProjectDetails, loadingDetails, errorDetails, currentProject } = useProjects();
-  // We need BOTH loading state AND the final userData object
   const { loading: userLoading, userData } = useUser(); 
 
   useEffect(() => {
-    // --- THIS IS THE FIX ---
-    // The new condition `&& userData` is the crucial part.
-    // It forces this effect to wait until two things are true:
-    // 1. The initial user authentication is finished (`!userLoading`).
-    // 2. Your full user profile, including your database ID, has been successfully fetched (`userData`).
-    // Only then do we fetch the project details. This eliminates the race condition.
     if (!userLoading && userData && projectUrl) {
       getProjectDetails(projectUrl);
     }
-    // We add `userData` to the dependency array so the effect re-evaluates
-    // when the user profile data finally arrives.
   }, [projectUrl, userLoading, userData, getProjectDetails]);
 
-  // Display a generic loading message while user or project is loading
   if (userLoading || loadingDetails) {
     return (
       <div className="ml-[17rem] flex h-screen items-center justify-center bg-bg-primary">
@@ -61,13 +51,20 @@ const ProjectView = () => {
       </div>
     );
   }
+  
+  // To handle the Kanban board being the "index" or default view, we determine if a child route is active.
+  const location = window.location.pathname;
+  const showKanbanBoard = location.endsWith(projectUrl) || location.endsWith(`${projectUrl}/`);
 
   return (
     <div className="flex min-h-screen flex-col bg-bg-primary">
       <ProjectHeader />
       <main className="pt-[4rem]">
-        {/* ProjectDetails is now guaranteed to receive complete data */}
-        <ProjectDetails />
+        {/* --- MODIFIED --- */}
+        {/* If no sub-route is active (e.g. /users), show the kanban board */}
+        {showKanbanBoard && <ProjectDetails />}
+        {/* React Router will render the nested route component (ProjectUsersPage) here */}
+        <Outlet />
       </main>
     </div>
   );

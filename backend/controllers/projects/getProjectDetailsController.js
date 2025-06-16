@@ -39,7 +39,7 @@ export const getProjectDetailsController = async (req, res) => {
                                     JOIN task_assignees ta ON u.id = ta.user_id
                                     WHERE ta.task_id = t.id
                                 ) AS a_agg
-                            ) as assignees -- [NEW] This creates a nested array of assignee objects for each task
+                            ) as assignees
                         FROM tasks t
                         JOIN boards b ON t.board_id = b.id
                         WHERE b.project_id = p.id
@@ -48,7 +48,14 @@ export const getProjectDetailsController = async (req, res) => {
                 (
                     SELECT json_agg(m_agg)
                     FROM (
-                        SELECT u.id, u.first_name, u.last_name, u.photo_url, u.email
+                        SELECT 
+                            u.id, 
+                            u.first_name, 
+                            u.last_name, 
+                            u.photo_url, 
+                            u.email,
+                            u.created_at AS account_created_at, -- [MODIFIED] Fetch user's account creation date
+                            pu_mem.added_at
                         FROM users u
                         JOIN project_users pu_mem ON u.id = pu_mem.user_id
                         WHERE pu_mem.project_id = p.id
