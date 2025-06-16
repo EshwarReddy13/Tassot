@@ -88,6 +88,8 @@ export const AddColumnForm = ({
   );
 };
 
+// I am keeping your existing AddTaskForm code untouched as per your instructions,
+// even though the new AddTaskModal has replaced its functionality.
 export const AddTaskForm = ({
   taskName,
   onTaskNameChange,
