@@ -1,16 +1,57 @@
+import React from 'react';
 import { AnimatePresence, motion } from "framer-motion";
-import { HiX, HiCalendar, HiMail, HiOutlineClock } from "react-icons/hi"; // Added HiOutlineClock for visual distinction
+import { HiX, HiCalendar, HiMail, HiOutlineClock, HiShieldCheck } from "react-icons/hi";
+import { useUser } from '../../../contexts/UserContext';
+import { useProjects } from '../../../contexts/ProjectContext';
+import { toast } from 'react-hot-toast';
 
-const UserDetailsModal = ({ user, isOpen, onClose }) => {
-    if (!user) return null;
+const UserDetailsModal = ({ user, project, isOpen, onClose }) => {
+    const { userData } = useUser();
+    const { updateMemberRole } = useProjects();
+    
+    if (!user || !project) return null;
 
-    // Helper to get initials if no profile picture exists
-    const getInitials = (firstName, lastName) => {
-        if (!firstName || !lastName) return 'U';
-        return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    const allMembers = project?.members || [];
+    const currentUserInProject = allMembers.find(m => m.id === userData?.id);
+    const currentUserRole = currentUserInProject?.role;
+    
+    const canManage = () => {
+        if (!currentUserRole || !user) return false;
+        if (currentUserRole === 'user') return false;
+        if (user.id === userData?.id) return false;
+        if (currentUserRole === 'editor' && user.role === 'owner') return false;
+        return true;
     };
 
-    // Helper to format the date string into a readable format
+    const handleRoleChange = (newRole) => {
+        // --- THIS IS THE FIX: ADD WARNING FOR OWNERSHIP TRANSFER ---
+        if (newRole === 'owner') {
+            const warningMessage = `Are you sure you want to transfer ownership to ${user.first_name} ${user.last_name}?\n\nYou will be demoted to an Editor and will lose owner privileges. This action cannot be undone.`;
+            if (!window.confirm(warningMessage)) {
+                return; // User clicked "Cancel", so we stop here.
+            }
+        }
+        // --- END OF FIX ---
+
+        if (!project?.project?.project_url) return;
+        toast.promise(
+            updateMemberRole(project.project.project_url, user.id, newRole),
+            {
+                loading: 'Updating role...',
+                success: `Role for ${user.first_name} updated successfully!`,
+                error: (err) => err.message || 'Failed to update role.'
+            }
+        ).then(() => {
+             // Let's refetch to ensure the roles (especially the demotion) are updated everywhere
+            onClose(); // This now implicitly triggers a refetch in ProjectUsersPage
+        });
+    };
+
+    const getInitials = (firstName, lastName) => {
+        if (!firstName) return 'U';
+        return `${firstName[0]}${lastName ? lastName[0] : ''}`.toUpperCase();
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -64,16 +105,30 @@ const UserDetailsModal = ({ user, isOpen, onClose }) => {
                                 </div>
                                 <div className="flex items-center gap-3 p-3 border-t border-bg-primary">
                                     <HiCalendar className="w-5 h-5 text-text-secondary flex-shrink-0" />
-                                    {/* MODIFIED: Label updated for clarity */}
                                     <span>Joined This Project: {formatDate(user.added_at)}</span>
                                 </div>
-                                {/* --- [NEW] Section for Account Creation Date --- */}
-                                <div className="flex items-center gap-3 p-3 border-y border-bg-primary">
+                                <div className="flex items-center gap-3 p-3 border-t border-bg-primary">
                                     <HiOutlineClock className="w-5 h-5 text-text-secondary flex-shrink-0" />
-                                    {/* The new 'account_created_at' field is now used here */}
                                     <span>Account Created: {formatDate(user.account_created_at)}</span>
                                 </div>
-                                {/* Future details can be added here, maintaining the pattern */}
+                                
+                                <div className="flex flex-col p-3 border-y border-bg-primary">
+                                    <div className="flex items-center gap-3">
+                                        <HiShieldCheck className="w-5 h-5 text-text-secondary flex-shrink-0" />
+                                        <label htmlFor="role-select" className="text-sm">Role in Project</label>
+                                    </div>
+                                    <select
+                                        id="role-select"
+                                        value={user.role}
+                                        onChange={(e) => handleRoleChange(e.target.value)}
+                                        disabled={!canManage()}
+                                        className="w-full mt-2 bg-bg-primary text-text-primary text-sm rounded-md py-2 px-3 border border-transparent focus:ring-2 focus:ring-accent-primary disabled:opacity-60 disabled:cursor-not-allowed capitalize"
+                                    >
+                                        <option value="owner" disabled={currentUserRole !== 'owner'}>Owner</option>
+                                        <option value="editor">Editor</option>
+                                        <option value="user">User</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </motion.div>

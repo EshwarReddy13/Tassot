@@ -54,8 +54,9 @@ export const getProjectDetailsController = async (req, res) => {
                             u.last_name, 
                             u.photo_url, 
                             u.email,
-                            u.created_at AS account_created_at, -- [MODIFIED] Fetch user's account creation date
-                            pu_mem.added_at
+                            u.created_at AS account_created_at,
+                            pu_mem.added_at,
+                            pu_mem.role -- This is the one required addition
                         FROM users u
                         JOIN project_users pu_mem ON u.id = pu_mem.user_id
                         WHERE pu_mem.project_id = p.id

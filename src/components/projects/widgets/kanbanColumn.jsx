@@ -13,10 +13,9 @@ const KanbanColumn = memo(({
     isDragging,
     onDeleteTask,
     onUpdateTaskName,
-    isOwner,
+    currentUserRole, // <-- RECEIVES THE ROLE INSTEAD OF isOwner
     onDeleteBoard,
     onUpdateBoardName,
-    // --- [NEW] This handler opens the modal ---
     onShowAddTaskModal
 }) => {
     const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -26,6 +25,9 @@ const KanbanColumn = memo(({
     const [columnName, setColumnName] = useState(column.name);
     const menuRef = useRef(null);
     const inputRef = useRef(null);
+
+    // --- NEW: Determine if user can manage boards ---
+    const canManageBoards = currentUserRole === 'owner' || currentUserRole === 'editor';
 
     useEffect(() => {
         setColumnName(column.name);
@@ -99,7 +101,8 @@ const KanbanColumn = memo(({
                     <span className="text-sm font-medium text-text-secondary bg-bg-primary px-2 py-1 rounded-full">
                         {tasks.length}
                     </span>
-                    {isOwner && !isEditing && (
+                    {/* --- FIX: Use canManageBoards instead of isOwner --- */}
+                    {canManageBoards && !isEditing && (
                         <div ref={menuRef} className="relative">
                             <button 
                                 onClick={() => setIsMenuOpen(o => !o)} 
@@ -156,13 +159,13 @@ const KanbanColumn = memo(({
                                 isGlobalDragging={isDragging} 
                                 onDelete={onDeleteTask} 
                                 onUpdateName={onUpdateTaskName}
+                                // We no longer pass permission flags down to TaskCard
                             />
                         ))}
                     </AnimatePresence>
                 </div>
             </SortableContext>
             
-            {/* --- MODIFIED: This whole block now only contains the Add Task button --- */}
             <div className="mt-3">
               {!isDragging && (
                   <motion.button

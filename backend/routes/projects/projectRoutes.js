@@ -1,4 +1,3 @@
-// src/routes/projectRoutes.js
 import express from 'express';
 import { createProjectController } from '../../controllers/projects/createProjectController.js';
 import { getProjectsController } from '../../controllers/projects/getProjectsController.js';
@@ -17,59 +16,40 @@ import { deleteTaskController } from '../../controllers/projects/tasks/deleteTas
 import { createInvitationController } from '../../controllers/invitations/createInvitationController.js';
 
 import { removeUserFromProjectController } from '../../controllers/users/removeUserFromProjectController.js';
+import { updateMemberRoleController } from '../../controllers/users/updateMemberRoleController.js';
 
-
-// Import your authentication middleware
 import { requireAuth } from '../../auth/authMiddleware.js'; 
+import { requireProjectRole } from '../../auth/requireProjectRole.js';
 
 const router = express.Router();
 router.use(requireAuth);
 
 // === Project Routes ===
-
-// Create Project
 router.post('/', createProjectController);
-
-// Get User's Projects
 router.get('/', getProjectsController);
-
-// Get Specific Project
 router.get('/:projectUrl', getProjectDetailsController);
-
-// Edit Project
-router.put('/:projectUrl', editProjectController);
-
-// Delete Project
-router.delete('/:projectUrl', deleteProjectController);
+router.put('/:projectUrl', requireProjectRole(['owner']), editProjectController);
+router.delete('/:projectUrl', requireProjectRole(['owner']), deleteProjectController);
 
 
 // === Board Routes ===
-router.post('/:projectUrl/boards', createBoardController);
-
-// Update a specific board
-router.put('/:projectUrl/boards/:boardId', updateBoardController);
-
-// Delete a specific board
-router.delete('/:projectUrl/boards/:boardId', deleteBoardController);
+router.post('/:projectUrl/boards', requireProjectRole(['owner', 'editor', 'user']), createBoardController);
+router.put('/:projectUrl/boards/:boardId', requireProjectRole(['owner', 'editor']), updateBoardController);
+router.delete('/:projectUrl/boards/:boardId', requireProjectRole(['owner', 'editor']), deleteBoardController);
 
 
 // === Task Routes ===
-// Create a new task within a board
-router.post('/:projectUrl/boards/:boardId/tasks', createTaskController);
-
-// Update a specific task
-router.put('/:projectUrl/tasks/:taskId', updateTaskController); 
-
-// Delete a specific task
-router.delete('/:projectUrl/tasks/:taskId', deleteTaskController);
+router.post('/:projectUrl/boards/:boardId/tasks', requireProjectRole(['owner', 'editor', 'user']), createTaskController);
+router.put('/:projectUrl/tasks/:taskId', requireProjectRole(['owner', 'editor', 'user']), updateTaskController); 
+router.delete('/:projectUrl/tasks/:taskId', requireProjectRole(['owner', 'editor', 'user']), deleteTaskController);
 
 
 // === Invitation Routes ===
-router.post('/:projectUrl/invitations', createInvitationController);
+router.post('/:projectUrl/invitations', requireProjectRole(['owner', 'editor']), createInvitationController);
 
 // === User Management Routes ===
-// Remove a user from a project
-router.delete('/:projectUrl/members/:memberId', removeUserFromProjectController);
+router.put('/:projectUrl/members/:memberId', updateMemberRoleController); // Authorization logic is inside this controller
+router.delete('/:projectUrl/members/:memberId', requireProjectRole(['owner', 'editor']), removeUserFromProjectController);
 
 
 export default router;

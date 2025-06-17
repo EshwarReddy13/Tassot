@@ -3,19 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import TaskCard from './taskCard.jsx';
 import KanbanColumn from './kanbanColumn.jsx';
-import { AddColumnForm} from './popups.jsx';
+import { AddColumnForm } from './popups.jsx';
 
 const KanbanBoard = ({
     columns,
     tasks,
     onTaskClick,
     newColumn,
-    // --- MODIFICATION: The following props are no longer needed and are removed ---
-    // addingTask,
-    // onShowAddTaskForm,
-    // onCancelAddTask,
-    // onAddTask,
-    // --- [NEW] This single prop replaces them all ---
     onShowAddTaskModal,
     activeTask,
     onDragStart,
@@ -23,7 +17,7 @@ const KanbanBoard = ({
     isDragging,
     onDeleteTask,
     onUpdateTaskName,
-    isOwner,
+    currentUserRole, // <-- This prop is received correctly from ProjectDetails
     onDeleteBoard,
     onUpdateBoardName,
 }) => {
@@ -45,7 +39,8 @@ const KanbanBoard = ({
                 <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(18rem, 1fr))' }}>
                     {columnsToRender.map((column) => {
                         if (column.id === 'add-column-placeholder') {
-                            return (
+                            const canAddColumn = currentUserRole === 'owner' || currentUserRole === 'editor';
+                            return canAddColumn ? (
                                 <div key="add-column" className="min-h-[25rem]">
                                     <AddColumnForm
                                         isAdding={newColumn.isAdding}
@@ -58,7 +53,7 @@ const KanbanBoard = ({
                                         inputRef={newColumn.addColumnInputRef}
                                     />
                                 </div>
-                            );
+                            ) : null;
                         }
 
                         const columnTasks = tasks.filter(task => task.board_id === column.id);
@@ -72,19 +67,13 @@ const KanbanBoard = ({
                                 isDragging={isDragging}
                                 onDeleteTask={onDeleteTask}
                                 onUpdateTaskName={onUpdateTaskName}
-                                isOwner={isOwner}
+                                // --- THIS IS THE FIX ---
+                                // The `currentUserRole` prop is now correctly passed down to each KanbanColumn
+                                currentUserRole={currentUserRole}
                                 onDeleteBoard={onDeleteBoard}
                                 onUpdateBoardName={onUpdateBoardName}
-                                // --- [NEW] The prop to trigger the modal is passed down ---
                                 onShowAddTaskModal={onShowAddTaskModal}
-                            >
-                                {/* 
-                                    The `children` prop for KanbanColumn from your file was only used
-                                    for the old inline form. As we are removing that logic, nothing needs
-                                    to be rendered here anymore, so the block is removed. The "+ Add a task"
-                                    button is now inside KanbanColumn itself.
-                                */}
-                            </KanbanColumn>
+                            />
                         );
                     })}
                 </div>
