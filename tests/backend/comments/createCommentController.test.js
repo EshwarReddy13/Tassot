@@ -17,7 +17,7 @@ describe('createCommentController', () => {
 
   beforeEach(async () => {
     // Use jest.unstable_mockModule for ESM
-    jest.unstable_mockModule('../../db.js', () => ({
+    jest.unstable_mockModule('../../../backend/db.js', () => ({
       __esModule: true,
       default: {
         query: jest.fn(),
@@ -25,11 +25,11 @@ describe('createCommentController', () => {
     }));
 
     // Dynamically import the mocked pool AFTER defining the mock
-    const dbModule = await import('../../db.js');
+    const dbModule = await import('../../../backend/db.js');
     pool = dbModule.default;
 
     // Dynamically import the controller *after* db.js is mocked
-    const controllerModule = await import('./createCommentController.js');
+    const controllerModule = await import('../../../backend/controllers/comments/createCommentController.js');
     createCommentController = controllerModule.createCommentController;
 
     // Clear any previous mock calls for pool.query

@@ -8,7 +8,7 @@ describe('getCommentsController', () => {
 
   beforeEach(async () => {
     // Mock db.js
-    jest.unstable_mockModule('../../db.js', () => ({
+    jest.unstable_mockModule('../../../backend/db.js', () => ({
       __esModule: true,
       default: {
         query: jest.fn(),
@@ -16,10 +16,10 @@ describe('getCommentsController', () => {
     }));
 
     // Dynamically import mocked pool and the controller
-    const dbModule = await import('../../db.js');
+    const dbModule = await import('../../../backend/db.js');
     pool = dbModule.default;
 
-    const controllerModule = await import('./getCommentsController.js');
+    const controllerModule = await import('../../../backend/controllers/comments/getCommentsController.js');
     getCommentsController = controllerModule.getCommentsController;
 
     // Clear mock calls
