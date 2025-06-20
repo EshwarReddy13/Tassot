@@ -1,44 +1,46 @@
-// src/controllers/projects/editProjectController.js
 import pool from '../../db.js';
 
 export const editProjectController = async (req, res) => {
   const { projectUrl } = req.params;
-  const { project_name, project_key, owner_id } = req.body;
-  const firebaseUid = req.user.uid; // from your requireAuth middleware
+  const { project_name, project_key } = req.body;
+
+  // The requireProjectRole(['owner']) middleware has already authorized the user.
+
+  if (!project_name?.trim()) {
+      return res.status(400).json({ error: 'Project name cannot be empty.' });
+  }
+  if (!/^[A-Z]{3,4}$/.test(project_key)) {
+    return res.status(400).json({ error: 'Project key must be 3-4 uppercase letters.' });
+  }
 
   try {
-    // look up DB user ID for the current Firebase UID
-    const userRes = await pool.query(
-      `SELECT id FROM users WHERE firebase_uid = $1`,
-      [firebaseUid]
-    );
-    if (!userRes.rows.length) return res.status(403).json({ error: 'User not found' });
-    const myId = userRes.rows[0].id;
-
-    // verify ownership
-    const projRes = await pool.query(
-      `SELECT owner_id FROM projects WHERE project_url = $1`,
-      [projectUrl]
-    );
-    if (!projRes.rows.length) return res.status(404).json({ error: 'Project not found' });
-    if (projRes.rows[0].owner_id !== myId) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-
-    // perform update
-    await pool.query(
+    const { rows } = await pool.query(
       `UPDATE projects
           SET project_name = $1,
               project_key  = $2,
-              owner_id     = $3,
               updated_at   = now()
-        WHERE project_url = $4`,
-      [project_name, project_key, owner_id, projectUrl]
+        WHERE project_url = $3
+      RETURNING *;`,
+      [project_name.trim(), project_key.trim(), projectUrl]
     );
 
-    res.json({ message: 'Project updated' });
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Project not found.' });
+    }
+
+    res.status(200).json({ message: 'Project updated successfully.', project: rows[0] });
+
   } catch (err) {
-    console.error('editProjectController error', err);
-    res.status(500).json({ error: 'Internal server error' });
+    // --- THIS IS THE FIX: ENHANCED ERROR LOGGING ---
+    // This will now print the full, detailed database error to your backend console.
+    console.error('💥 DETAILED DATABASE ERROR in editProjectController:', err);
+    // --- END OF FIX ---
+    
+    if (err.code === '23505') { // Check for unique violation
+      return res.status(409).json({ error: 'A project with this key already exists. Please choose another.' });
+    }
+    
+    // Fallback for all other errors
+    res.status(500).json({ error: 'An internal server error occurred while updating the project.' });
   }
 };
