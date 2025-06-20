@@ -8,6 +8,7 @@ import userRoutes from './routes/users/userRoutes.js';
 import projectRoutes from './routes/projects/projectRoutes.js';
 import invitationRoutes from './routes/invitations/invitationRoutes.js';
 import commentRoutes from './routes/comments/commentRoutes.js';
+import aiRoutes from './routes/ai/aiRoutes.js';
 
 
 // Load environment variables
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api', commentRoutes);
 
 // Healthcheck endpoint

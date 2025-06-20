@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiUserCircle, HiCalendar, HiViewGrid } from 'react-icons/hi';
 import { useUser } from '../../../contexts/UserContext';
+import { useAI } from '../../../contexts/AIContext.jsx';
 import Select from 'react-select';
+import AIEnhancedInput from './AIEnhancedInput.jsx';
 
-// Custom component to format how an option appears in the dropdown
 const FormatOptionLabel = ({ id, photo_url, first_name, last_name, email }) => (
     <div className="flex items-center">
         <img
@@ -19,7 +20,6 @@ const FormatOptionLabel = ({ id, photo_url, first_name, last_name, email }) => (
     </div>
 );
 
-// Custom styles for React-Select to match your theme
 const selectStyles = {
     control: (provided) => ({
         ...provided,
@@ -60,9 +60,9 @@ const selectStyles = {
     singleValue: (styles) => ({ ...styles, color: 'var(--color-text-primary)' }),
 };
 
-
 const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], initialBoardId }) => {
     const { userData } = useUser();
+    const { enhanceTaskName, enhanceTaskDescription } = useAI();
 
     const getInitialState = () => ({
         task_name: '',
@@ -77,7 +77,6 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
 
     useEffect(() => {
         if (isOpen) {
-            // Reset form when the modal is reopened, respecting the initially clicked board
             setTaskData(prev => ({ ...getInitialState(), board_id: initialBoardId || prev.board_id }));
             setError('');
         }
@@ -102,12 +101,11 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
             setError('A board must be selected.');
             return;
         }
-        // Transform data for the API: we only need an array of user IDs
         const payload = {
             ...taskData,
             assigneeIds: taskData.assignees.map(a => a.value),
         };
-        delete payload.assignees; // Clean up the payload
+        delete payload.assignees;
         onSubmit(payload);
         onClose();
     };
@@ -151,14 +149,12 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
                                 <label htmlFor="task_name" className="block text-sm font-medium text-text-primary mb-2">
                                     Task Name <span className="text-error">*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    id="task_name"
+                                <AIEnhancedInput
                                     name="task_name"
                                     value={taskData.task_name}
                                     onChange={handleChange}
-                                    className="w-full bg-bg-primary text-text-primary p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                                    required autoFocus
+                                    placeholder="e.g., Design the new user dashboard"
+                                    onEnhance={enhanceTaskName}
                                 />
                                 {error && taskData.task_name.trim() === '' && <p className="text-error text-sm mt-1">{error}</p>}
                             </div>
@@ -180,14 +176,13 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
 
                              <div>
                                 <label htmlFor="description" className="block text-sm font-medium text-text-primary mb-2">Description</label>
-                                <textarea
-                                    id="description"
+                                <AIEnhancedInput
                                     name="description"
                                     value={taskData.description}
                                     onChange={handleChange}
-                                    rows="4"
-                                    className="w-full bg-bg-primary text-text-primary p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                                    placeholder="Add details, links, etc."
+                                    rows={4}
+                                    placeholder="Add details, links, checklists..."
+                                    onEnhance={enhanceTaskDescription}
                                 />
                             </div>
 
