@@ -4,7 +4,7 @@ import { useUser } from './UserContext.jsx';
 const ProjectContext = createContext();
 
 export const ProjectProvider = ({ children }) => {
-    const { firebaseUser } = useUser();
+    const { firebaseUser, userData } = useUser();
 
     const [projects, setProjects] = useState([]);
     const [loadingFetch, setLoadingFetch] = useState(false);
@@ -145,8 +145,7 @@ export const ProjectProvider = ({ children }) => {
         });
         return updatedBoard;
     }, [firebaseUser]);
-    
-    // --- [NEW] Function to remove a user from a project ---
+
     const removeUserFromProject = useCallback(async (projectUrl, memberId) => {
         if (!firebaseUser) throw new Error("Authentication required");
         const token = await firebaseUser.getIdToken();
@@ -158,7 +157,6 @@ export const ProjectProvider = ({ children }) => {
         if (res.status === 204) {
             setCurrentProject(prev => {
                 if (!prev) return null;
-                // Instantly update the members list in the context
                 const newMembers = prev.members.filter(m => m.id !== memberId);
                 return { ...prev, members: newMembers };
             });
@@ -167,13 +165,40 @@ export const ProjectProvider = ({ children }) => {
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to remove member.");
     }, [firebaseUser]);
+    
+    const updateMemberRole = useCallback(async (projectUrl, memberId, newRole) => {
+        if (!firebaseUser) throw new Error("Authentication required");
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch(`/api/projects/${projectUrl}/members/${memberId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ role: newRole }),
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || "Failed to update member role.");
+        }
+
+        if (newRole === 'owner') {
+            await getProjectDetails(projectUrl); // Must refetch to get updated roles for all users
+        } else {
+            setCurrentProject(prev => {
+                if (!prev) return null;
+                const newMembers = prev.members.map(m =>
+                    m.id === memberId ? { ...m, role: newRole } : m
+                );
+                return { ...prev, members: newMembers };
+            });
+        }
+    }, [firebaseUser, getProjectDetails]);
 
 
     const value = useMemo(() => ({
         projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate,
         currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails,
         deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard,
-        removeUserFromProject // <-- [NEW] Expose the new function
+        removeUserFromProject, updateMemberRole
     }),
         [
             projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject,

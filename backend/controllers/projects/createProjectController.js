@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid'; // Make sure you have nanoid installed: npm i nanoid
+import { nanoid } from 'nanoid';
 import pool from '../../db.js';
 
 export const createProjectController = async (req, res) => {
@@ -7,14 +7,12 @@ export const createProjectController = async (req, res) => {
   }
   const ownerId = req.user.id;
   
-  // *** FIX: Only take projectName and projectKey from the body.
   const { projectName, projectKey } = req.body;
 
-  // Validation
   if (!projectName?.trim()) {
     return res.status(400).json({ error: 'Project name is required.' });
   }
-  if (!/^[A-Z]{3,4}$/.test(projectKey)) { // Accepting 3 or 4 letters is more flexible
+  if (!/^[A-Z]{3,4}$/.test(projectKey)) {
     return res.status(400).json({ error: 'Project key must be 3-4 uppercase letters.' });
   }
 
@@ -22,7 +20,6 @@ export const createProjectController = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // *** FIX: Generate the unique project URL on the backend. ***
     const projectUrl = `${projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${nanoid(8)}`;
 
     const insertProjectSQL = `
@@ -37,7 +34,6 @@ export const createProjectController = async (req, res) => {
         created_at       AS "createdAt";
     `;
 
-    // Use the generated projectUrl
     const { rows } = await client.query(insertProjectSQL, [
       projectUrl,
       projectKey.trim(),
@@ -46,11 +42,13 @@ export const createProjectController = async (req, res) => {
     ]);
     const newProject = rows[0];
 
-    // Link owner to project
+    // --- THIS IS THE FIX ---
+    // The query now explicitly sets the role for the new owner.
     await client.query(
-      `INSERT INTO project_users (project_id, user_id) VALUES ($1, $2)`,
+      `INSERT INTO project_users (project_id, user_id, role) VALUES ($1, $2, 'owner')`,
       [newProject.id, ownerId]
     );
+    // --- END OF FIX ---
 
     // Create default boards
     const defaultBoards = [
@@ -67,7 +65,6 @@ export const createProjectController = async (req, res) => {
 
     await client.query('COMMIT');
     
-    // Return the full project object, which now includes the generated URL.
     return res.status(201).json(newProject);
   } catch (err) {
     await client.query('ROLLBACK');

@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 
 const ProjectDetails = () => {
     const { projectUrl } = useParams();
+    // Getting the current user's role from the context to pass to child components
     const { currentProject, loadingDetails, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard } = useProjects();
     const { firebaseUser, userData } = useUser();
 
@@ -25,6 +26,10 @@ const ProjectDetails = () => {
     const tasks = currentProject?.tasks || [];
     const columns = (currentProject?.boards || []).sort((a, b) => a.position - b.position);
 
+    // --- NEW: Find the current user's role ---
+    const currentUser = currentProject?.members?.find(m => m.id === userData?.id);
+    const currentUserRole = currentUser?.role;
+
     const addColumnInputRef = useRef(null);
     
     useEffect(() => {
@@ -33,8 +38,6 @@ const ProjectDetails = () => {
         }
     }, [newColumn.isAdding]);
     
-    const isOwner = currentProject?.project?.owner_id === userData?.id;
-
     const handleAddColumn = async () => {
         if (!newColumn.name.trim()) {
             setNewColumn(prev => ({ ...prev, error: 'Name cannot be empty.' }));
@@ -126,12 +129,9 @@ const ProjectDetails = () => {
             toast.error(err.message || "Failed to update task.");
         }
     };
-
+    
+    // --- FIX: NO PERMISSION CHECK HERE ---
     const handleDeleteTask = (taskId) => {
-        if (!isOwner) {
-            toast.error("Only the project owner can delete tasks.");
-            return;
-        }
         if (window.confirm("Are you sure? This action is permanent.")) {
             toast.promise(deleteTask(projectUrl, taskId), {
                 loading: 'Deleting task...',
@@ -141,17 +141,15 @@ const ProjectDetails = () => {
         }
     };
     
+    // --- NO CHANGE NEEDED HERE ---
     const handleUpdateTaskName = (taskId, newName) => {
         handleUpdateTask({ id: taskId, task_name: newName }).then(savedTask => {
             if (savedTask) { toast.success("Task name updated!"); }
         });
     };
 
+    // --- FIX: NO PERMISSION CHECK HERE ---
     const handleDeleteBoard = (boardId) => {
-        if (!isOwner) {
-            toast.error("Only the project owner can delete columns.");
-            return;
-        }
         const confirmText = "Are you sure you want to delete this column?\nAll tasks within it will also be permanently deleted. Move them first if you wish to keep them.";
         if(window.confirm(confirmText)) {
             toast.promise(deleteBoard(projectUrl, boardId), {
@@ -162,11 +160,8 @@ const ProjectDetails = () => {
         }
     };
     
+    // --- FIX: NO PERMISSION CHECK HERE ---
     const handleUpdateBoardName = (boardId, newName) => {
-        if (!isOwner) {
-            toast.error("Only the project owner can rename columns.");
-            return;
-        }
         toast.promise(updateBoard(projectUrl, boardId, newName), {
             loading: 'Renaming column...',
             success: 'Column renamed!',
@@ -219,7 +214,7 @@ const ProjectDetails = () => {
                 isDragging={isDragging}
                 onDeleteTask={handleDeleteTask}
                 onUpdateTaskName={handleUpdateTaskName}
-                isOwner={isOwner}
+                currentUserRole={currentUserRole} // --- PASS ROLE, NOT 'isOwner' ---
                 onDeleteBoard={handleDeleteBoard}
                 onUpdateBoardName={handleUpdateBoardName}
             />
@@ -231,7 +226,7 @@ const ProjectDetails = () => {
                     boards={columns}
                     onUpdateTask={handleUpdateTask}
                     creator={taskCreator}
-                    members={currentProject?.members || []} // Pass members to details modal
+                    members={currentProject?.members || []}
                 />
             )}
             <AddTaskModal
