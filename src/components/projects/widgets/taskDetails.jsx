@@ -2,12 +2,12 @@ import { Fragment, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiOutlineNewspaper, HiOutlineCollection, HiOutlineUser, HiOutlineChatAlt2, HiCalendar, HiUserCircle } from 'react-icons/hi';
 import CommentList from './commentList';
-import Select from 'react-select'; // Import react-select
+import Select from 'react-select';
+import { useAI } from '../../../contexts/AIContext.jsx';
+import AIEnhancedInput from './AIEnhancedInput.jsx';
 
-// Helper to format date for input[type=date] which needs 'YYYY-MM-DD'
 const formatToInputDate = (isoString) => {
     if (!isoString) return '';
-    // Ensure we handle the date in a way that respects the user's local timezone offset
     const date = new Date(isoString);
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -15,7 +15,6 @@ const formatToInputDate = (isoString) => {
     return `${year}-${month}-${day}`;
 };
 
-// --- [NEW] Reusable components for React-Select from AddTaskModal ---
 const FormatOptionLabel = ({ id, photo_url, first_name, last_name, email }) => (
     <div className="flex items-center">
         <img
@@ -41,31 +40,25 @@ const selectStyles = {
     placeholder: (p) => ({ ...p, color: 'var(--color-text-placeholder)' }),
     singleValue: (p) => ({ ...p, color: 'var(--color-text-primary)' }),
 };
-// --- END of React-Select components ---
-
 
 const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator, members = [] }) => {
+    const { enhanceTaskDescription } = useAI();
     const [updatedTask, setUpdatedTask] = useState(task);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        // When the task prop changes, reset the internal state
-        // This is crucial for when you open a different task
         setUpdatedTask(task);
     }, [task]);
 
-    // General handler for simple text/date inputs
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setUpdatedTask(prev => ({ ...prev, [name]: value }));
     };
 
-    // Specific handler for react-select assignees
     const handleAssigneeChange = (selectedOptions) => {
         setUpdatedTask(prev => ({ ...prev, assignees: selectedOptions || [] }));
     };
     
-    // Handler for board select
     const handleBoardChange = (e) => {
         const { value } = e.target;
         setUpdatedTask(prev => ({ ...prev, board_id: value }));
@@ -73,19 +66,17 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
 
     const handleSave = async () => {
         setIsSaving(true);
-        // Prepare the payload for the API
         const payload = {
             id: updatedTask.id,
             task_name: updatedTask.task_name,
             description: updatedTask.description,
             board_id: updatedTask.board_id,
             deadline: updatedTask.deadline,
-            // API expects an array of IDs, not the full user objects
             assigneeIds: updatedTask.assignees.map(a => a.id),
         };
         await onUpdateTask(payload);
         setIsSaving(false);
-        onClose(); // Close modal on save
+        onClose();
     };
 
     const hasChanges = JSON.stringify(task) !== JSON.stringify(updatedTask);
@@ -110,7 +101,6 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                         className="bg-bg-secondary rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Header */}
                         <header className="flex items-center justify-between p-4 border-b border-bg-primary">
                             <div className="flex items-center gap-3">
                                 <span className="text-sm font-semibold text-text-secondary bg-bg-primary px-2 py-1 rounded-md">
@@ -127,23 +117,21 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                             </button>
                         </header>
 
-                        {/* Body */}
                         <div className="p-6 overflow-y-auto flex-grow">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="md:col-span-2 space-y-6">
-                                    {/* --- [MODIFIED] Description Section --- */}
                                     <section>
                                         <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
                                             <HiOutlineNewspaper className="w-5 h-5 text-text-secondary" />
                                             Description
                                         </h3>
-                                        <textarea
-                                            name="description" // <-- Changed name from 'notes'
-                                            value={updatedTask.description || ''} // <-- Changed from 'notes'
+                                        <AIEnhancedInput
+                                            name="description"
+                                            value={updatedTask.description || ''}
                                             onChange={handleInputChange}
                                             placeholder="Add a more detailed description..."
-                                            className="w-full h-48 bg-bg-primary text-text-primary placeholder-text-placeholder p-3 rounded-md border-2 border-transparent focus:border-accent-primary focus:outline-none resize-y"
-                                            aria-label="Task description"
+                                            rows={8}
+                                            onEnhance={enhanceTaskDescription}
                                         />
                                     </section>
                                     
@@ -172,7 +160,6 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                                         </select>
                                     </section>
                                     
-                                    {/* --- [NEW] Assignees Section --- */}
                                     <section>
                                         <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
                                           <HiUserCircle className="w-5 h-5 text-text-secondary"/>  Assigned To
@@ -188,7 +175,6 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                                         />
                                     </section>
                                     
-                                    {/* --- [NEW] Deadline Section --- */}
                                      <section>
                                         <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
                                             <HiCalendar className="w-5 h-5 text-text-secondary" /> Deadline
@@ -216,7 +202,6 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <footer className="flex items-center justify-end p-4 border-t border-bg-primary gap-3">
                             <button onClick={onClose} className="px-4 py-2 rounded-md text-text-secondary hover:bg-bg-primary transition-colors">Cancel</button>
                             <button onClick={handleSave} disabled={!hasChanges || isSaving} className="px-6 py-2 rounded-md bg-accent-primary text-text-primary font-semibold transition-all duration-200 hover:bg-accent-hover disabled:bg-bg-primary disabled:text-text-secondary disabled:cursor-not-allowed">
