@@ -17,6 +17,7 @@ import Dashboard from './components/dashboard/dashboardPage.jsx';
 
 import Projects from './components/projects/projectsPage.jsx';
 import ProjectPage from './components/projects/projectView.jsx';
+import ProjectSettingsPage from './components/projects/projectSettingsPage.jsx';
 
 import SettingsPage from './components/settings/settingsPage.jsx';
 
@@ -72,6 +73,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/projects/:projectUrl" element={<ProjectPage />}>
                     <Route index element={null} /> {/* This handles the base `/projects/:projectUrl` path */}
                     <Route path="users" element={<ProjectUsersPage />} />
+                    <Route path="settings" element={<ProjectSettingsPage />} />
                     {/* You could add other nested project pages like "settings", "reports", etc. here later */}
                 </Route>
                 <Route path="/settings" element={<SettingsPage />} />

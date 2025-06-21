@@ -6,6 +6,7 @@ const ProjectContext = createContext();
 export const ProjectProvider = ({ children }) => {
     const { firebaseUser, userData } = useUser();
 
+    // --- Existing States ---
     const [projects, setProjects] = useState([]);
     const [loadingFetch, setLoadingFetch] = useState(false);
     const [errorFetch, setErrorFetch] = useState(null);
@@ -17,6 +18,13 @@ export const ProjectProvider = ({ children }) => {
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [errorDetails, setErrorDetails] = useState(null);
 
+    // --- NEW: Settings State ---
+    const [projectSettings, setProjectSettings] = useState(null);
+    const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+    const [settingsError, setSettingsError] = useState(null);
+
+    // --- Existing Functions ---
+    // (fetchUserProjects, createProject, etc. remain here unchanged)
     const fetchUserProjects = useCallback(async () => {
         if (!firebaseUser) { setProjects([]); return; }
         setLoadingFetch(true);
@@ -80,7 +88,8 @@ export const ProjectProvider = ({ children }) => {
             setLoadingDetails(false);
         }
     }, [firebaseUser]);
-
+    
+    // (Other existing functions like deleteTask, createTask, etc.)
     const deleteTask = useCallback(async (projectUrl, taskId) => {
         if (!firebaseUser) throw new Error('Authentication required');
         const token = await firebaseUser.getIdToken();
@@ -181,7 +190,7 @@ export const ProjectProvider = ({ children }) => {
         }
 
         if (newRole === 'owner') {
-            await getProjectDetails(projectUrl); // Must refetch to get updated roles for all users
+            await getProjectDetails(projectUrl); 
         } else {
             setCurrentProject(prev => {
                 if (!prev) return null;
@@ -194,15 +203,57 @@ export const ProjectProvider = ({ children }) => {
     }, [firebaseUser, getProjectDetails]);
 
 
+    // --- NEW: Settings Functions ---
+    const getProjectSettings = useCallback(async (projectUrl) => {
+        if (!firebaseUser) { setSettingsError("Authentication required."); return; }
+        setIsSettingsLoading(true);
+        setSettingsError(null);
+        try {
+            const token = await firebaseUser.getIdToken();
+            // Note: Your backend route is `/projects/:projectId/...` but the context uses `projectUrl`.
+            // I'm assuming your backend resolves the project via its URL slug for consistency.
+            const res = await fetch(`/api/projects/${projectUrl}/settings`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch project settings.');
+            setProjectSettings(data);
+        } catch (err) {
+            setSettingsError(err.message);
+        } finally {
+            setIsSettingsLoading(false);
+        }
+    }, [firebaseUser]);
+
+    const updateProjectSettings = useCallback(async (projectUrl, newSettings) => {
+        if (!firebaseUser) throw new Error('Authentication required');
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch(`/api/projects/${projectUrl}/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(newSettings)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update settings.');
+        
+        // Update local state to prevent a re-fetch
+        setProjectSettings(data);
+        return data;
+    }, [firebaseUser]);
+
     const value = useMemo(() => ({
         projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate,
         currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails,
         deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard,
-        removeUserFromProject, updateMemberRole
+        removeUserFromProject, updateMemberRole,
+        // --- NEW: Export new state and functions ---
+        projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings
     }),
         [
             projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject,
-            loadingDetails, errorDetails
+            loadingDetails, errorDetails,
+            // --- NEW: Add new state to dependency array ---
+            projectSettings, isSettingsLoading, settingsError
         ]);
 
     return (
