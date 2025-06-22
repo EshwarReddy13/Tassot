@@ -4,6 +4,8 @@ import { getUser } from '../../controllers/users/getUserController.js';
 import { updateUser } from '../../controllers/users/updateUserController.js';
 import { getUsersController } from '../../controllers/users/getUsersController.js';
 import { getUserByIdController } from '../../controllers/users/getUserByIdController.js';
+import { getUserByEmailController } from '../../controllers/users/getUserByEmailController.js';
+
 // ADDED: Import the authentication middleware
 import { requireAuth } from '../../auth/authMiddleware.js';
 
@@ -19,5 +21,6 @@ router.get('/', requireAuth, getUsersController);
 router.get('/id/:userId', requireAuth, getUserByIdController);
 router.get('/:uid', requireAuth, getUser);
 router.patch('/:uid', requireAuth, updateUser);
+router.get('/email/:email', requireAuth, getUserByEmailController);
 
 export default router;

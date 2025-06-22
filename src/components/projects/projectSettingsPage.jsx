@@ -13,21 +13,31 @@ const ProjectSettingsPage = () => {
         getProjectSettings,
         updateProjectSettings, 
         isSettingsLoading, 
-        settingsError 
+        settingsError,
+        loadingDetails, 
+        getProjectDetails
     } = useProjects();
     const { userData } = useUser();
 
     useEffect(() => {
         if (projectUrl) {
             getProjectSettings(projectUrl);
+            
+            if (!currentProject || currentProject.project.project_url !== projectUrl) {
+                getProjectDetails(projectUrl);
+            }
         }
-    }, [projectUrl, getProjectSettings]);
+    }, [projectUrl, getProjectSettings, getProjectDetails, currentProject]);
 
     const isOwner = useMemo(() => {
-        if (!currentProject || !userData) return false;
+        // Guard against missing data
+        if (!currentProject || !userData || !currentProject.members) return false;
+        
         const currentUserMembership = currentProject.members.find(
-            (member) => member.firebase_uid === userData.firebase_uid
+            (member) => member.id === userData.id 
         );
+        // -----------------
+
         return currentUserMembership?.role === 'owner';
     }, [currentProject, userData]);
 
@@ -41,8 +51,8 @@ const ProjectSettingsPage = () => {
         }
     };
     
-    if (isSettingsLoading) {
-        return <div className="p-8 text-text-primary">Loading AI Settings...</div>;
+    if (isSettingsLoading || loadingDetails) {
+        return <div className="p-8 text-text-primary">Loading Settings...</div>;
     }
 
     if (settingsError) {
@@ -50,14 +60,14 @@ const ProjectSettingsPage = () => {
     }
 
     if (!projectSettings) {
-        return <div className="p-8 text-text-secondary">No settings found.</div>;
+        return <div className="p-8 text-text-secondary">No settings found for this project.</div>;
     }
 
     return (
         <div className="p-4 md:p-6 lg:p-8 text-text-primary">
             <h1 className="text-2xl font-bold mb-4">AI Generation Settings</h1>
             <p className="text-text-secondary mb-8">
-                Customize how AI generates content for this project. These settings only apply to "{currentProject?.project_name}".
+                Customize how AI generates content for this project. These settings only apply to "{currentProject?.project.project_name}".
             </p>
 
             <AISettingsForm

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiUserCircle, HiCalendar, HiViewGrid } from 'react-icons/hi';
 import { useUser } from '../../../contexts/UserContext';
 import { useAI } from '../../../contexts/AIContext.jsx';
 import Select from 'react-select';
-import AIEnhancedInput from './AIEnhancedInput.jsx';
+import AIEnhancedInput from './aiEnhancedInput.jsx';
 
 const FormatOptionLabel = ({ id, photo_url, first_name, last_name, email }) => (
     <div className="flex items-center">
@@ -63,6 +64,7 @@ const selectStyles = {
 const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], initialBoardId }) => {
     const { userData } = useUser();
     const { enhanceTaskName, enhanceTaskDescription } = useAI();
+    const { projectUrl } = useParams();
 
     const getInitialState = () => ({
         task_name: '',
@@ -81,6 +83,14 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
             setError('');
         }
     }, [isOpen, initialBoardId]);
+
+    const handleEnhanceName = useCallback((text) => {
+        return enhanceTaskName(text, projectUrl);
+    }, [enhanceTaskName, projectUrl]);
+
+    const handleEnhanceDescription = useCallback((text) => {
+        return enhanceTaskDescription(text, taskData.task_name, projectUrl);
+    }, [enhanceTaskDescription, projectUrl, taskData.task_name]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -154,7 +164,7 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
                                     value={taskData.task_name}
                                     onChange={handleChange}
                                     placeholder="e.g., Design the new user dashboard"
-                                    onEnhance={enhanceTaskName}
+                                    onEnhance={handleEnhanceName}
                                 />
                                 {error && taskData.task_name.trim() === '' && <p className="text-error text-sm mt-1">{error}</p>}
                             </div>
@@ -182,7 +192,7 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
                                     onChange={handleChange}
                                     rows={4}
                                     placeholder="Add details, links, checklists..."
-                                    onEnhance={enhanceTaskDescription}
+                                    onEnhance={handleEnhanceDescription}
                                 />
                             </div>
 

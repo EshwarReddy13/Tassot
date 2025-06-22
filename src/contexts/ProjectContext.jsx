@@ -6,7 +6,7 @@ const ProjectContext = createContext();
 export const ProjectProvider = ({ children }) => {
     const { firebaseUser, userData } = useUser();
 
-    // --- Existing States ---
+    // --- States ---
     const [projects, setProjects] = useState([]);
     const [loadingFetch, setLoadingFetch] = useState(false);
     const [errorFetch, setErrorFetch] = useState(null);
@@ -18,13 +18,11 @@ export const ProjectProvider = ({ children }) => {
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [errorDetails, setErrorDetails] = useState(null);
 
-    // --- NEW: Settings State ---
     const [projectSettings, setProjectSettings] = useState(null);
     const [isSettingsLoading, setIsSettingsLoading] = useState(true);
     const [settingsError, setSettingsError] = useState(null);
 
-    // --- Existing Functions ---
-    // (fetchUserProjects, createProject, etc. remain here unchanged)
+    // --- Functions ---
     const fetchUserProjects = useCallback(async () => {
         if (!firebaseUser) { setProjects([]); return; }
         setLoadingFetch(true);
@@ -89,7 +87,6 @@ export const ProjectProvider = ({ children }) => {
         }
     }, [firebaseUser]);
     
-    // (Other existing functions like deleteTask, createTask, etc.)
     const deleteTask = useCallback(async (projectUrl, taskId) => {
         if (!firebaseUser) throw new Error('Authentication required');
         const token = await firebaseUser.getIdToken();
@@ -202,16 +199,12 @@ export const ProjectProvider = ({ children }) => {
         }
     }, [firebaseUser, getProjectDetails]);
 
-
-    // --- NEW: Settings Functions ---
     const getProjectSettings = useCallback(async (projectUrl) => {
         if (!firebaseUser) { setSettingsError("Authentication required."); return; }
         setIsSettingsLoading(true);
         setSettingsError(null);
         try {
             const token = await firebaseUser.getIdToken();
-            // Note: Your backend route is `/projects/:projectId/...` but the context uses `projectUrl`.
-            // I'm assuming your backend resolves the project via its URL slug for consistency.
             const res = await fetch(`/api/projects/${projectUrl}/settings`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -236,25 +229,32 @@ export const ProjectProvider = ({ children }) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to update settings.');
         
-        // Update local state to prevent a re-fetch
         setProjectSettings(data);
         return data;
     }, [firebaseUser]);
 
+    // --- THIS IS THE FIX ---
     const value = useMemo(() => ({
         projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate,
         currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails,
         deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard,
         removeUserFromProject, updateMemberRole,
-        // --- NEW: Export new state and functions ---
         projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings
     }),
         [
+            // State values
             projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject,
-            loadingDetails, errorDetails,
-            // --- NEW: Add new state to dependency array ---
-            projectSettings, isSettingsLoading, settingsError
+            loadingDetails, errorDetails, projectSettings, isSettingsLoading, settingsError,
+            
+            // Callback functions
+            // By adding the functions here, useMemo will re-calculate the value object
+            // whenever a function is re-created (e.g., when firebaseUser changes),
+            // thus providing the fresh function to all consumers.
+            createProject, fetchUserProjects, getProjectDetails, deleteTask, createTask, 
+            updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, 
+            updateMemberRole, getProjectSettings, updateProjectSettings
         ]);
+    // ----------------------
 
     return (
         <ProjectContext.Provider value={value}>

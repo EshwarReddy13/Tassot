@@ -1,7 +1,6 @@
-import pool from '../../../db.js'; // Adjust path to db connection if needed
+import pool from '../../../db.js';
 import { z } from 'zod';
 
-// Schema for the nested ai_preferences object
 const aiPreferencesSchema = z.object({
   general: z.object({
     tone: z.string(),
@@ -20,7 +19,7 @@ const aiPreferencesSchema = z.object({
     structure_type: z.string(),
     content_elements: z.array(z.string()),
     clarity_level: z.string(),
-    match_tone_and_style_from_title: z.boolean(),
+    match_general_settings: z.boolean(), // FIXED: Key name updated
     task_description_tone: z.string(),
     task_description_style: z.string(),
     task_description_clarity_level_override: z.string(),
@@ -30,21 +29,14 @@ const aiPreferencesSchema = z.object({
   selected_preset: z.string(),
 });
 
-// Top-level schema for the entire settings object
 const settingsSchema = z.object({
   ai_preferences: aiPreferencesSchema,
-  // Future top-level settings can be added here
 });
 
 export const updateSettingsController = async (req, res) => {
-  // Debugging statement to log received parameters and body
-  console.log('[DEBUG] updateSettingsController received params:', req.params);
-  console.log('[DEBUG] updateSettingsController received body:', JSON.stringify(req.body, null, 2));
-
   const { projectUrl } = req.params;
   const newSettings = req.body;
 
-  // 1. Validate the entire incoming settings object
   const validationResult = settingsSchema.safeParse(newSettings);
   if (!validationResult.success) {
     return res.status(400).json({
@@ -55,7 +47,7 @@ export const updateSettingsController = async (req, res) => {
 
   try {
     const updateResult = await pool.query(
-      'UPDATE projects SET settings = $1, updated_at = now() WHERE project_url = $2 RETURNING settings', // FIXED: Query by project_url instead of id
+      'UPDATE projects SET settings = $1, updated_at = now() WHERE project_url = $2 RETURNING settings',
       [newSettings, projectUrl]
     );
 
