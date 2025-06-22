@@ -3,7 +3,8 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useMemo
+  useMemo,
+  useCallback
 } from 'react';
 import { auth } from '../firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -55,27 +56,23 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // THE FIX IS IN THIS FUNCTION
   const updateUser = async (updates = {}) => {
     if (!firebaseUser) throw new Error('No authenticated user');
     setLoading(true);
     setError('');
     try {
-      // 1. Get the auth token from the currently logged-in Firebase user
       const token = await firebaseUser.getIdToken();
 
       const res = await fetch(`/api/users/${firebaseUser.uid}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          // 2. Send the token in the 'Authorization' header
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(updates)
       });
       
       if (!res.ok) {
-        // The backend returns a specific error message, so we parse it.
         const errorData = await res.json().catch(() => ({ error: `Server error: ${res.status}` }));
         throw new Error(errorData.error || `Failed to update user. Status: ${res.status}`);
       }
@@ -87,16 +84,46 @@ export const UserProvider = ({ children }) => {
     } catch (err) {
       console.error('updateUser error:', err);
       setError(err.message);
-      // Re-throw the error so the calling component (SettingsPage) can catch it
       throw err;
     } finally {
       setLoading(false);
     }
   };
+  
+  // --- THIS FUNCTION IS NOW FIXED ---
+  const getUserByEmail = useCallback(async (email) => {
+    if (!email) {
+      throw new Error("Email address is required.");
+    }
+    // The check for firebaseUser is essential for getting the token.
+    if (!firebaseUser) {
+      throw new Error("Authentication required to perform this action.");
+    }
+
+    try {
+      // Get the authentication token.
+      const token = await firebaseUser.getIdToken();
+
+      const res = await fetch(`/api/users/email/${encodeURIComponent(email)}`, {
+        // Add the required headers object with the token.
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: `Server error: ${res.status}` }));
+        throw new Error(errorData.error || 'Failed to check user existence.');
+      }
+      return await res.json();
+    } catch (err) {
+      console.error('getUserByEmail error:', err);
+      throw err;
+    }
+  }, [firebaseUser]); // Add firebaseUser to the dependency array.
 
   const value = useMemo(
-    () => ({ firebaseUser, userData, loading, error, updateUser, updateUserError: error }),
-    [firebaseUser, userData, loading, error]
+    () => ({ firebaseUser, userData, loading, error, updateUser, updateUserError: error, getUserByEmail }),
+    [firebaseUser, userData, loading, error, getUserByEmail]
   );
 
   return (

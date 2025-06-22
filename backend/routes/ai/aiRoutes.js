@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { enhanceTextController } from '../../controllers/ai/enhanceTaskNameController.js';
+import { enhanceTaskNameController } from '../../controllers/ai/enhanceTaskNameController.js';
 import { enhanceTaskDescriptionController } from '../../controllers/ai/enhanceTaskDescriptionController.js';
 
 import { requireAuth } from '../../auth/authMiddleware.js';
@@ -11,7 +11,7 @@ const router = express.Router();
 router.use(requireAuth);
 
 // Route to handle text enhancement
-router.post('/tasks/task-name', enhanceTextController);
+router.post('/tasks/task-name', enhanceTaskNameController);
 
 // Route to handle task description enhancement
 router.post('/tasks/task-description', enhanceTaskDescriptionController);

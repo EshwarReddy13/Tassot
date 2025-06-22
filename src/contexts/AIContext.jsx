@@ -8,9 +8,11 @@ export const AIProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const callApi = useCallback(async (endpoint, text) => {
+    // UPDATED: 'callApi' now accepts a single payload object for more flexibility
+    const callApi = useCallback(async (endpoint, payload) => {
         if (!firebaseUser) throw new Error('Authentication required.');
-        if (!text || !text.trim()) throw new Error('Cannot enhance empty text.');
+        if (!payload || !payload.text || !payload.text.trim()) throw new Error('Cannot enhance empty text.');
+        if (!payload.projectUrl) throw new Error('projectUrl is required for AI context.'); // Added validation
 
         setIsLoading(true);
         setError(null);
@@ -20,7 +22,8 @@ export const AIProvider = ({ children }) => {
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ text }),
+                // UPDATED: The entire payload object is now sent in the body
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to get AI suggestion.');
@@ -33,8 +36,15 @@ export const AIProvider = ({ children }) => {
         }
     }, [firebaseUser]);
 
-    const enhanceTaskName = useCallback((text) => callApi('/api/ai/tasks/task-name', text), [callApi]);
-    const enhanceTaskDescription = useCallback((text) => callApi('/api/ai/tasks/task-description', text), [callApi]);
+    // UPDATED: Now accepts projectUrl and passes it down
+    const enhanceTaskName = useCallback((text, projectUrl) => {
+        return callApi('/api/ai/tasks/task-name', { text, projectUrl });
+    }, [callApi]);
+
+    // UPDATED: Now accepts taskName and projectUrl for full context
+    const enhanceTaskDescription = useCallback((text, taskName, projectUrl) => {
+        return callApi('/api/ai/tasks/task-description', { text, taskName, projectUrl });
+    }, [callApi]);
 
     const value = useMemo(() => ({
         enhanceTaskName,

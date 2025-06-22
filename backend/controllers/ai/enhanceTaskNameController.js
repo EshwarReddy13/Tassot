@@ -1,34 +1,64 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import pool from '../../db.js'; // <-- ADDED: Import the database pool
 
-// --- THIS IS THE FIX ---
-// We check for the API key immediately. If it's missing, the server will log a fatal error.
-// This prevents runtime crashes and makes debugging much easier.
 if (!process.env.GEMINI_API_KEY) {
-    throw new Error("FATAL ERROR: GEMINI_API_KEY is not defined in the environment variables. Please check your .env file.");
+    throw new Error("FATAL ERROR: GEMINI_API_KEY is not defined in the environment variables.");
 }
 
-// Initialize the Google AI client. This will only run if the key exists.
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export const enhanceTextController = async (req, res) => {
-    const { text } = req.body;
+// The function is renamed for clarity to reflect it handles task names
+export const enhanceTaskNameController = async (req, res) => {
+    // UPDATED: Expect projectUrl in the body
+    const { text, projectUrl } = req.body;
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
         return res.status(400).json({ error: 'A non-empty text field is required.' });
+    }
+    // ADDED: Validate projectUrl
+    if (!projectUrl) {
+        return res.status(400).json({ error: 'projectUrl is required to fetch AI settings.' });
     }
     if (text.length > 500) {
         return res.status(400).json({ error: 'Input text cannot exceed 500 characters.' });
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite-preview-06-17" });
+        // --- NEW: Fetch project-specific AI settings and persona ---
+        const projectResult = await pool.query(
+            'SELECT settings, persona FROM projects WHERE project_url = $1',
+            [projectUrl]
+        );
 
-        const prompt = `You are an expert project manager. Your task is to refine a user's input for a task name.
-        Make it clearer, more concise, and more actionable.
-        Do not add any extra formatting, quotation marks, or explanations.
-        Just return the single, refined task name.
+        if (projectResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Project not found.' });
+        }
+        
+        const { settings, persona } = projectResult.rows[0];
+        const prefs = settings.ai_preferences;
+        // --- End of new database logic ---
 
-        Here is the user's input: "${text}"`;
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+
+        // --- UPDATED: Dynamic prompt construction ---
+        const prompt = `You are an expert ${persona}. Your task is to refine a user-provided task name to make it clearer and more effective.
+
+The original task name is: "${text}"
+
+Follow these rules precisely:
+- Tone: The output should have a ${prefs.general.tone} tone.
+- Style: The output should be ${prefs.general.style}.
+- Formality: The output must be ${prefs.general.formality}.
+- Person: Write in the ${prefs.general.person}.
+- Language: The output must be in ${prefs.general.language_style}.
+- Length: The name should be ${prefs.task_name.length} in length.
+- Verb Style: Start the name with an ${prefs.task_name.verb_style} verb.
+- Punctuation: Use ${prefs.task_name.punctuation_style}.
+- Additional Instructions: ${prefs.special_notes || 'None.'}
+
+Your response MUST be ONLY the refined task name.
+DO NOT include any explanation, preamble, or quotation marks.`;
+        // --- End of dynamic prompt ---
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
@@ -37,11 +67,7 @@ export const enhanceTextController = async (req, res) => {
         res.status(200).json({ enhancedText });
 
     } catch (error) {
-        console.error('Error with Gemini API:', error);
-        // This provides more specific feedback if the API key is valid but there's another issue (e.g., billing).
-        if (error.message.includes('API key not valid')) {
-             return res.status(401).json({ error: 'The provided Gemini API key is not valid.' });
-        }
-        res.status(500).json({ error: 'Failed to enhance text due to an internal AI service error.' });
+        console.error('Error in enhanceTaskNameController:', error);
+        res.status(500).json({ error: 'Failed to enhance text due to an internal server error.' });
     }
 };

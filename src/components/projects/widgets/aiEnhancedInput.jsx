@@ -21,7 +21,7 @@ const AIEnhancedInput = ({ value, onChange, onBlur, name, placeholder, rows = 1,
         }
         
         toast.promise(
-            onEnhance(value),
+            onEnhance(value), // This correctly calls the function it was given.
             {
                 loading: 'AI is thinking...',
                 success: (enhancedText) => {

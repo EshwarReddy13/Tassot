@@ -6,6 +6,7 @@ const ProjectContext = createContext();
 export const ProjectProvider = ({ children }) => {
     const { firebaseUser, userData } = useUser();
 
+    // --- States ---
     const [projects, setProjects] = useState([]);
     const [loadingFetch, setLoadingFetch] = useState(false);
     const [errorFetch, setErrorFetch] = useState(null);
@@ -17,6 +18,11 @@ export const ProjectProvider = ({ children }) => {
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [errorDetails, setErrorDetails] = useState(null);
 
+    const [projectSettings, setProjectSettings] = useState(null);
+    const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+    const [settingsError, setSettingsError] = useState(null);
+
+    // --- Functions ---
     const fetchUserProjects = useCallback(async () => {
         if (!firebaseUser) { setProjects([]); return; }
         setLoadingFetch(true);
@@ -80,7 +86,7 @@ export const ProjectProvider = ({ children }) => {
             setLoadingDetails(false);
         }
     }, [firebaseUser]);
-
+    
     const deleteTask = useCallback(async (projectUrl, taskId) => {
         if (!firebaseUser) throw new Error('Authentication required');
         const token = await firebaseUser.getIdToken();
@@ -181,7 +187,7 @@ export const ProjectProvider = ({ children }) => {
         }
 
         if (newRole === 'owner') {
-            await getProjectDetails(projectUrl); // Must refetch to get updated roles for all users
+            await getProjectDetails(projectUrl); 
         } else {
             setCurrentProject(prev => {
                 if (!prev) return null;
@@ -193,17 +199,62 @@ export const ProjectProvider = ({ children }) => {
         }
     }, [firebaseUser, getProjectDetails]);
 
+    const getProjectSettings = useCallback(async (projectUrl) => {
+        if (!firebaseUser) { setSettingsError("Authentication required."); return; }
+        setIsSettingsLoading(true);
+        setSettingsError(null);
+        try {
+            const token = await firebaseUser.getIdToken();
+            const res = await fetch(`/api/projects/${projectUrl}/settings`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch project settings.');
+            setProjectSettings(data);
+        } catch (err) {
+            setSettingsError(err.message);
+        } finally {
+            setIsSettingsLoading(false);
+        }
+    }, [firebaseUser]);
 
+    const updateProjectSettings = useCallback(async (projectUrl, newSettings) => {
+        if (!firebaseUser) throw new Error('Authentication required');
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch(`/api/projects/${projectUrl}/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(newSettings)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update settings.');
+        
+        setProjectSettings(data);
+        return data;
+    }, [firebaseUser]);
+
+    // --- THIS IS THE FIX ---
     const value = useMemo(() => ({
         projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate,
         currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails,
         deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard,
-        removeUserFromProject, updateMemberRole
+        removeUserFromProject, updateMemberRole,
+        projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings
     }),
         [
+            // State values
             projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject,
-            loadingDetails, errorDetails
+            loadingDetails, errorDetails, projectSettings, isSettingsLoading, settingsError,
+            
+            // Callback functions
+            // By adding the functions here, useMemo will re-calculate the value object
+            // whenever a function is re-created (e.g., when firebaseUser changes),
+            // thus providing the fresh function to all consumers.
+            createProject, fetchUserProjects, getProjectDetails, deleteTask, createTask, 
+            updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, 
+            updateMemberRole, getProjectSettings, updateProjectSettings
         ]);
+    // ----------------------
 
     return (
         <ProjectContext.Provider value={value}>

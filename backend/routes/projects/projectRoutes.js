@@ -18,6 +18,9 @@ import { createInvitationController } from '../../controllers/invitations/create
 import { removeUserFromProjectController } from '../../controllers/users/removeUserFromProjectController.js';
 import { updateMemberRoleController } from '../../controllers/users/updateMemberRoleController.js';
 
+import { getSettingsController } from '../../controllers/projects/settings/getSettingsController.js';
+import { updateSettingsController } from '../../controllers/projects/settings/updateSettingsController.js';
+
 import { requireAuth } from '../../auth/authMiddleware.js'; 
 import { requireProjectRole } from '../../auth/requireProjectRole.js';
 
@@ -51,5 +54,8 @@ router.post('/:projectUrl/invitations', requireProjectRole(['owner', 'editor']),
 router.put('/:projectUrl/members/:memberId', updateMemberRoleController); // Authorization logic is inside this controller
 router.delete('/:projectUrl/members/:memberId', requireProjectRole(['owner', 'editor']), removeUserFromProjectController);
 
+// === Settings Routes ===
+router.get('/:projectUrl/settings', getSettingsController);
+router.put('/:projectUrl/settings', requireProjectRole(['owner', 'editor']), updateSettingsController);
 
 export default router;
