@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import pool from '../../db.js';
 import { createAndSendInvitation } from '../../services/invitationService.js';
+import { logActivity } from '../../services/activityLogger.js'; // <-- IMPORT the service
 
 const balancedPresetSettings = {
   "ai_preferences": {
@@ -88,6 +89,16 @@ export const createProjectController = async (req, res) => {
 
     await client.query('COMMIT');
     
+    // --- LOG THE ACTIVITY ---
+    logActivity({
+      projectId: newProject.id,
+      userId: ownerId,
+      primaryEntityType: 'project',
+      primaryEntityId: newProject.id,
+      actionType: 'create'
+    });
+    // ------------------------
+
     res.status(201).json({
         id: newProject.id,
         projectUrl: newProject.project_url,

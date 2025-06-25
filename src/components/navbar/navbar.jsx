@@ -14,6 +14,7 @@ const icons = [
 
 // Define submenu items for Projects
 const subMenuItems = [ 
+  { id: 'dashboard', label: 'Dashboard', path: 'dashboard' },
   { id: 'board', label: 'Board', path: '' }, 
   { id: 'users', label: 'Users', path: 'users' },
   { id: 'settings', label: 'Settings', path: 'settings' },

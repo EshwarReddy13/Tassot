@@ -21,6 +21,10 @@ import { updateMemberRoleController } from '../../controllers/users/updateMember
 import { getSettingsController } from '../../controllers/projects/settings/getSettingsController.js';
 import { updateSettingsController } from '../../controllers/projects/settings/updateSettingsController.js';
 
+import { getProjectDashboardSummaryController } from '../../controllers/projects/dashboard/getProjectDashboardSummaryController.js';
+import { getProjectActionItemsController } from '../../controllers/projects/dashboard/getProjectActionItemsController.js';
+import { getProjectActivityController } from '../../controllers/projects/dashboard/getProjectActivityController.js';
+
 import { requireAuth } from '../../auth/authMiddleware.js'; 
 import { requireProjectRole } from '../../auth/requireProjectRole.js';
 
@@ -51,11 +55,17 @@ router.delete('/:projectUrl/tasks/:taskId', requireProjectRole(['owner', 'editor
 router.post('/:projectUrl/invitations', requireProjectRole(['owner', 'editor']), createInvitationController);
 
 // === User Management Routes ===
-router.put('/:projectUrl/members/:memberId', updateMemberRoleController); // Authorization logic is inside this controller
+router.put('/:projectUrl/members/:memberId', updateMemberRoleController); 
 router.delete('/:projectUrl/members/:memberId', requireProjectRole(['owner', 'editor']), removeUserFromProjectController);
 
 // === Settings Routes ===
 router.get('/:projectUrl/settings', getSettingsController);
 router.put('/:projectUrl/settings', requireProjectRole(['owner', 'editor']), updateSettingsController);
+
+// === Dashboard Routes ===
+router.get('/:projectUrl/dashboard/summary', requireProjectRole(['owner', 'editor', 'user']), getProjectDashboardSummaryController);
+router.get('/:projectUrl/dashboard/action-items', requireProjectRole(['owner', 'editor', 'user']),getProjectActionItemsController);
+router.get('/:projectUrl/dashboard/activity', requireProjectRole(['owner', 'editor', 'user']), getProjectActivityController);
+
 
 export default router;

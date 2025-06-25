@@ -1,26 +1,37 @@
 import pool from '../../../db.js';
+import { logActivity } from '../../../services/activityLogger.js';
 
 export const deleteTaskController = async (req, res) => {
   const { taskId } = req.params;
-
-  // The 'requireProjectRole' middleware (set to ['owner', 'editor', 'user'] in projectRoutes.js)
-  // has already verified the user has sufficient permission to be here.
-  // We can now proceed directly with the deletion logic.
+  const { id: userId } = req.user;
 
   if (!taskId) {
     return res.status(400).json({ error: 'Task ID is required.' });
   }
 
   try {
-    const deleteQuery = 'DELETE FROM tasks WHERE id = $1 RETURNING id;';
-    const deleteResult = await pool.query(deleteQuery, [taskId]);
+    const taskDataResult = await pool.query(
+      'SELECT t.task_key, b.project_id FROM tasks t JOIN boards b ON t.board_id = b.id WHERE t.id = $1', 
+      [taskId]
+    );
 
-    if (deleteResult.rowCount === 0) {
-      // This can happen if the task was deleted by someone else just moments ago.
+    if (taskDataResult.rowCount === 0) {
       return res.status(404).json({ error: 'Task not found.' });
     }
+    const { task_key, project_id } = taskDataResult.rows[0];
 
-    // Success with No Content is the standard for successful DELETE operations.
+    const deleteResult = await pool.query('DELETE FROM tasks WHERE id = $1 RETURNING id;', [taskId]);
+
+    if (deleteResult.rowCount > 0) {
+        logActivity({
+            projectId: project_id,
+            userId: userId,
+            primaryEntityType: 'task',
+            primaryEntityId: task_key,
+            actionType: 'delete'
+        });
+    }
+
     res.status(204).send();
 
   } catch (error) {

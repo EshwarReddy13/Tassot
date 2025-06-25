@@ -4,102 +4,76 @@ import { useUser } from './UserContext.jsx';
 const ProjectContext = createContext();
 
 export const ProjectProvider = ({ children }) => {
-    const { firebaseUser, userData } = useUser();
+    const { firebaseUser } = useUser();
 
-    // --- States ---
+    // States
     const [projects, setProjects] = useState([]);
     const [loadingFetch, setLoadingFetch] = useState(false);
     const [errorFetch, setErrorFetch] = useState(null);
-
     const [loadingCreate, setLoadingCreate] = useState(false);
     const [errorCreate, setErrorCreate] = useState(null);
-
     const [currentProject, setCurrentProject] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [errorDetails, setErrorDetails] = useState(null);
-
     const [projectSettings, setProjectSettings] = useState(null);
     const [isSettingsLoading, setIsSettingsLoading] = useState(true);
     const [settingsError, setSettingsError] = useState(null);
+    const [dashboardSummary, setDashboardSummary] = useState(null);
+    const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+    const [summaryError, setSummaryError] = useState(null);
+    const [actionItems, setActionItems] = useState(null);
+    const [isActionItemsLoading, setIsActionItemsLoading] = useState(true);
+    const [actionItemsError, setActionItemsError] = useState(null);
+    const [activityFeed, setActivityFeed] = useState(null);
+    const [isActivityLoading, setIsActivityLoading] = useState(true);
+    const [activityError, setActivityError] = useState(null);
 
-    // --- Functions ---
+    // Functions
     const fetchUserProjects = useCallback(async () => {
         if (!firebaseUser) { setProjects([]); return; }
-        setLoadingFetch(true);
-        setErrorFetch(null);
+        setLoadingFetch(true); setErrorFetch(null);
         try {
             const token = await firebaseUser.getIdToken();
             const res = await fetch('/api/projects', { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || res.statusText);
             setProjects(data);
-        } catch (err) {
-            setErrorFetch(err.message);
-            setProjects([]);
-        } finally {
-            setLoadingFetch(false);
-        }
+        } catch (err) { setErrorFetch(err.message); setProjects([]); }
+        finally { setLoadingFetch(false); }
     }, [firebaseUser]);
 
     const createProject = useCallback(async (body) => {
         if (!firebaseUser) throw new Error('Authentication required');
-        setLoadingCreate(true);
-        setErrorCreate(null);
+        setLoadingCreate(true); setErrorCreate(null);
         try {
             const token = await firebaseUser.getIdToken();
-            const res = await fetch('/api/projects', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify(body)
-            });
+            const res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || res.statusText);
-            fetchUserProjects();
-            return data;
-        } catch (err) {
-            setErrorCreate(err.message);
-            throw err;
-        } finally {
-            setLoadingCreate(false);
-        }
+            fetchUserProjects(); return data;
+        } catch (err) { setErrorCreate(err.message); throw err; }
+        finally { setLoadingCreate(false); }
     }, [firebaseUser, fetchUserProjects]);
 
     const getProjectDetails = useCallback(async (projectUrl) => {
-        if (!firebaseUser) {
-            setErrorDetails('Authentication required to fetch project details.');
-            return;
-        }
-        setLoadingDetails(true);
-        setErrorDetails(null);
-        setCurrentProject(null);
+        if (!firebaseUser) { setErrorDetails('Authentication required to fetch project details.'); return; }
+        setLoadingDetails(true); setErrorDetails(null); setCurrentProject(null);
         try {
             const token = await firebaseUser.getIdToken();
             const res = await fetch(`/api/projects/${projectUrl}`, { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to fetch project data.');
-            setCurrentProject(data);
-            return data;
-        } catch (err) {
-            setErrorDetails(err.message);
-            setCurrentProject(null);
-        } finally {
-            setLoadingDetails(false);
-        }
+            setCurrentProject(data); return data;
+        } catch (err) { setErrorDetails(err.message); setCurrentProject(null); }
+        finally { setLoadingDetails(false); }
     }, [firebaseUser]);
     
     const deleteTask = useCallback(async (projectUrl, taskId) => {
         if (!firebaseUser) throw new Error('Authentication required');
         const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/tasks/${taskId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.status === 204) {
-            setCurrentProject(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== taskId) } : null);
-            return;
-        }
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to delete task.');
+        const res = await fetch(`/api/projects/${projectUrl}/tasks/${taskId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 204) { setCurrentProject(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== taskId) } : null); return; }
+        const errorData = await res.json(); throw new Error(errorData.error || 'Failed to delete task.');
     }, [firebaseUser]);
 
     const createTask = useCallback((newTask) => {
@@ -107,164 +81,117 @@ export const ProjectProvider = ({ children }) => {
     }, []);
 
     const updateTaskInContext = useCallback((updatedTask) => {
-        setCurrentProject(prev => {
-            if (!prev) return null;
-            const newTasks = prev.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
-            return { ...prev, tasks: newTasks };
-        });
+        setCurrentProject(prev => { if (!prev) return null; const newTasks = prev.tasks.map(t => t.id === updatedTask.id ? updatedTask : t); return { ...prev, tasks: newTasks }; });
     }, []);
 
     const deleteBoard = useCallback(async (projectUrl, boardId) => {
         if (!firebaseUser) throw new Error("Authentication required");
         const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/boards/${boardId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.status === 204) {
-            setCurrentProject(prev => {
-                if (!prev) return null;
-                const newBoards = prev.boards.filter(b => b.id !== boardId);
-                const newTasks = prev.tasks.filter(t => t.board_id !== boardId);
-                return { ...prev, boards: newBoards, tasks: newTasks };
-            });
-            return;
-        }
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to delete board.");
+        const res = await fetch(`/api/projects/${projectUrl}/boards/${boardId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 204) { setCurrentProject(prev => { if (!prev) return null; const newBoards = prev.boards.filter(b => b.id !== boardId); const newTasks = prev.tasks.filter(t => t.board_id !== boardId); return { ...prev, boards: newBoards, tasks: newTasks }; }); return; }
+        const errorData = await res.json(); throw new Error(errorData.error || "Failed to delete board.");
     }, [firebaseUser]);
 
     const updateBoard = useCallback(async (projectUrl, boardId, name) => {
         if (!firebaseUser) throw new Error("Authentication required");
         const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/boards/${boardId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ name }),
-        });
-        const updatedBoard = await res.json();
-        if (!res.ok) throw new Error(updatedBoard.error || "Failed to update board.");
-        setCurrentProject(prev => {
-            if (!prev) return null;
-            const newBoards = prev.boards.map(b => b.id === boardId ? { ...b, ...updatedBoard } : b);
-            return { ...prev, boards: newBoards };
-        });
-        return updatedBoard;
+        const res = await fetch(`/api/projects/${projectUrl}/boards/${boardId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name }) });
+        const updatedBoard = await res.json(); if (!res.ok) throw new Error(updatedBoard.error || "Failed to update board.");
+        setCurrentProject(prev => { if (!prev) return null; const newBoards = prev.boards.map(b => b.id === boardId ? { ...b, ...updatedBoard } : b); return { ...prev, boards: newBoards }; }); return updatedBoard;
     }, [firebaseUser]);
 
     const removeUserFromProject = useCallback(async (projectUrl, memberId) => {
         if (!firebaseUser) throw new Error("Authentication required");
         const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/members/${memberId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.status === 204) {
-            setCurrentProject(prev => {
-                if (!prev) return null;
-                const newMembers = prev.members.filter(m => m.id !== memberId);
-                return { ...prev, members: newMembers };
-            });
-            return;
-        }
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to remove member.");
+        const res = await fetch(`/api/projects/${projectUrl}/members/${memberId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 204) { setCurrentProject(prev => { if (!prev) return null; const newMembers = prev.members.filter(m => m.id !== memberId); return { ...prev, members: newMembers }; }); return; }
+        const errorData = await res.json(); throw new Error(errorData.error || "Failed to remove member.");
     }, [firebaseUser]);
     
     const updateMemberRole = useCallback(async (projectUrl, memberId, newRole) => {
         if (!firebaseUser) throw new Error("Authentication required");
         const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/members/${memberId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ role: newRole }),
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || "Failed to update member role.");
-        }
-
-        if (newRole === 'owner') {
-            await getProjectDetails(projectUrl); 
-        } else {
-            setCurrentProject(prev => {
-                if (!prev) return null;
-                const newMembers = prev.members.map(m =>
-                    m.id === memberId ? { ...m, role: newRole } : m
-                );
-                return { ...prev, members: newMembers };
-            });
-        }
+        const res = await fetch(`/api/projects/${projectUrl}/members/${memberId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ role: newRole }) });
+        if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.error || "Failed to update member role."); }
+        if (newRole === 'owner') { await getProjectDetails(projectUrl); } else { setCurrentProject(prev => { if (!prev) return null; const newMembers = prev.members.map(m => m.id === memberId ? { ...m, role: newRole } : m); return { ...prev, members: newMembers }; }); }
     }, [firebaseUser, getProjectDetails]);
 
     const getProjectSettings = useCallback(async (projectUrl) => {
         if (!firebaseUser) { setSettingsError("Authentication required."); return; }
-        setIsSettingsLoading(true);
-        setSettingsError(null);
+        setIsSettingsLoading(true); setSettingsError(null);
         try {
-            const token = await firebaseUser.getIdToken();
-            const res = await fetch(`/api/projects/${projectUrl}/settings`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to fetch project settings.');
-            setProjectSettings(data);
-        } catch (err) {
-            setSettingsError(err.message);
-        } finally {
-            setIsSettingsLoading(false);
-        }
+            const token = await firebaseUser.getIdToken(); const res = await fetch(`/api/projects/${projectUrl}/settings`, { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Failed to fetch project settings.'); setProjectSettings(data);
+        } catch (err) { setSettingsError(err.message); } finally { setIsSettingsLoading(false); }
     }, [firebaseUser]);
 
     const updateProjectSettings = useCallback(async (projectUrl, newSettings) => {
         if (!firebaseUser) throw new Error('Authentication required');
-        const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/settings`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify(newSettings)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to update settings.');
-        
-        setProjectSettings(data);
-        return data;
+        const token = await firebaseUser.getIdToken(); const res = await fetch(`/api/projects/${projectUrl}/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(newSettings) });
+        const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Failed to update settings.'); setProjectSettings(data); return data;
+    }, [firebaseUser]);
+    
+    // --- THIS IS THE FIX ---
+    const getDashboardSummary = useCallback(async (projectUrl) => {
+        if (!firebaseUser) { setSummaryError("Authentication required."); return; }
+        setIsSummaryLoading(true); setSummaryError(null);
+        try {
+            const token = await firebaseUser.getIdToken();
+            const res = await fetch(`/api/projects/${projectUrl}/dashboard/summary`, { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch dashboard summary.');
+            setDashboardSummary(data);
+        } catch (err) { setSummaryError(err.message); }
+        finally { setIsSummaryLoading(false); }
     }, [firebaseUser]);
 
-    // --- THIS IS THE FIX ---
-    const value = useMemo(() => ({
-        projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate,
-        currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails,
-        deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard,
-        removeUserFromProject, updateMemberRole,
-        projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings
-    }),
-        [
-            // State values
-            projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject,
-            loadingDetails, errorDetails, projectSettings, isSettingsLoading, settingsError,
-            
-            // Callback functions
-            // By adding the functions here, useMemo will re-calculate the value object
-            // whenever a function is re-created (e.g., when firebaseUser changes),
-            // thus providing the fresh function to all consumers.
-            createProject, fetchUserProjects, getProjectDetails, deleteTask, createTask, 
-            updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, 
-            updateMemberRole, getProjectSettings, updateProjectSettings
-        ]);
+    const getActionItems = useCallback(async (projectUrl) => {
+        if (!firebaseUser) { setActionItemsError("Authentication required."); return; }
+        setIsActionItemsLoading(true); setActionItemsError(null);
+        try {
+            const token = await firebaseUser.getIdToken();
+            const res = await fetch(`/api/projects/${projectUrl}/dashboard/action-items`, { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch action items.');
+            setActionItems(data);
+        } catch (err) { setActionItemsError(err.message); }
+        finally { setIsActionItemsLoading(false); }
+    }, [firebaseUser]);
+
+    const getActivityFeed = useCallback(async (projectUrl) => {
+        if (!firebaseUser) { setActivityError("Authentication required."); return; }
+        setIsActivityLoading(true);
+        setActivityError(null);
+        try {
+            const token = await firebaseUser.getIdToken();
+            const res = await fetch(`/api/projects/${projectUrl}/dashboard/activity`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch activity feed.');
+            setActivityFeed(data);
+        } catch (err) {
+            setActivityError(err.message);
+        } finally {
+            setIsActivityLoading(false);
+        }
+    }, [firebaseUser]);
     // ----------------------
 
-    return (
-        <ProjectContext.Provider value={value}>
-            {children}
-        </ProjectContext.Provider>
-    );
+    const value = useMemo(() => ({
+        projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, updateMemberRole, projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings, dashboardSummary, isSummaryLoading, summaryError, getDashboardSummary,
+        actionItems, isActionItemsLoading, actionItemsError, getActionItems,
+        activityFeed, isActivityLoading, activityError, getActivityFeed
+    }),
+    [
+        // State
+        projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, projectSettings, isSettingsLoading, settingsError, dashboardSummary, isSummaryLoading, summaryError, actionItems, isActionItemsLoading, actionItemsError, activityFeed, isActivityLoading, activityError,
+        // Functions
+        createProject, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, 
+        updateMemberRole, getProjectSettings, updateProjectSettings, getDashboardSummary, getActionItems, getActivityFeed
+    ]);
+
+    return ( <ProjectContext.Provider value={value}> {children} </ProjectContext.Provider> );
 };
 
-export const useProjects = () => {
-    const ctx = useContext(ProjectContext);
-    if (!ctx) throw new Error('useProjects must be used within a ProjectProvider');
-    return ctx;
-};
+export const useProjects = () => { const ctx = useContext(ProjectContext); if (!ctx) throw new Error('useProjects must be used within a ProjectProvider'); return ctx; };
