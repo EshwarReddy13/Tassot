@@ -36,10 +36,10 @@ router.use(requireAuth);
 // === Project Routes ===
 router.post('/', createProjectController);
 router.get('/', getProjectsController);
-router.put('/order', updateProjectOrderController);
 router.get('/:projectUrl', getProjectDetailsController);
 router.put('/:projectUrl', requireProjectRole(['owner']), editProjectController);
 router.delete('/:projectUrl', requireProjectRole(['owner']), deleteProjectController);
+router.put('/order', updateProjectOrderController);
 router.put('/:projectUrl/pin', pinProjectController);
 
 
