@@ -4,6 +4,8 @@ import { getProjectsController } from '../../controllers/projects/getProjectsCon
 import { getProjectDetailsController } from '../../controllers/projects/getProjectDetailsController.js';
 import { deleteProjectController } from '../../controllers/projects/deleteProjectController.js';
 import { editProjectController } from '../../controllers/projects/editProjectController.js';
+import { pinProjectController } from '../../controllers/projects/pinProjectController.js';
+import { updateProjectOrderController } from '../../controllers/projects/updateProjectOrderController.js';
 
 import { createBoardController } from '../../controllers/projects/boards/createBoardController.js';
 import { deleteBoardController } from '../../controllers/projects/boards/deleteBoardController.js';
@@ -34,9 +36,11 @@ router.use(requireAuth);
 // === Project Routes ===
 router.post('/', createProjectController);
 router.get('/', getProjectsController);
+router.put('/order', updateProjectOrderController);
 router.get('/:projectUrl', getProjectDetailsController);
 router.put('/:projectUrl', requireProjectRole(['owner']), editProjectController);
 router.delete('/:projectUrl', requireProjectRole(['owner']), deleteProjectController);
+router.put('/:projectUrl/pin', pinProjectController);
 
 
 // === Board Routes ===

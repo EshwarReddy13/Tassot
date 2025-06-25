@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext.jsx';
 import { useProjects } from '../../contexts/ProjectContext.jsx';
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi';
+import ProjectCard from './widgets/ProjectCard.jsx';
+import DraggableProjectGrid from './widgets/DraggableProjectGrid.jsx';
 import toast from 'react-hot-toast'; // Used for better user feedback
 
 const ProjectsPage = () => {
@@ -13,12 +14,16 @@ const ProjectsPage = () => {
     projects,
     fetchUserProjects,
     loadingFetch: projectsLoading,
-    errorFetch: projectsError
+    errorFetch: projectsError,
+    pinProject,
+    updateProjectOrder
   } = useProjects();
 
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [formData, setFormData] = useState({ name: '', key: '' });
+  const [pinningProject, setPinningProject] = useState(null);
+  const [reorderingProjects, setReorderingProjects] = useState(false);
   
   // No longer needed, as we'll use react-hot-toast for feedback
   // const [modalError, setModalError] = useState('');
@@ -57,6 +62,34 @@ const ProjectsPage = () => {
     setDeleting(project);
   };
   // --- END OF FIX ---
+
+  const handlePinToggle = async (projectUrl) => {
+    if (pinningProject) return; // Prevent multiple simultaneous pin operations
+    
+    setPinningProject(projectUrl);
+    try {
+      const result = await pinProject(projectUrl);
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(error.message || 'Failed to pin/unpin project');
+    } finally {
+      setPinningProject(null);
+    }
+  };
+
+  const handleReorder = async (projectOrders) => {
+    if (reorderingProjects) return; // Prevent multiple simultaneous reorder operations
+    
+    setReorderingProjects(true);
+    try {
+      const result = await updateProjectOrder(projectOrders);
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(error.message || 'Failed to reorder projects');
+    } finally {
+      setReorderingProjects(false);
+    }
+  };
 
   const saveEdit = async () => {
     try {
@@ -109,6 +142,10 @@ const ProjectsPage = () => {
   const isLoading = userLoading || projectsLoading;
   const displayError = userError || projectsError;
 
+  // Separate pinned and unpinned projects
+  const pinnedProjects = projects.filter(project => project.isPinned);
+  const unpinnedProjects = projects.filter(project => !project.isPinned);
+
   return (
     <div className="min-h-screen bg-[#292830]">
       <main className="ml-0 md:ml-[4rem] mr-4 pt-6 pb-4 px-4 sm:px-6">
@@ -139,32 +176,55 @@ const ProjectsPage = () => {
 
         <AnimatePresence>
           {!isLoading && !displayError && projects.length > 0 && (
-            <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-              {projects.map((project, idx) => (
-                <motion.div key={project.id} className="relative bg-[#17171b] rounded-lg p-4 group" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ delay: idx * 0.05 }}>
-                  <div className="cursor-pointer" onClick={() => navigate(`/projects/${project.project_url ?? project.projectUrl}`)}>
-                    <p className="text-xl text-white font-semibold mb-2 truncate group-hover:text-accent-primary transition-colors" title={project.project_name ?? project.projectName}>
-                      {project.project_name ?? project.projectName}
-                    </p>
-                    <p className="text-gray-400 text-sm font-mono mb-2">
-                      KEY: {project.project_key ?? project.projectKey}
-                    </p>
-                    <p className="text-gray-500 text-sm">
-                      Created:{' '}{new Date(project.created_at ?? project.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  
-                  <div className="absolute top-2 right-2 flex space-x-2">
-                    <button onClick={() => handleEditClick(project)} aria-label="Edit project">
-                      <HiOutlinePencil className="w-5 h-5 text-gray-400 hover:text-[#9674da] transition-colors" />
-                    </button>
-                    <button onClick={() => handleDeleteClick(project)} aria-label="Delete project">
-                      <HiOutlineTrash className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
-                    </button>
+            <div className="space-y-8">
+              {/* Pinned Projects Section */}
+              {pinnedProjects.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  transition={{ duration: 0.5 }}
+                >
+                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <span className="mr-2">📌</span>
+                    Pinned Projects
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {pinnedProjects.map((project, idx) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        index={idx}
+                        onEdit={handleEditClick}
+                        onDelete={handleDeleteClick}
+                        onPinToggle={handlePinToggle}
+                        onNavigate={navigate}
+                        isPinning={pinningProject === (project.projectUrl ?? project.project_url)}
+                      />
+                    ))}
                   </div>
                 </motion.div>
-              ))}
-            </motion.div>
+              )}
+
+              {/* All Projects Section */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                {pinnedProjects.length > 0 && (
+                  <h2 className="text-lg font-semibold text-white mb-4">All Projects</h2>
+                )}
+                <DraggableProjectGrid
+                  projects={unpinnedProjects}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteClick}
+                  onPinToggle={handlePinToggle}
+                  onNavigate={navigate}
+                  pinningProject={pinningProject}
+                  onReorder={handleReorder}
+                />
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 

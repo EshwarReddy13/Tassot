@@ -218,17 +218,61 @@ export const ProjectProvider = ({ children }) => {
         }
     }, [firebaseUser]);
 
+    // New functions for pinning and reordering
+    const pinProject = useCallback(async (projectUrl) => {
+        if (!firebaseUser) throw new Error('Authentication required');
+        try {
+            const token = await firebaseUser.getIdToken();
+            const res = await fetch(`/api/projects/${projectUrl}/pin`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to pin project');
+            
+            // Update the projects list to reflect the new pin status
+            await fetchUserProjects();
+            return data;
+        } catch (err) {
+            throw err;
+        }
+    }, [firebaseUser, fetchUserProjects]);
+
+    const updateProjectOrder = useCallback(async (projectOrders) => {
+        if (!firebaseUser) throw new Error('Authentication required');
+        try {
+            const token = await firebaseUser.getIdToken();
+            const res = await fetch('/api/projects/order', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    Authorization: `Bearer ${token}` 
+                },
+                body: JSON.stringify({ projectOrders })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to update project order');
+            
+            // Update the projects list to reflect the new order
+            await fetchUserProjects();
+            return data;
+        } catch (err) {
+            throw err;
+        }
+    }, [firebaseUser, fetchUserProjects]);
+
     const value = useMemo(() => ({
         projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, updateMemberRole, projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings, updateProjectDetails, dashboardSummary, isSummaryLoading, summaryError, getDashboardSummary,
         actionItems, isActionItemsLoading, actionItemsError, getActionItems,
-        activityFeed, isActivityLoading, activityError, getActivityFeed
+        activityFeed, isActivityLoading, activityError, getActivityFeed,
+        pinProject, updateProjectOrder
     }),
     [
         // State
         projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, projectSettings, isSettingsLoading, settingsError, dashboardSummary, isSummaryLoading, summaryError, actionItems, isActionItemsLoading, actionItemsError, activityFeed, isActivityLoading, activityError,
         // Functions
         createProject, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, 
-        updateMemberRole, getProjectSettings, updateProjectSettings, updateProjectDetails, getDashboardSummary, getActionItems, getActivityFeed
+        updateMemberRole, getProjectSettings, updateProjectSettings, updateProjectDetails, getDashboardSummary, getActionItems, getActivityFeed, pinProject, updateProjectOrder
     ]);
 
     return ( <ProjectContext.Provider value={value}> {children} </ProjectContext.Provider> );

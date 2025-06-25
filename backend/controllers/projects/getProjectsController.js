@@ -10,13 +10,15 @@ export const getProjectsController = async (req, res) => {
               p.project_key,
               p.project_name,
               p.owner_id,
-              p.created_at
+              p.created_at,
+              pu.is_pinned,
+              pu.sort_order
          FROM projects p
     INNER JOIN project_users pu
             ON pu.project_id = p.id
         WHERE pu.user_id = $1
           AND pu.project_id IS NOT NULL
-     ORDER BY p.created_at DESC`,
+     ORDER BY pu.is_pinned DESC, pu.sort_order ASC NULLS LAST, p.created_at DESC`,
       [userId]
     );
 
@@ -26,7 +28,9 @@ export const getProjectsController = async (req, res) => {
       projectKey:   r.project_key,
       projectName:  r.project_name,
       ownerId:      r.owner_id,
-      createdAt:    r.created_at
+      createdAt:    r.created_at,
+      isPinned:     r.is_pinned,
+      sortOrder:    r.sort_order
     }));
 
     res.json(projects);
