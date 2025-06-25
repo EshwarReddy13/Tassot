@@ -20,15 +20,14 @@
   --color-success: #34d399;
 }
 
-
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: #292830;
-  color: #ffffff;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 :focus-visible {
-  outline: 2px solid #9674da;
+  outline: 2px solid var(--color-accent-primary);
   outline-offset: 2px;
 }
 

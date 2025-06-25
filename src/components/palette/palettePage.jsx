@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { HiSun, HiMoon } from 'react-icons/hi';
 
 const PalettePage = () => {
   const [selectedColor, setSelectedColor] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Define all the colors from your CSS theme
-  const themeColors = {
+  const darkThemeColors = {
     backgrounds: {
       'Primary Background': '#292830',
       'Secondary Background': '#3a3a44', 
@@ -29,6 +31,33 @@ const PalettePage = () => {
     }
   };
 
+  const lightThemeColors = {
+    backgrounds: {
+      'Primary Background': '#f8fafc',
+      'Secondary Background': '#f1f5f9', 
+      'Card Background': '#ffffff',
+      'Dark Background': '#e2e8f0'
+    },
+    accents: {
+      'Primary Accent': '#7c3aed',
+      'Accent Hover': '#6d28d9'
+    },
+    text: {
+      'Primary Text': '#1e293b',
+      'Secondary Text': '#64748b',
+      'Placeholder Text': '#94a3b8'
+    },
+    status: {
+      'Error': '#ef4444',
+      'Warning': '#f59e0b',
+      'Info': '#3b82f6',
+      'Success': '#10b981'
+    }
+  };
+
+  const themeColors = isDarkMode ? darkThemeColors : lightThemeColors;
+  const currentTheme = isDarkMode ? 'Dark' : 'Light';
+
   const ColorSwatch = ({ name, color, category }) => (
     <motion.div
       className="relative group cursor-pointer"
@@ -41,21 +70,25 @@ const PalettePage = () => {
         style={{ backgroundColor: color }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-mono text-white drop-shadow-lg">
+          <span className={`text-xs font-mono drop-shadow-lg ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>
             {color}
           </span>
         </div>
       </div>
       <div className="mt-2 text-center">
-        <p className="text-sm font-medium text-white">{name}</p>
-        <p className="text-xs text-gray-400 font-mono">{color}</p>
+        <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{name}</p>
+        <p className={`text-xs font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{color}</p>
       </div>
     </motion.div>
   );
 
   const ColorCategory = ({ title, colors, category }) => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">
+      <h3 className={`text-lg font-semibold border-b pb-2 ${
+        isDarkMode ? 'text-white border-gray-700' : 'text-gray-900 border-gray-300'
+      }`}>
         {title}
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -71,48 +104,79 @@ const PalettePage = () => {
     </div>
   );
 
-  const PreviewCard = () => (
-    <div className="bg-[#17171b] rounded-lg p-6 border border-gray-700">
-      <h3 className="text-lg font-semibold text-white mb-4">Theme Preview</h3>
-      
-      {/* Card Preview */}
-      <div className="bg-[#17171b] rounded-lg p-4 border border-gray-700 mb-4">
-        <h4 className="text-white font-semibold mb-2">Sample Card</h4>
-        <p className="text-gray-400 text-sm mb-3">This is how cards look with your current theme</p>
-        <div className="flex space-x-2">
-          <button className="px-3 py-1 bg-[#9674da] hover:bg-[#7e5cb7] text-white rounded text-sm transition-colors">
-            Primary Button
-          </button>
-          <button className="px-3 py-1 bg-[#3a3a44] hover:bg-[#4a4a54] text-white rounded text-sm transition-colors">
-            Secondary
-          </button>
-        </div>
-      </div>
+  const PreviewCard = () => {
+    const bgColor = isDarkMode ? '#17171b' : '#ffffff';
+    const borderColor = isDarkMode ? '#374151' : '#e5e7eb';
+    const textColor = isDarkMode ? '#ffffff' : '#1e293b';
+    const secondaryTextColor = isDarkMode ? '#a0a0a0' : '#64748b';
+    const primaryButtonBg = isDarkMode ? '#9674da' : '#7c3aed';
+    const primaryButtonHover = isDarkMode ? '#7e5cb7' : '#6d28d9';
+    const secondaryButtonBg = isDarkMode ? '#3a3a44' : '#f1f5f9';
+    const secondaryButtonHover = isDarkMode ? '#4a4a54' : '#e2e8f0';
 
-      {/* Text Preview */}
-      <div className="space-y-2">
-        <p className="text-white">Primary text color</p>
-        <p className="text-gray-400">Secondary text color</p>
-        <p className="text-gray-500">Placeholder text color</p>
-      </div>
+    return (
+      <div className={`rounded-lg p-6 border transition-colors ${
+        isDarkMode ? 'bg-[#17171b] border-gray-700' : 'bg-white border-gray-300'
+      }`}>
+        <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          {currentTheme} Theme Preview
+        </h3>
+        
+        {/* Card Preview */}
+        <div className={`rounded-lg p-4 border mb-4 transition-colors`}
+             style={{ backgroundColor: bgColor, borderColor: borderColor }}>
+          <h4 className={`font-semibold mb-2`} style={{ color: textColor }}>Sample Card</h4>
+          <p className={`text-sm mb-3`} style={{ color: secondaryTextColor }}>
+            This is how cards look with your {isDarkMode ? 'dark' : 'light'} theme
+          </p>
+          <div className="flex space-x-2">
+            <button 
+              className="px-3 py-1 text-white rounded text-sm transition-colors"
+              style={{ 
+                backgroundColor: primaryButtonBg,
+                ':hover': { backgroundColor: primaryButtonHover }
+              }}
+            >
+              Primary Button
+            </button>
+            <button 
+              className="px-3 py-1 rounded text-sm transition-colors"
+              style={{ 
+                backgroundColor: secondaryButtonBg,
+                color: textColor,
+                ':hover': { backgroundColor: secondaryButtonHover }
+              }}
+            >
+              Secondary
+            </button>
+          </div>
+        </div>
 
-      {/* Status Colors */}
-      <div className="mt-4 space-y-2">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-[#34d399]"></div>
-          <span className="text-[#34d399] text-sm">Success message</span>
+        {/* Text Preview */}
+        <div className="space-y-2">
+          <p style={{ color: textColor }}>Primary text color</p>
+          <p style={{ color: secondaryTextColor }}>Secondary text color</p>
+          <p style={{ color: isDarkMode ? '#6b7280' : '#94a3b8' }}>Placeholder text color</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-[#f87171]"></div>
-          <span className="text-[#f87171] text-sm">Error message</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-[#3b82f6]"></div>
-          <span className="text-[#3b82f6] text-sm">Info message</span>
+
+        {/* Status Colors */}
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: isDarkMode ? '#34d399' : '#10b981' }}></div>
+            <span className="text-sm" style={{ color: isDarkMode ? '#34d399' : '#10b981' }}>Success message</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: isDarkMode ? '#f87171' : '#ef4444' }}></div>
+            <span className="text-sm" style={{ color: isDarkMode ? '#f87171' : '#ef4444' }}>Error message</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }}></div>
+            <span className="text-sm" style={{ color: '#3b82f6' }}>Info message</span>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const ColorDetails = () => {
     if (!selectedColor) return null;
@@ -121,31 +185,38 @@ const PalettePage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#17171b] rounded-lg p-6 border border-gray-700"
+        className={`rounded-lg p-6 border transition-colors ${
+          isDarkMode ? 'bg-[#17171b] border-gray-700' : 'bg-white border-gray-300'
+        }`}
       >
-        <h3 className="text-lg font-semibold text-white mb-4">Color Details</h3>
+        <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Color Details
+        </h3>
         
         <div className="space-y-4">
           <div>
-            <p className="text-gray-400 text-sm">Name</p>
-            <p className="text-white font-medium">{selectedColor.name}</p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Name</p>
+            <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{selectedColor.name}</p>
           </div>
           
           <div>
-            <p className="text-gray-400 text-sm">Category</p>
-            <p className="text-white font-medium capitalize">{selectedColor.category}</p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Category</p>
+            <p className={`font-medium capitalize ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{selectedColor.category}</p>
           </div>
           
           <div>
-            <p className="text-gray-400 text-sm">Hex Value</p>
-            <p className="text-white font-mono">{selectedColor.color}</p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Hex Value</p>
+            <p className={`font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{selectedColor.color}</p>
           </div>
           
           <div>
-            <p className="text-gray-400 text-sm">Preview</p>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Preview</p>
             <div 
-              className="w-full h-16 rounded-lg border border-gray-700 mt-2"
-              style={{ backgroundColor: selectedColor.color }}
+              className="w-full h-16 rounded-lg border mt-2"
+              style={{ 
+                backgroundColor: selectedColor.color,
+                borderColor: isDarkMode ? '#374151' : '#e5e7eb'
+              }}
             ></div>
           </div>
         </div>
@@ -153,13 +224,49 @@ const PalettePage = () => {
     );
   };
 
+  const ThemeToggle = () => (
+    <motion.button
+      onClick={() => setIsDarkMode(!isDarkMode)}
+      className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-[#17171b] border-gray-700 text-white hover:bg-[#1f1f23]' 
+          : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
+      }`}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      {isDarkMode ? (
+        <>
+          <HiSun className="w-5 h-5" />
+          <span>Switch to Light Mode</span>
+        </>
+      ) : (
+        <>
+          <HiMoon className="w-5 h-5" />
+          <span>Switch to Dark Mode</span>
+        </>
+      )}
+    </motion.button>
+  );
+
   return (
-    <div className="min-h-screen bg-[#292830] p-6">
+    <div className={`min-h-screen p-6 transition-colors ${
+      isDarkMode ? 'bg-[#292830]' : 'bg-[#f8fafc]'
+    }`}>
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-white">Theme Palette</h1>
-          <p className="text-gray-400">Explore and visualize your current theme colors</p>
+          <div className="space-y-1">
+            <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Theme Palette
+            </h1>
+            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+              Explore and visualize your {isDarkMode ? 'dark' : 'light'} theme colors
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center">
+            <ThemeToggle />
         </div>
 
         {/* Main Content */}
@@ -199,11 +306,19 @@ const PalettePage = () => {
         </div>
 
         {/* CSS Variables Section */}
-        <div className="bg-[#17171b] rounded-lg p-6 border border-gray-700">
-          <h3 className="text-lg font-semibold text-white mb-4">CSS Variables</h3>
-          <div className="bg-[#292830] rounded-lg p-4 overflow-x-auto">
-            <pre className="text-sm text-gray-300 font-mono">
-{`@theme {
+        <div className={`rounded-lg p-6 border transition-colors ${
+          isDarkMode ? 'bg-[#17171b] border-gray-700' : 'bg-white border-gray-300'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            CSS Variables ({currentTheme} Mode)
+          </h3>
+          <div className={`rounded-lg p-4 overflow-x-auto ${
+            isDarkMode ? 'bg-[#292830]' : 'bg-gray-100'
+          }`}>
+            <pre className={`text-sm font-mono ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+{isDarkMode ? `@theme {
   --color-bg-primary: #292830;
   --color-bg-secondary: #3a3a44;
   --color-bg-card: #17171b;
@@ -220,6 +335,23 @@ const PalettePage = () => {
   --color-warning: #f87171;
   --color-info: #3b82f6;
   --color-success: #34d399;
+}` : `@theme {
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-dark: #e2e8f0;
+  
+  --color-accent-primary: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-placeholder: #94a3b8;
+  
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+  --color-success: #10b981;
 }`}
             </pre>
           </div>
