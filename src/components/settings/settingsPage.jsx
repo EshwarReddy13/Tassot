@@ -2,13 +2,16 @@ import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext.jsx';
+import { useTheme } from '../../contexts/ThemeContext.jsx';
 import { auth, storage } from '../../firebase.js';
 import { signOut } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { HiSun, HiMoon } from 'react-icons/hi';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { userData, updateUser, loading: contextLoading, updateUserError } = useUser();
+  const { isDarkMode, toggleTheme } = useTheme();
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({ firstName: '', lastName: '' });
@@ -139,6 +142,58 @@ const SettingsPage = () => {
 
         {userData && (
           <div className="max-w-xl mx-auto space-y-8">
+            {/* --- Theme Settings Section --- */}
+            <motion.div className="p-4 rounded-lg bg-bg-secondary" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <h2 className="mb-4 text-xl font-semibold text-text-primary">Theme Settings</h2>
+              
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  {isDarkMode ? (
+                    <HiMoon className="w-6 h-6 text-accent-primary" />
+                  ) : (
+                    <HiSun className="w-6 h-6 text-accent-primary" />
+                  )}
+                  <div>
+                    <p className="text-text-primary font-medium">
+                      {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                    </p>
+                    <p className="text-text-secondary text-sm">
+                      {isDarkMode ? 'Dark theme for better visibility in low light' : 'Light theme for better readability'}
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={toggleTheme}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 ${
+                    isDarkMode ? 'bg-accent-primary' : 'bg-gray-300'
+                  }`}
+                  role="switch"
+                  aria-checked={isDarkMode}
+                  aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isDarkMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Theme Preview */}
+              <div className="p-3 rounded-lg bg-bg-card border border-bg-dark">
+                <p className="text-text-secondary text-sm mb-2">Preview:</p>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-accent-primary"></div>
+                  <span className="text-text-primary text-sm">Sample text with current theme</span>
+                </div>
+                <div className="flex items-center space-x-2 mt-1">
+                  <div className="w-3 h-3 rounded-full bg-success"></div>
+                  <span className="text-success text-sm">Success message</span>
+                </div>
+              </div>
+            </motion.div>
+
             {/* --- Profile Picture Section --- */}
             <motion.div className="p-4 rounded-lg bg-bg-secondary" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="mb-4 text-xl font-semibold text-text-primary">Profile Picture</h2>
