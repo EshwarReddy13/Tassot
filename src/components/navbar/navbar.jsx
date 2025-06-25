@@ -6,8 +6,8 @@ import clsx from 'clsx'; // --- [THIS IS THE FIX] The missing import is now re-a
 
 // Define main navigation icons
 const icons = [
-    { id: 'logo', label: 'Logo', path: '/dashboard', url: '/favicon.svg' },
-    { id: 'home', label: 'Home', path: '/dashboard', url: 'https://api.iconify.design/mdi:home.svg' },
+    { id: 'logo', label: 'Logo', path: '/home', url: '/favicon.svg' },
+    { id: 'home', label: 'Home', path: '/home', url: 'https://api.iconify.design/mdi:home.svg' },
     { id: 'projects', label: 'Projects', path: '/projects', url: 'https://api.iconify.design/mdi:folder.svg' },
     { id: 'settings', label: 'Settings', path: '/settings', url: 'https://api.iconify.design/mdi:cog.svg' },
 ];

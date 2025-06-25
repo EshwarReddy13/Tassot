@@ -53,3 +53,7 @@ apphosting.emulator.yaml
 apphosting.yaml
 firebase-debug.log
 firebase-debug.*.log
+
+#cursor
+.cursor
+.cursor/

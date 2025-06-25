@@ -39,7 +39,7 @@ export const createProjectController = async (req, res) => {
   }
   const ownerId = req.user.id;
   
-  const { projectName, projectKey, persona, inviteEmails } = req.body;
+  const { projectName, projectKey, persona, inviteEmails, description, projectType, currentPhase, teamSize, complexityLevel } = req.body;
 
   if (!projectName?.trim()) {
     return res.status(400).json({ error: 'Project name is required.' });
@@ -54,9 +54,20 @@ export const createProjectController = async (req, res) => {
 
     const projectUrl = `${projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${nanoid(8)}`;
 
+    // Merge project details into settings
+    const projectSettings = {
+      ...balancedPresetSettings,
+      project_details: {
+        project_type: projectType,
+        current_phase: currentPhase,
+        team_size: parseInt(teamSize),
+        complexity_level: complexityLevel
+      }
+    };
+
     const insertProjectSQL = `
-      INSERT INTO projects (project_url, project_key, project_name, owner_id, persona, settings)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO projects (project_url, project_key, project_name, owner_id, persona, settings, description)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *;
     `;
 
@@ -66,7 +77,8 @@ export const createProjectController = async (req, res) => {
       projectName.trim(),
       ownerId,
       persona || 'project manager',
-      balancedPresetSettings
+      projectSettings,
+      description?.trim() || null
     ]);
     const newProject = rows[0];
 

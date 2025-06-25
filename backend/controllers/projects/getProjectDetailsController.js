@@ -16,6 +16,7 @@ export const getProjectDetailsController = async (req, res) => {
                 p.project_key,
                 p.project_name,
                 p.owner_id,
+                p.description,
                 (
                     SELECT json_agg(b_agg)
                     FROM (
@@ -81,6 +82,7 @@ export const getProjectDetailsController = async (req, res) => {
                 project_key: projectData.project_key,
                 project_name: projectData.project_name,
                 owner_id: projectData.owner_id,
+                description: projectData.description,
             },
             boards: projectData.boards || [],
             tasks: projectData.tasks || [],
