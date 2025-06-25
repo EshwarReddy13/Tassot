@@ -4,7 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import TaskCard from './taskCard.jsx';
 import clsx from 'clsx';
-import { HiDotsVertical, HiPencil, HiTrash } from 'react-icons/hi';
+import { HiDotsVertical, HiPencil, HiTrash, HiSparkles } from 'react-icons/hi';
 
 const KanbanColumn = memo(({ 
     column, 
@@ -16,7 +16,8 @@ const KanbanColumn = memo(({
     currentUserRole, // <-- RECEIVES THE ROLE INSTEAD OF isOwner
     onDeleteBoard,
     onUpdateBoardName,
-    onShowAddTaskModal
+    onShowAddTaskModal,
+    onShowAITaskModal
 }) => {
     const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
@@ -166,16 +167,29 @@ const KanbanColumn = memo(({
                 </div>
             </SortableContext>
             
-            <div className="mt-3">
-              {!isDragging && (
-                  <motion.button
-                      onClick={() => onShowAddTaskModal(column.id)}
-                      className="w-full text-left p-2 rounded-md text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-colors"
-                      whileTap={{ scale: 0.98 }}
-                      aria-label={`Add a task to ${column.name}`}
-                  >
-                      + Add a task
-                  </motion.button>
+            <div className="mt-3 space-y-2">
+              {!isDragging && canManageBoards && (
+                  <>
+                      <motion.button
+                          onClick={() => onShowAddTaskModal(column.id)}
+                          className="w-full text-left p-2 rounded-md text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-colors"
+                          whileTap={{ scale: 0.98 }}
+                          aria-label={`Add a task to ${column.name}`}
+                      >
+                          + Add a task
+                      </motion.button>
+                      <motion.button
+                          onClick={() => onShowAITaskModal(column.id)}
+                          className="w-full text-left p-2 rounded-md text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-colors"
+                          whileTap={{ scale: 0.98 }}
+                          aria-label={`Create task with AI in ${column.name}`}
+                      >
+                          <div className="flex items-center gap-2">
+                              <HiSparkles className="w-4 h-4" />
+                              <span>Create with AI</span>
+                          </div>
+                      </motion.button>
+                  </>
               )}
             </div>
         </motion.div>

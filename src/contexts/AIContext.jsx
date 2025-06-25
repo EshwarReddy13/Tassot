@@ -46,12 +46,63 @@ export const AIProvider = ({ children }) => {
         return callApi('/api/ai/tasks/task-description', { text, taskName, projectUrl });
     }, [callApi]);
 
+    // NEW: AI-powered task creation with project context
+    const createTaskWithAI = useCallback(async (userDescription, projectUrl, boardName, isFinalCreation = false) => {
+        if (!firebaseUser) throw new Error('Authentication required.');
+        if (!userDescription || !userDescription.trim()) throw new Error('Task description is required.');
+        if (!projectUrl) throw new Error('Project URL is required for AI context.');
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const token = await firebaseUser.getIdToken();
+            
+            // Get the board ID from the board name by making a request to get project details
+            const projectRes = await fetch(`/api/projects/${projectUrl}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (!projectRes.ok) {
+                throw new Error('Failed to fetch project details.');
+            }
+            
+            const projectData = await projectRes.json();
+            const board = projectData.boards?.find(b => b.name === boardName);
+            
+            if (!board) {
+                throw new Error('Board not found.');
+            }
+
+            const res = await fetch(`/api/ai/tasks/create/${projectUrl}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    userDescription,
+                    boardId: board.id,
+                    isFinalCreation
+                }),
+            });
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to create task with AI.');
+            
+            return data;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [firebaseUser]);
+
     const value = useMemo(() => ({
         enhanceTaskName,
         enhanceTaskDescription,
+        createTaskWithAI,
         isAIContextLoading: isLoading,
         aiContextError: error,
-    }), [isLoading, error, enhanceTaskName, enhanceTaskDescription]);
+    }), [isLoading, error, enhanceTaskName, enhanceTaskDescription, createTaskWithAI]);
 
     return (
         <AIContext.Provider value={value}>

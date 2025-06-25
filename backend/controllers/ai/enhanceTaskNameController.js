@@ -26,7 +26,7 @@ export const enhanceTaskNameController = async (req, res) => {
     try {
         // --- NEW: Fetch project-specific AI settings and persona ---
         const projectResult = await pool.query(
-            'SELECT settings, persona FROM projects WHERE project_url = $1',
+            'SELECT settings, persona, description FROM projects WHERE project_url = $1',
             [projectUrl]
         );
 
@@ -34,14 +34,22 @@ export const enhanceTaskNameController = async (req, res) => {
             return res.status(404).json({ error: 'Project not found.' });
         }
         
-        const { settings, persona } = projectResult.rows[0];
+        const { settings, persona, description } = projectResult.rows[0];
         const prefs = settings.ai_preferences;
+        const projectDetails = settings.project_details || {};
         // --- End of new database logic ---
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite-preview-06-17" });
 
-        // --- UPDATED: Dynamic prompt construction ---
+        // --- UPDATED: Dynamic prompt construction with project context ---
         const prompt = `You are an expert ${persona}. Your task is to refine a user-provided task name to make it clearer and more effective.
+
+Project Context:
+- Project Description: ${description || 'No description provided'}
+- Project Type: ${projectDetails.project_type || 'General'}
+- Current Phase: ${projectDetails.current_phase || 'Development'}
+- Team Size: ${projectDetails.team_size || 'Small'}
+- Complexity Level: ${projectDetails.complexity_level || 'Medium'}
 
 The original task name is: "${text}"
 
@@ -55,6 +63,8 @@ Follow these rules precisely:
 - Verb Style: Start the name with an ${prefs.task_name.verb_style} verb.
 - Punctuation: Use ${prefs.task_name.punctuation_style}.
 - Additional Instructions: ${prefs.special_notes || 'None.'}
+
+Consider the project context when generating the task name to ensure it aligns with the project's goals and current phase.
 
 Your response MUST be ONLY the refined task name.
 DO NOT include any explanation, preamble, or quotation marks.`;

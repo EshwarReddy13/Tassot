@@ -3,9 +3,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
+import { useAI } from '../../../contexts/AIContext.jsx';
 import KanbanBoard from './kanbanBoard.jsx';
 import TaskDetailsModal from './taskDetails.jsx';
-import AddTaskModal from './addTaskModal.jsx'; 
+import AddTaskModal from './addTaskModal.jsx';
+import AITaskCreationModal from './AITaskCreationModal.jsx';
 import toast from 'react-hot-toast';
 
 const ProjectDetails = () => {
@@ -13,10 +15,15 @@ const ProjectDetails = () => {
     // Getting the current user's role from the context to pass to child components
     const { currentProject, loadingDetails, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard } = useProjects();
     const { firebaseUser, userData } = useUser();
+    const { createTaskWithAI } = useAI();
 
     const [newColumn, setNewColumn] = useState({ isAdding: false, name: '', error: '' });
     const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+    const [isAITaskModalOpen, setIsAITaskModalOpen] = useState(false);
     const [initialBoardIdForModal, setInitialBoardIdForModal] = useState(null);
+    const [isCreatingTask, setIsCreatingTask] = useState(false);
+    const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+    const [aiGeneratedData, setAiGeneratedData] = useState(null);
 
     const [selectedTask, setSelectedTask] = useState(null);
     const [taskCreator, setTaskCreator] = useState(null);
@@ -64,9 +71,20 @@ const ProjectDetails = () => {
     
     const handleOpenAddTaskModal = (boardId) => {
         setInitialBoardIdForModal(boardId);
+        setAiGeneratedData(null); // Clear any AI data
         setIsAddTaskModalOpen(true);
     };
+
+    const handleOpenAITaskModal = (boardId) => {
+        setInitialBoardIdForModal(boardId);
+        setIsAITaskModalOpen(true);
+    };
     
+    const handleCloseAddTaskModal = () => {
+        setIsAddTaskModalOpen(false);
+        setAiGeneratedData(null); // Clear AI data when modal is closed
+    };
+
     const handleModalCreateTask = async (taskPayload) => {
         if (!firebaseUser || !taskPayload.board_id) return;
         const boardIdForURL = taskPayload.board_id;
@@ -91,6 +109,37 @@ const ProjectDetails = () => {
                 error: (err) => err.message || 'Could not create task.',
             }
         );
+    };
+
+    const handleAITaskCreation = async (userDescription) => {
+        if (!firebaseUser || !initialBoardIdForModal) return;
+
+        try {
+            setIsGeneratingAI(true);
+
+            const boardName = columns.find(col => col.id === initialBoardIdForModal)?.name || 'Unknown Board';
+            
+            // Generate AI content (not final creation)
+            const result = await createTaskWithAI(userDescription, projectUrl, boardName, false);
+            
+            if (result.generated) {
+                // Store the generated data and open the AddTaskModal
+                setAiGeneratedData(result.generated);
+                setIsAITaskModalOpen(false);
+                
+                // Small delay to show success message before opening task modal
+                setTimeout(() => {
+                    setIsAddTaskModalOpen(true);
+                }, 500);
+            }
+            
+            setIsGeneratingAI(false);
+            return result;
+        } catch (err) {
+            console.error('AI task creation error:', err);
+            setIsGeneratingAI(false);
+            throw err;
+        }
     };
 
     const handleTaskClick = async (task) => {
@@ -208,6 +257,7 @@ const ProjectDetails = () => {
                     addColumnInputRef: addColumnInputRef,
                 }}
                 onShowAddTaskModal={handleOpenAddTaskModal}
+                onShowAITaskModal={handleOpenAITaskModal}
                 activeTask={activeTask}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
@@ -231,11 +281,18 @@ const ProjectDetails = () => {
             )}
             <AddTaskModal
                 isOpen={isAddTaskModalOpen}
-                onClose={() => setIsAddTaskModalOpen(false)}
+                onClose={handleCloseAddTaskModal}
                 onSubmit={handleModalCreateTask}
                 members={currentProject?.members || []}
                 boards={columns || []}
                 initialBoardId={initialBoardIdForModal}
+                prefillData={aiGeneratedData}
+            />
+            <AITaskCreationModal
+                isOpen={isAITaskModalOpen}
+                onClose={() => setIsAITaskModalOpen(false)}
+                onSubmit={handleAITaskCreation}
+                isGenerating={isGeneratingAI}
             />
         </div>
     );

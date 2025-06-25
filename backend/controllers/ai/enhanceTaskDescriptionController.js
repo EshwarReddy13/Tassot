@@ -25,7 +25,7 @@ export const enhanceTaskDescriptionController = async (req, res) => {
 
     try {
         const projectResult = await pool.query(
-            'SELECT settings, persona FROM projects WHERE project_url = $1',
+            'SELECT settings, persona, description FROM projects WHERE project_url = $1',
             [projectUrl]
         );
 
@@ -33,11 +33,12 @@ export const enhanceTaskDescriptionController = async (req, res) => {
             return res.status(404).json({ error: 'Project not found.' });
         }
         
-        const { settings, persona } = projectResult.rows[0];
+        const { settings, persona, description } = projectResult.rows[0];
         const prefs = settings.ai_preferences;
         const descPrefs = prefs.task_description;
+        const projectDetails = settings.project_details || {};
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite-preview-06-17" });
         
         // FIXED: The check now uses `match_general_settings`
         const toneStyleLogic = descPrefs.match_general_settings
@@ -47,6 +48,13 @@ export const enhanceTaskDescriptionController = async (req, res) => {
      Style: Use the specific description style: ${descPrefs.task_description_style}.`;
 
         const prompt = `You are an expert ${persona}. Your task is to generate a comprehensive task description based on a task name and a user's initial notes, following a set of formatting rules.
+
+Project Context:
+- Project Description: ${description || 'No description provided'}
+- Project Type: ${projectDetails.project_type || 'General'}
+- Current Phase: ${projectDetails.current_phase || 'Development'}
+- Team Size: ${projectDetails.team_size || 'Small'}
+- Complexity Level: ${projectDetails.complexity_level || 'Medium'}
 
 The task name is: "${taskName}"
 The user's initial notes are: "${text}" (If these notes are brief, expand on them. If they are detailed, refine and structure them.)
@@ -65,6 +73,13 @@ Follow these rules precisely:
 - **Depth:** The description should be ${descPrefs.depth}.
 - **Primary Structure:** The overall organization should follow a ${descPrefs.structure_type} pattern.
 - **Content Elements:** You MUST include the following elements in your response: ${descPrefs.content_elements.join(', ')}. Adhere to this list strictly.
+
+**Project Context Integration:**
+Consider the project context when generating the description:
+- Align with the project's current phase (${projectDetails.current_phase})
+- Consider the team size (${projectDetails.team_size}) for appropriate task scope
+- Match the project's complexity level (${projectDetails.complexity_level})
+- Ensure the description supports the project's goals and objectives
 
 **Special Instructions:**
 - **Notes:** ${prefs.special_notes || 'None.'}
