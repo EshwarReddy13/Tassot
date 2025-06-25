@@ -48,7 +48,7 @@ export default function SignUpPageView() {
 
   useEffect(() => {
     if (!contextLoading && firebaseUser) {
-      navigate(firebaseUser.emailVerified ? '/dashboard' : '/verify-email', { replace: true });
+      navigate(firebaseUser.emailVerified ? '/home' : '/verify-email', { replace: true });
     }
   }, [firebaseUser, contextLoading, navigate]);
 

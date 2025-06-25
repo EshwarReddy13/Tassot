@@ -29,6 +29,11 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
   const [userInputProjectKey, setUserInputProjectKey] = useState('');
   const [projectKeyError, setProjectKeyError] = useState('');
   const [generatedDisplayId, setGeneratedDisplayId] = useState('');
+  const [description, setDescription] = useState('');
+  const [projectType, setProjectType] = useState('');
+  const [currentPhase, setCurrentPhase] = useState('');
+  const [teamSize, setTeamSize] = useState('');
+  const [complexityLevel, setComplexityLevel] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [popup, setPopup] = useState({ show: false, message: '', type: 'info' });
@@ -42,23 +47,46 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     let canProceed = true;
     const currentGeneratedId = generateDisplayProjectId(projectName.trim());
 
-    if (!projectName.trim()) {
-      setPopup({ show: true, message: 'Project Name is required.', type: 'error' });
-      canProceed = false;
-    }
-    if (!userInputProjectKey || !isValidProjectKeyFormat(userInputProjectKey)) {
-      setProjectKeyError('Project Key must be 4 uppercase letters.');
-      canProceed = false;
-    } else {
-      setProjectKeyError('');
-    }
-    if (!currentGeneratedId && projectName.trim()) {
-      setPopup({ show: true, message: 'Project Display ID could not be generated.', type: 'error' });
-      canProceed = false;
-    }
+    if (step === 'create') {
+      if (!projectName.trim()) {
+        setPopup({ show: true, message: 'Project Name is required.', type: 'error' });
+        canProceed = false;
+      }
+      if (!userInputProjectKey || !isValidProjectKeyFormat(userInputProjectKey)) {
+        setProjectKeyError('Project Key must be 4 uppercase letters.');
+        canProceed = false;
+      } else {
+        setProjectKeyError('');
+      }
+      if (!currentGeneratedId && projectName.trim()) {
+        setPopup({ show: true, message: 'Project Display ID could not be generated.', type: 'error' });
+        canProceed = false;
+      }
 
-    if (canProceed) {
-      setStep('invite');
+      if (canProceed) {
+        setStep('details');
+      }
+    } else if (step === 'details') {
+      if (!projectType) {
+        setPopup({ show: true, message: 'Project Type is required.', type: 'error' });
+        canProceed = false;
+      }
+      if (!currentPhase) {
+        setPopup({ show: true, message: 'Current Project Phase is required.', type: 'error' });
+        canProceed = false;
+      }
+      if (!teamSize || teamSize < 1) {
+        setPopup({ show: true, message: 'Team Size must be at least 1.', type: 'error' });
+        canProceed = false;
+      }
+      if (!complexityLevel) {
+        setPopup({ show: true, message: 'Project Complexity Level is required.', type: 'error' });
+        canProceed = false;
+      }
+
+      if (canProceed) {
+        setStep('invite');
+      }
     }
   };
 
@@ -121,6 +149,11 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     const payload = {
       projectName: trimmedProjectName,
       projectKey: userInputProjectKey.toUpperCase(),
+      description: description.trim(),
+      projectType,
+      currentPhase,
+      teamSize: parseInt(teamSize),
+      complexityLevel,
       inviteEmails: invitedUsers.map(u => u.email)
     };
 
@@ -146,6 +179,11 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
     setUserInputProjectKey('');
     setProjectKeyError('');
     setGeneratedDisplayId('');
+    setDescription('');
+    setProjectType('');
+    setCurrentPhase('');
+    setTeamSize('');
+    setComplexityLevel('');
     setEmail('');
     setEmailError('');
     setPopup({ show: false, message: '', type: 'info' });
@@ -203,6 +241,65 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                       <motion.button className="bg-[#9674da] text-white text-lg py-2 px-6 rounded-lg font-semibold hover:bg-[#7e5cb7] disabled:bg-gray-600 disabled:cursor-not-allowed" onClick={handleNext} disabled={!projectName.trim() || !userInputProjectKey || !!projectKeyError || !generateDisplayProjectId(projectName.trim()) || projectCreationLoading || userLoading}>Next</motion.button>
                     </div>
                   </motion.div>
+                ) : step === 'details' ? (
+                  <motion.div key="details-step" variants={fieldVariants} initial="initial" animate="animate" exit="exit" className="flex flex-col flex-grow">
+                    <h2 className="text-white text-3xl font-bold mb-2">Project Details</h2>
+                    <p className="text-gray-400 text-base mb-6">Provide additional context for "{projectName}" to help AI generate better tasks.</p>
+                    
+                    <div className="mb-5">
+                      <label htmlFor="project-description" className="block text-white text-lg font-medium mb-2">Project Description <span className="text-xs text-gray-400">(Optional)</span></label>
+                      <textarea id="project-description" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full h-24 bg-[#161616] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#9674da] resize-none" placeholder="Describe your project goals, objectives, and key deliverables..." disabled={projectCreationLoading || userLoading} />
+                    </div>
+                    
+                    <div className="mb-5">
+                      <label htmlFor="project-type" className="block text-white text-lg font-medium mb-2">Project Type</label>
+                      <select id="project-type" value={projectType} onChange={(e) => setProjectType(e.target.value)} className="w-full h-12 bg-[#161616] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]" disabled={projectCreationLoading || userLoading}>
+                        <option value="">Select project type</option>
+                        <option value="Software Development">Software Development</option>
+                        <option value="Marketing Campaign">Marketing Campaign</option>
+                        <option value="Event Planning">Event Planning</option>
+                        <option value="Product Launch">Product Launch</option>
+                        <option value="Research Project">Research Project</option>
+                        <option value="Content Creation">Content Creation</option>
+                        <option value="Design Project">Design Project</option>
+                        <option value="Business Strategy">Business Strategy</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    
+                    <div className="mb-5">
+                      <label htmlFor="current-phase" className="block text-white text-lg font-medium mb-2">Current Project Phase</label>
+                      <select id="current-phase" value={currentPhase} onChange={(e) => setCurrentPhase(e.target.value)} className="w-full h-12 bg-[#161616] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]" disabled={projectCreationLoading || userLoading}>
+                        <option value="">Select current phase</option>
+                        <option value="Planning">Planning</option>
+                        <option value="Development">Development</option>
+                        <option value="Testing">Testing</option>
+                        <option value="Launch">Launch</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Review">Review</option>
+                      </select>
+                    </div>
+                    
+                    <div className="mb-5">
+                      <label htmlFor="team-size" className="block text-white text-lg font-medium mb-2">Team Size</label>
+                      <input id="team-size" type="number" min="1" value={teamSize} onChange={(e) => setTeamSize(e.target.value)} className="w-full h-12 bg-[#161616] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]" placeholder="Enter team size" disabled={projectCreationLoading || userLoading} />
+                    </div>
+                    
+                    <div className="mb-6">
+                      <label htmlFor="complexity-level" className="block text-white text-lg font-medium mb-2">Project Complexity Level</label>
+                      <select id="complexity-level" value={complexityLevel} onChange={(e) => setComplexityLevel(e.target.value)} className="w-full h-12 bg-[#161616] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#9674da]" disabled={projectCreationLoading || userLoading}>
+                        <option value="">Select complexity level</option>
+                        <option value="Simple">Simple</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Complex">Complex</option>
+                      </select>
+                    </div>
+                    
+                    <div className="mt-auto flex justify-between">
+                      <motion.button type="button" className="text-gray-400 hover:text-white text-lg py-2 px-6 rounded-lg font-semibold" onClick={() => setStep('create')} disabled={projectCreationLoading || userLoading}>Back</motion.button>
+                      <motion.button className="bg-[#9674da] text-white text-lg py-2 px-6 rounded-lg font-semibold hover:bg-[#7e5cb7] disabled:bg-gray-600 disabled:cursor-not-allowed" onClick={handleNext} disabled={!projectType || !currentPhase || !teamSize || !complexityLevel || projectCreationLoading || userLoading}>Next</motion.button>
+                    </div>
+                  </motion.div>
                 ) : (
                   <motion.div key="invite-step" variants={fieldVariants} initial="initial" animate="animate" exit="exit" className="flex flex-col flex-grow">
                     <h2 className="text-white text-3xl font-bold mb-2">Invite Users <span className="text-lg text-gray-500">(Optional)</span></h2>
@@ -226,7 +323,8 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                         ))}
                       </div>
                     )}
-                    <div className="mt-6 flex justify-end">
+                    <div className="mt-6 flex justify-between">
+                      <motion.button type="button" className="text-gray-400 hover:text-white text-lg py-2 px-6 rounded-lg font-semibold" onClick={() => setStep('details')} disabled={projectCreationLoading || userLoading}>Back</motion.button>
                       <motion.button className="bg-[#9674da] text-white text-lg py-2 px-6 rounded-lg font-semibold hover:bg-[#7e5cb7]" onClick={handleCreate} disabled={projectCreationLoading || userLoading}>{projectCreationLoading || userLoading ? 'Verifying...' : 'Create Project'}</motion.button>
                     </div>
                   </motion.div>

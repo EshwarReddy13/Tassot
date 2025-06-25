@@ -27,7 +27,7 @@ export default function LoginPageView() {
   useEffect(() => {
     if (firebaseUser) {
       navigate(
-        firebaseUser.emailVerified ? '/dashboard' : '/verify-email',
+        firebaseUser.emailVerified ? '/home' : '/verify-email',
         { replace: true }
       );
     }

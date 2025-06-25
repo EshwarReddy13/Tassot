@@ -28,7 +28,7 @@ function VerifyEmailPage() {
       if (firebaseUser?.emailVerified) {
         // If Firebase user exists and email is verified, go to dashboard
         console.log('VerifyEmailPage: Redirecting to /dashboard (verified)');
-        navigate('/dashboard', { replace: true });
+        navigate('/home', { replace: true });
       } else if (!firebaseUser) {
         // If no Firebase user and not loading, redirect to login
         console.log('VerifyEmailPage: Redirecting to /login (no firebaseUser)');

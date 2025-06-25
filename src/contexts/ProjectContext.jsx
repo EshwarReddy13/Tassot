@@ -130,8 +130,49 @@ export const ProjectProvider = ({ children }) => {
         const token = await firebaseUser.getIdToken(); const res = await fetch(`/api/projects/${projectUrl}/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(newSettings) });
         const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Failed to update settings.'); setProjectSettings(data); return data;
     }, [firebaseUser]);
-    
-    // --- THIS IS THE FIX ---
+
+    const updateProjectDetails = useCallback(async (projectUrl, projectDetails) => {
+        if (!firebaseUser) throw new Error('Authentication required');
+        const token = await firebaseUser.getIdToken();
+        
+        // Transform frontend field names to backend expected names
+        const transformedData = {
+            project_name: projectDetails.projectName,
+            project_key: projectDetails.projectKey,
+            description: projectDetails.description,
+            projectType: projectDetails.projectType,
+            currentPhase: projectDetails.currentPhase,
+            teamSize: projectDetails.teamSize,
+            complexityLevel: projectDetails.complexityLevel
+        };
+        
+        const res = await fetch(`/api/projects/${projectUrl}`, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
+            body: JSON.stringify(transformedData) 
+        });
+        const data = await res.json(); 
+        if (!res.ok) throw new Error(data.error || 'Failed to update project details.'); 
+        
+        // Update current project if it exists
+        if (currentProject) {
+            setCurrentProject(prev => ({
+                ...prev,
+                project: {
+                    ...prev.project,
+                    project_name: projectDetails.projectName,
+                    project_key: projectDetails.projectKey,
+                    description: projectDetails.description
+                }
+            }));
+        }
+        
+        // Refresh project settings to get updated project_details
+        await getProjectSettings(projectUrl);
+        
+        return data;
+    }, [firebaseUser, currentProject, getProjectSettings]);
+
     const getDashboardSummary = useCallback(async (projectUrl) => {
         if (!firebaseUser) { setSummaryError("Authentication required."); return; }
         setIsSummaryLoading(true); setSummaryError(null);
@@ -176,10 +217,9 @@ export const ProjectProvider = ({ children }) => {
             setIsActivityLoading(false);
         }
     }, [firebaseUser]);
-    // ----------------------
 
     const value = useMemo(() => ({
-        projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, updateMemberRole, projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings, dashboardSummary, isSummaryLoading, summaryError, getDashboardSummary,
+        projects, loadingFetch, errorFetch, createProject, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, updateMemberRole, projectSettings, isSettingsLoading, settingsError, getProjectSettings, updateProjectSettings, updateProjectDetails, dashboardSummary, isSummaryLoading, summaryError, getDashboardSummary,
         actionItems, isActionItemsLoading, actionItemsError, getActionItems,
         activityFeed, isActivityLoading, activityError, getActivityFeed
     }),
@@ -188,7 +228,7 @@ export const ProjectProvider = ({ children }) => {
         projects, loadingFetch, errorFetch, loadingCreate, errorCreate, currentProject, loadingDetails, errorDetails, projectSettings, isSettingsLoading, settingsError, dashboardSummary, isSummaryLoading, summaryError, actionItems, isActionItemsLoading, actionItemsError, activityFeed, isActivityLoading, activityError,
         // Functions
         createProject, fetchUserProjects, getProjectDetails, deleteTask, createTask, updateTaskInContext, deleteBoard, updateBoard, removeUserFromProject, 
-        updateMemberRole, getProjectSettings, updateProjectSettings, getDashboardSummary, getActionItems, getActivityFeed
+        updateMemberRole, getProjectSettings, updateProjectSettings, updateProjectDetails, getDashboardSummary, getActionItems, getActivityFeed
     ]);
 
     return ( <ProjectContext.Provider value={value}> {children} </ProjectContext.Provider> );
