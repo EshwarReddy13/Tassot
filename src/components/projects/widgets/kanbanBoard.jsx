@@ -98,6 +98,7 @@ const KanbanBoard = ({
     onTaskClick,
     newColumn,
     onShowAddTaskModal,
+    onShowAITaskModal,
     activeTask,
     onDragStart,
     onDragEnd,
@@ -158,6 +159,7 @@ const KanbanBoard = ({
                                 onDeleteBoard={onDeleteBoard}
                                 onUpdateBoardName={onUpdateBoardName}
                                 onShowAddTaskModal={onShowAddTaskModal}
+                                onShowAITaskModal={onShowAITaskModal}
                             />
                         );
                     })}

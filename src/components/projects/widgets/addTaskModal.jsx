@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiX, HiUserCircle, HiCalendar, HiViewGrid } from 'react-icons/hi';
+import { HiX, HiUserCircle, HiCalendar, HiViewGrid, HiSparkles } from 'react-icons/hi';
 import { useUser } from '../../../contexts/UserContext';
 import { useAI } from '../../../contexts/AIContext.jsx';
 import Select from 'react-select';
-import AIEnhancedInput from './aiEnhancedInput.jsx';
+import AIEnhancedInput from './AIEnhancedInput.jsx';
 
 const FormatOptionLabel = ({ id, photo_url, first_name, last_name, email }) => (
     <div className="flex items-center">
@@ -61,7 +61,7 @@ const selectStyles = {
     singleValue: (styles) => ({ ...styles, color: 'var(--color-text-primary)' }),
 };
 
-const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], initialBoardId }) => {
+const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], initialBoardId, prefillData = null }) => {
     const { userData } = useUser();
     const { enhanceTaskName, enhanceTaskDescription } = useAI();
     const { projectUrl } = useParams();
@@ -79,10 +79,23 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
 
     useEffect(() => {
         if (isOpen) {
-            setTaskData(prev => ({ ...getInitialState(), board_id: initialBoardId || prev.board_id }));
+            if (prefillData) {
+                // Pre-fill with AI-generated content
+                const deadline = prefillData.deadline ? new Date(prefillData.deadline).toISOString().split('T')[0] : '';
+                setTaskData({
+                    task_name: prefillData.taskName || '',
+                    description: prefillData.description || '',
+                    deadline: deadline,
+                    board_id: initialBoardId || (boards[0] ? boards[0].id : ''),
+                    assignees: [],
+                });
+            } else {
+                // Reset to initial state
+                setTaskData(prev => ({ ...getInitialState(), board_id: initialBoardId || prev.board_id }));
+            }
             setError('');
         }
-    }, [isOpen, initialBoardId]);
+    }, [isOpen, initialBoardId, prefillData, boards]);
 
     const handleEnhanceName = useCallback((text) => {
         return enhanceTaskName(text, projectUrl);
@@ -143,7 +156,17 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
                         onClick={(e) => e.stopPropagation()}
                     >
                         <header className="flex items-center justify-between p-4 border-b border-bg-primary">
-                            <h2 id="add-task-modal-title" className="text-lg font-bold text-text-primary">Create New Task</h2>
+                            <div className="flex items-center gap-3">
+                                <h2 id="add-task-modal-title" className="text-lg font-bold text-text-primary">
+                                    {prefillData ? 'Review & Create Task (AI Generated)' : 'Create New Task'}
+                                </h2>
+                                {prefillData && (
+                                    <div className="flex items-center gap-2 px-2 py-1 bg-accent-primary bg-opacity-20 rounded-full">
+                                        <HiSparkles className="w-4 h-4 text-accent-primary" />
+                                        <span className="text-xs font-medium text-accent-primary">AI Generated</span>
+                                    </div>
+                                )}
+                            </div>
                             <button onClick={onClose} className="p-2 rounded-full text-text-secondary hover:bg-bg-primary">
                                 <HiX className="w-6 h-6" />
                             </button>
@@ -231,7 +254,9 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
 
                         <footer className="flex items-center justify-end p-4 border-t border-bg-primary gap-3 mt-auto">
                             <button type="button" onClick={onClose} className="px-4 py-2 rounded-md text-text-secondary hover:bg-bg-primary">Cancel</button>
-                            <button type="submit" onClick={handleSubmit} className="px-6 py-2 rounded-md bg-accent-primary font-semibold text-text-primary hover:bg-accent-hover">Create Task</button>
+                            <button type="submit" onClick={handleSubmit} className="px-6 py-2 rounded-md bg-accent-primary font-semibold text-text-primary hover:bg-accent-hover">
+                                {prefillData ? 'Create Task' : 'Create Task'}
+                            </button>
                         </footer>
                     </motion.div>
                 </motion.div>
