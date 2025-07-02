@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Tassot Logo](https://img.shields.io/badge/ProjectFlow-Project%20Management-blue?style=for-the-badge&logo=react)
+![Tassot Logo](https://img.shields.io/badge/Tassot-Project%20Management-blue?style=for-the-badge&logo=react)
 ![React](https://img.shields.io/badge/React-18.0+-61DAFB?style=for-the-badge&logo=react)
 ![Node.js](https://img.shields.io/badge/Node.js-18.0+-339933?style=for-the-badge&logo=node.js)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=for-the-badge&logo=postgresql)
