@@ -24,6 +24,30 @@ export const UserProvider = ({ children }) => {
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
+          // Handle display name parsing more robustly
+          let firstName = 'New';
+          let lastName = 'User';
+          
+          if (fbUser.displayName) {
+            const nameParts = fbUser.displayName.trim().split(' ');
+            firstName = nameParts[0] || 'New';
+            lastName = nameParts.slice(1).join(' ') || 'User';
+          } else if (fbUser.email) {
+            // Fallback to email username if no display name
+            const emailUsername = fbUser.email.split('@')[0];
+            firstName = emailUsername || 'New';
+            lastName = 'User';
+          }
+
+          console.log('Creating user with data:', {
+            id: fbUser.uid,
+            email: fbUser.email,
+            provider: fbUser.providerData[0]?.providerId || 'password',
+            firstName,
+            lastName,
+            photoURL: fbUser.photoURL || null,
+          });
+
           const res = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -31,16 +55,18 @@ export const UserProvider = ({ children }) => {
               id:        fbUser.uid,
               email:     fbUser.email,
               provider:  fbUser.providerData[0]?.providerId || 'password',
-              firstName: fbUser.displayName?.split(' ')[0] || 'New',
-              lastName:  fbUser.displayName?.split(' ').slice(1).join(' ') || 'User',
+              firstName,
+              lastName,
               photoURL:  fbUser.photoURL || null,
             })
           });
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Server returned a non-JSON error' }));
+            console.error('Server error response:', { status: res.status, error: errorData });
             throw new Error(errorData.error || `Server responded with status ${res.status}`);
           }
           const profileData = await res.json();
+          console.log('User created successfully:', profileData);
           setUserData(profileData);
         } catch (err) {
           console.error('UserContext sync error:', err);

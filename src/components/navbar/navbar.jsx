@@ -108,7 +108,7 @@ const Navbar = () => {
       variants={navbarVariants}
       aria-label="Primary navigation"
     >
-      <div className="flex flex-row h-full w-full bg-bg-card p-2.5 rounded-xl mt-2 mb-2">
+      <div className="flex flex-row h-full w-full bg-bg-dark p-2.5 rounded-xl mt-2 mb-2">
         <div className="flex flex-col items-center w-[4rem] py-4 space-y-4 flex-shrink-0">
           {icons.map((icon) => (
             <div key={icon.id} className="relative group flex-shrink-0">

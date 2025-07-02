@@ -1,4 +1,21 @@
-// src/views/LoginPageView.jsx
+/**
+ * LoginPageView Component
+ * 
+ * A comprehensive login page that provides multiple authentication methods:
+ * - Email/password authentication
+ * - Google OAuth sign-in
+ * - Apple sign-in (placeholder for future implementation)
+ * 
+ * Features:
+ * - Real-time form validation
+ * - Error handling and user feedback
+ * - Responsive design with animations
+ * - Accessibility compliance
+ * - Automatic redirection based on user state
+ * 
+ * @component
+ * @returns {JSX.Element} The login page component
+ */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -9,21 +26,31 @@ import {
 import { auth, googleProvider } from '../../firebase.js';
 import { motion } from 'framer-motion';
 import { useUser } from '../../contexts/UserContext.jsx';
-import login_background from '../../assets/login_background.webp';
+import login_background from '../../assets/login_background.png';
 
 export default function LoginPageView() {
+  // Get current user from context
   const { firebaseUser } = useUser();
-  const [email, setEmail]               = useState('');
-  const [password, setPassword]         = useState('');
-  const [emailError, setEmailError]     = useState('');
+  
+  // Form state management
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  // Error state management
+  const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [authError, setAuthError]       = useState('');
-  const [showPopup, setShowPopup]       = useState(false);
-  const [popupType, setPopupType]       = useState(''); // only used for Apple
+  const [authError, setAuthError] = useState('');
+  
+  // Modal/popup state management
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState(''); // Currently only used for Apple sign-in popup
 
   const navigate = useNavigate();
 
-  // Redirect once we have a signed-in user
+  /**
+   * Effect to handle automatic redirection based on user authentication state
+   * Redirects to home page if email is verified, otherwise to email verification page
+   */
   useEffect(() => {
     if (firebaseUser) {
       navigate(
@@ -33,24 +60,50 @@ export default function LoginPageView() {
     }
   }, [firebaseUser, navigate]);
 
+  /**
+   * Validates email format using regex pattern
+   * @param {string} em - Email address to validate
+   * @returns {boolean} True if email format is valid, false otherwise
+   */
   const isValidEmail = (em) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
 
+  /**
+   * Handles email input changes with real-time validation
+   * Updates email state and validates format, clearing or setting error messages
+   * @param {string} val - The new email value
+   */
   const handleEmailChange = (val) => {
     setEmail(val);
-    if (!val) setEmailError('Please fill in this field');
-    else if (!isValidEmail(val)) setEmailError('Incorrect email format');
-    else setEmailError('');
+    if (!val) {
+      setEmailError('Please fill in this field');
+    } else if (!isValidEmail(val)) {
+      setEmailError('Incorrect email format');
+    } else {
+      setEmailError('');
+    }
   };
 
+  /**
+   * Handles password input changes with basic validation
+   * Updates password state and validates presence, clearing or setting error messages
+   * @param {string} val - The new password value
+   */
   const handlePasswordChange = (val) => {
     setPassword(val);
     setPasswordError(val ? '' : 'Please fill in this field');
   };
 
+  /**
+   * Handles form submission for email/password authentication
+   * Validates form inputs and attempts to sign in with Firebase
+   * Provides user-friendly error messages for different failure scenarios
+   * @param {Event} e - Form submission event
+   */
   const handleLogin = async (e) => {
     e.preventDefault();
     let hasError = false;
 
+    // Validate email field
     if (!email) {
       setEmailError('Please fill in this field');
       hasError = true;
@@ -59,19 +112,23 @@ export default function LoginPageView() {
       hasError = true;
     }
 
+    // Validate password field
     if (!password) {
       setPasswordError('Please fill in this field');
       hasError = true;
     }
 
+    // Return early if validation fails
     if (hasError) return;
 
     try {
       setAuthError('');
       await signInWithEmailAndPassword(auth, email, password);
-      // Redirect handled in useEffect
+      // Redirect is handled automatically by useEffect when firebaseUser changes
     } catch (err) {
       console.error('Login error:', err.code, err.message);
+      
+      // Provide user-friendly error messages based on Firebase error codes
       if (
         err.code === 'auth/wrong-password' ||
         err.code === 'auth/user-not-found'
@@ -85,28 +142,43 @@ export default function LoginPageView() {
     }
   };
 
+  /**
+   * Handles Google OAuth sign-in process
+   * Opens Google sign-in popup and handles user profile creation
+   * Sets default display name if none is provided by Google
+   */
   const handleGoogleSignIn = async () => {
     try {
       setAuthError('');
       setShowPopup(false);
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      
+      // Set default display name if Google doesn't provide one
       if (!user.displayName) {
         await updateProfile(user, { displayName: 'User' });
       }
-      // UserProvider will upsert & fetch your profile
+      // UserProvider will handle profile creation and data fetching
     } catch (err) {
       console.error('Google Sign-In Error:', err);
       setAuthError(err.message || 'Failed to sign in with Google');
     }
   };
 
+  /**
+   * Handles Apple sign-in button click
+   * Currently shows a placeholder popup as Apple sign-in is not implemented
+   * TODO: Implement actual Apple sign-in functionality
+   */
   const handleAppleSignIn = () => {
     setPopupType('apple');
     setShowPopup(true);
     setAuthError('');
   };
 
+  /**
+   * Closes the modal popup and resets popup state
+   */
   const closePopup = () => {
     setShowPopup(false);
     setPopupType('');
@@ -114,24 +186,22 @@ export default function LoginPageView() {
 
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
-      {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
-        <img
-          src={login_background}
-          alt="Decorative login background"
-          className="w-full h-full object-cover rounded-lg scale-100 transition-none"
-        />
-      </div>
+      {/* 
+        Main container with split layout:
+        - Left side: Login form with animations
+        - Right side: Decorative background image
+      */}
 
-      {/* Right Form Section */}
+      {/* Left Form Section - Contains login form and authentication options */}
       <motion.div
-        className="w-1/2 h-full flex flex-col justify-center px-12 bg-[#2c2638] min-w-0 flex-shrink-0"
+        className="w-1/2 h-full flex flex-col justify-center px-8 bg-bg-primary min-w-0 flex-shrink-0"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
+        {/* Page Title - Animated entrance with responsive font sizing */}
         <motion.h2
-          className="text-5xl font-bold text-white mb-6 text-center"
+          className="text-5xl font-bold text-text-primary mb-6 text-center"
           style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -140,22 +210,24 @@ export default function LoginPageView() {
           Log In
         </motion.h2>
 
+        {/* Sign Up Link - Animated entrance with link to registration page */}
         <motion.p
-          className="mt-3 mb-8 text-center text-sm text-white"
+          className="mb-10 text-center text-sm text-text-secondary"
           style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           Don't have an account?{' '}
-          <Link to="/signup" className="underline font-bold text-[#9674da]">
+          <Link to="/signup" className="underline font-bold text-accent-primary">
             Sign Up
           </Link>
         </motion.p>
 
+        {/* Authentication Error Display - Shows Firebase auth errors with animation */}
         {authError && (
           <motion.p
-            className="text-red-400 text-sm mb-4 text-center"
+            className="text-error text-sm mb-4 text-center"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -165,12 +237,13 @@ export default function LoginPageView() {
           </motion.p>
         )}
 
+        {/* Login Form - Email/password authentication with validation */}
         <form onSubmit={handleLogin} className="space-y-4 w-full max-w-md mx-auto">
-          {/* Email */}
+          {/* Email Input Field - With real-time validation */}
           <div>
             <label
               htmlFor="email"
-              className="block text-xl font-medium text-white text-left"
+              className="block text-xl font-medium text-text-primary text-left"
             >
               Email
             </label>
@@ -179,7 +252,7 @@ export default function LoginPageView() {
               id="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-bg-tertiary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               aria-describedby={emailError ? 'email-error' : undefined}
             />
             {emailError && (
@@ -196,12 +269,13 @@ export default function LoginPageView() {
             )}
           </div>
 
-          {/* Password */}
+          {/* Password Input Field - With basic validation */}
           <div>
             <label
               htmlFor="password"
-              className="block text-xl font-medium text-white text-left"
+              className="block text-xl font-medium text-text-primary text-left"
             >
+              
               Password
             </label>
             <input
@@ -209,7 +283,7 @@ export default function LoginPageView() {
               id="password"
               value={password}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-bg-tertiary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               aria-describedby={passwordError ? 'password-error' : undefined}
             />
             {passwordError && (
@@ -226,10 +300,10 @@ export default function LoginPageView() {
             )}
           </div>
 
-          {/* Submit */}
+          {/* Submit Button - Email/password login with hover animations */}
           <motion.button
             type="submit"
-            className="w-full bg-[#9674da] text-white p-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+            className="w-full mt-4 bg-accent-primary text-text-primary p-2 rounded-md font-bold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label="Log in with email and password"
@@ -237,9 +311,9 @@ export default function LoginPageView() {
             Log In
           </motion.button>
 
-          {/* Divider */}
+          {/* Divider Line - Separates email/password from OAuth options */}
           <motion.div
-            className="flex items-center my-6"
+            className="flex items-center mt-6 mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.3 }}
@@ -249,17 +323,17 @@ export default function LoginPageView() {
             <div className="flex-grow border-t border-gray-600" />
           </motion.div>
 
-          {/* OAuth Buttons Row */}
+          {/* OAuth Buttons Row - Google and Apple sign-in options */}
           <motion.div
             className="flex gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.3 }}
           >
-            {/* Google */}
+            {/* Google OAuth Button - Opens Google sign-in popup */}
             <motion.button
               type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="w-1/2 flex items-center justify-center gap-2 bg-bg-tertiary text-text-primary py-2 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               onClick={handleGoogleSignIn}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -273,10 +347,10 @@ export default function LoginPageView() {
               Google
             </motion.button>
 
-            {/* Apple */}
+            {/* Apple OAuth Button - Currently shows placeholder popup */}
             <motion.button
               type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="w-1/2 flex items-center justify-center gap-2 bg-bg-tertiary text-text-primary py-2 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               onClick={handleAppleSignIn}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -292,7 +366,7 @@ export default function LoginPageView() {
           </motion.div>
         </form>
 
-        {/* Popup Modal */}
+        {/* Popup Modal - Currently used for Apple sign-in placeholder */}
         {showPopup && (
           <motion.div
             className="fixed inset-0 bg-[#000]/40 backdrop-blur-sm flex items-center justify-center z-50"
@@ -311,18 +385,19 @@ export default function LoginPageView() {
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Apple Sign-in Placeholder Content */}
               {popupType === 'apple' && (
                 <>
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">
+                  <h3 className="text-xl font-bold text-text-primary mb-4 text-center">
                     Apple Sign-In Not Available
                   </h3>
-                  <p className="text-white text-sm mb-6 text-center">
+                  <p className="text-text-secondary text-sm mb-6 text-center">
                     We are still working on setting up Apple sign-in. For now, use
                     Google or email.
                   </p>
                   <motion.button
                     type="button"
-                    className="w-full bg-[#9674da] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                    className="w-full bg-[#9674da] text-text-primary py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
                     onClick={closePopup}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -336,6 +411,17 @@ export default function LoginPageView() {
           </motion.div>
         )}
       </motion.div>
+
+      {/* Right Image Section - Decorative background image */}
+      <div className="w-1/2 h-full bg-bg-primary p-2 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+        <img
+          src={login_background}
+          alt="Decorative login background"
+          className="w-full h-full object-cover rounded-lg scale-100 transition-none"
+        />
+      </div>
+
+      
     </div>
   );
 }

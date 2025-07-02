@@ -3,7 +3,7 @@ import { useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useUser } from './contexts/UserContext.jsx';
 import { auth } from './firebase.js';
-import Navbar from './components/navbar/navbar.jsx';
+import Navbar from './components/navbar/Navbar.jsx';
 
 // This is a small, invisible component whose only job is to handle the
 // post-login invitation flow. It lives here because Layout.jsx is inside
