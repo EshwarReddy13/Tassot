@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react'; // Added useEffect for completeness, though not strictly needed for this fix
 
 import { useUser } from '../../contexts/UserContext.jsx';
-import CreateProjectDrawer from './widgets/dashboardCreateProject.jsx'; // Ensure this path is correct
+import CreateProjectDrawer from './widgets/DashboardCreateProject.jsx'; // Ensure this path is correct
 import BackgroundImage from '../../assets/dashboard_background.png'; // Ensure this path is correct
 
 const DashboardPage = () => {

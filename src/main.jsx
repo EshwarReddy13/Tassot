@@ -9,23 +9,25 @@ import { ProjectProvider } from './contexts/ProjectContext.jsx';
 import { AIProvider } from './contexts/AIContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
 
-import Login from './components/login/loginPage.jsx';
-import Signup from './components/login/signupPage.jsx';
-import VerifyEmailPage from './components/login/verifyEmailPage.jsx';
-import AcceptInvitePage from './components/projects/pages/acceptInvitePage.jsx'; 
+import Login from './components/login/LoginPage.jsx';
+import Signup from './components/login/SignupPage.jsx';
+import VerifyEmailPage from './components/login/VerifyEmailPage.jsx';
+import AcceptInvitePage from './components/projects/pages/AcceptInvitePage.jsx'; 
 
-import Dashboard from './components/dashboard/dashboardPage.jsx';
+import Dashboard from './components/dashboard/DashboardPage.jsx';
 
-import Projects from './components/projects/pages/projectsPage.jsx';
-import ProjectPage from './components/projects/pages/projectView.jsx';
-import ProjectSettingsPage from './components/projects/pages/projectSettingsPage.jsx';
-import ProjectDashboardPage from './components/projects/pages/projectDashboardPage.jsx'; 
+import Projects from './components/projects/pages/ProjectsPage.jsx';
+import ProjectPage from './components/projects/pages/ProjectView.jsx';
+import ProjectSettingsPage from './components/projects/pages/ProjectSettingsPage.jsx';
+import ProjectDashboardPage from './components/projects/pages/ProjectDashboardPage.jsx'; 
 
-import SettingsPage from './components/settings/settingsPage.jsx';
+import SettingsPage from './components/settings/SettingsPage.jsx';
 
-import ProjectUsersPage from './components/projects/pages/projectUsersPage.jsx';
+import ProjectUsersPage from './components/projects/pages/ProjectUsersPage.jsx';
 
-import PalettePage from './components/palette/palettePage.jsx';
+import PalettePage from './components/palette/PalettePage.jsx';
+import NotFoundPage from './components/404/NotFoundPage.jsx';
+import LogoutPage from './components/logout/LogoutPage.jsx';
 
 import Layout from './layout.jsx';
 
@@ -67,6 +69,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/logout" element={<LogoutPage />} />
 
                 <Route path="/accept-invite" element={<AcceptInvitePage />} />
 
@@ -85,6 +88,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/palette" element={<PalettePage />} />
                 </Route>
+
+                {/* 404 Catch-all route - Must be last */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </ThemeProvider>
           </BrowserRouter>

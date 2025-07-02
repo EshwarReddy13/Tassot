@@ -1,10 +1,10 @@
 import { Fragment, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiOutlineNewspaper, HiOutlineCollection, HiOutlineUser, HiOutlineChatAlt2, HiCalendar, HiUserCircle } from 'react-icons/hi';
-import CommentList from '../comments/commentList';
+import CommentList from '../comments/CommentList';
 import Select from 'react-select';
 import { useAI } from '../../../contexts/AIContext.jsx';
-import AIEnhancedInput from '../ai/aiEnhancedInput.jsx';
+import AIEnhancedInput from '../ai/AIEnhancedInput.jsx';
 
 const formatToInputDate = (isoString) => {
     if (!isoString) return '';

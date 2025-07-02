@@ -1,8 +1,8 @@
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
-import TaskCard from './taskCard.jsx';
-import KanbanColumn from './kanbanColumn.jsx';
+import TaskCard from './TaskCard.jsx';
+import KanbanColumn from './KanbanColumn.jsx';
 import { HiX } from 'react-icons/hi';
 
 const AddColumnForm = ({

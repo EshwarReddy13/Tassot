@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useParams, Link, Outlet } from 'react-router-dom'; // <-- [NEW] Import Outlet
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
-import ProjectHeader from '../shared/projectHeader.jsx';
-import ProjectDetails from '../shared/projectDetails.jsx';
+import ProjectHeader from '../shared/ProjectHeader.jsx';
+import ProjectDetails from '../shared/ProjectDetails.jsx';
 
 const ProjectView = () => {
   const { projectUrl } = useParams();

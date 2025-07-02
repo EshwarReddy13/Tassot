@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import AddCommentForm from './addCommentForm';
+import AddCommentForm from './AddCommentForm';
 
 const Comment = ({ comment, onReplySubmit, isReply = false }) => {
   const [isReplying, setIsReplying] = useState(false);

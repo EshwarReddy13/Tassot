@@ -5,8 +5,8 @@ import { useUser } from '../../../contexts/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiTrash, HiUserAdd } from 'react-icons/hi';
 import { toast } from 'react-hot-toast';
-import InviteModal from '../modals/inviteModal.jsx';
-import UserDetailsModal from '../modals/userDetailsModal.jsx';
+import InviteModal from '../modals/InviteModal.jsx';
+import UserDetailsModal from '../modals/UserDetailsModal.jsx';
 
 const roleStyles = {
     owner: 'bg-yellow-400/20 text-yellow-300 ring-yellow-400/30',

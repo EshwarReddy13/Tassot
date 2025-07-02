@@ -14,6 +14,8 @@ import pool from '../../db.js';
  * }
  */
 export async function createUser(req, res) {
+  console.log('createUser called with body:', req.body);
+  
   const {
     id: firebaseUid,
     email,
@@ -23,11 +25,15 @@ export async function createUser(req, res) {
     photoURL, // Get the photoURL from the request
   } = req.body;
 
+  console.log('Extracted values:', { firebaseUid, email, provider, firstName, lastName, photoURL });
+
   if (!firebaseUid || !email || !provider || !firstName || !lastName) {
+    console.log('Missing required fields:', { firebaseUid, email, provider, firstName, lastName });
     return res.status(400).json({ error: 'Missing required user profile fields' });
   }
 
   try {
+    console.log('Executing database query with params:', [firebaseUid, email, provider, firstName, lastName, photoURL]);
     const { rows } = await pool.query(
       `
       INSERT INTO users (
@@ -74,6 +80,13 @@ export async function createUser(req, res) {
 
   } catch (err) {
     console.error('Error in createUser controller:', err);
+    console.error('Error details:', {
+      message: err.message,
+      code: err.code,
+      detail: err.detail,
+      hint: err.hint,
+      where: err.where
+    });
     return res.status(500).json({ error: 'Internal server error while syncing user.' });
   }
 }

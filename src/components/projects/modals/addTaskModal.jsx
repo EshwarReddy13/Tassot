@@ -5,7 +5,7 @@ import { HiX, HiUserCircle, HiCalendar, HiViewGrid, HiSparkles } from 'react-ico
 import { useUser } from '../../../contexts/UserContext';
 import { useAI } from '../../../contexts/AIContext.jsx';
 import Select from 'react-select';
-import AIEnhancedInput from '../ai/aiEnhancedInput.jsx';
+import AIEnhancedInput from '../ai/AIEnhancedInput.jsx';
 
 const FormatOptionLabel = ({ id, photo_url, first_name, last_name, email }) => (
     <div className="flex items-center">

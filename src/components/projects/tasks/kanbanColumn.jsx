@@ -2,7 +2,7 @@ import { memo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import TaskCard from './taskCard.jsx';
+import TaskCard from './TaskCard.jsx';
 import clsx from 'clsx';
 import { HiDotsVertical, HiPencil, HiTrash, HiSparkles } from 'react-icons/hi';
 

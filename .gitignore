@@ -57,3 +57,5 @@ firebase-debug.*.log
 #cursor
 .cursor
 .cursor/
+*storybook.log
+storybook-static

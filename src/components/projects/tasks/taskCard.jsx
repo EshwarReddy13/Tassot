@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import clsx from 'clsx';
 import { HiPencil, HiTrash, HiOutlineCalendar } from 'react-icons/hi';
 import { useAI } from '../../../contexts/AIContext.jsx';
-import AIEnhancedInput from '../ai/aiEnhancedInput.jsx';
+import AIEnhancedInput from '../ai/AIEnhancedInput.jsx';
 
 const formatDate = (dateString) => {
     if (!dateString) return null;

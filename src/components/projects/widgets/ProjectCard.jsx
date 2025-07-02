@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi';
-import PinButton from './pinButton.jsx';
+import PinButton from './PinButton.jsx';
 
 const ProjectCard = ({ 
   project, 

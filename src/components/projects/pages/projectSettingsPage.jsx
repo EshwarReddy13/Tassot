@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext';
 import { useUser } from '../../../contexts/UserContext';
 import toast from 'react-hot-toast';
-import AISettingsForm from '../ai/aiSettingsForm';
+import AISettingsForm from '../ai/AISettingsForm';
 import ProjectDetailsForm from '../shared/ProjectDetailsForm';
 
 const ProjectSettingsPage = () => {

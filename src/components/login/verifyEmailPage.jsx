@@ -108,7 +108,7 @@ function VerifyEmailPage() {
         // Navigate to dashboard after verification is confirmed
         // A slight delay might allow UserContext to fetch updated userData if needed,
         // but the redirect in useEffect should also catch the verified state.
-        setTimeout(() => navigate('/dashboard'), 500);
+        setTimeout(() => navigate('/home'), 500);
       } else {
         setError('Email is not yet verified. Please check your email and click the verification link.');
       }
@@ -118,12 +118,12 @@ function VerifyEmailPage() {
     }
   };
 
-  // Keep original loading state UI
+  // Loading state UI with theme colors
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#1f1e25] font-poppins">
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary font-poppins">
         <div
-          className="w-[2.5rem] h-[2.5rem] border-[0.25rem] border-t-[#9674da] border-[#ffffff33] rounded-full animate-spin"
+          className="w-10 h-10 border-4 border-t-accent-primary border-text-secondary/20 rounded-full animate-spin"
           role="status"
           aria-live="polite"
           aria-label="Loading"
@@ -136,7 +136,7 @@ function VerifyEmailPage() {
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
       {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-[#2c2638] p-4 hidden md:flex items-center justify-center transition-none min-w-0 flex-shrink-0"> {/* Hidden on small screens */}
+      <div className="w-1/2 h-full bg-bg-primary p-4 hidden md:flex items-center justify-center transition-none min-w-0 flex-shrink-0">
         <img
           src={login_background}
           alt="Decorative verify email background"
@@ -146,14 +146,14 @@ function VerifyEmailPage() {
 
       {/* Right Content Section */}
        <motion.div
-        className="w-full md:w-1/2 h-full flex items-center justify-center px-6 sm:px-12 bg-[#2c2638] min-w-0 flex-shrink-0 overflow-y-auto" // Adjusted padding for smaller screens
+        className="w-full md:w-1/2 h-full flex items-center justify-center px-6 sm:px-12 bg-bg-primary min-w-0 flex-shrink-0 overflow-y-auto"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <div className="w-full max-w-md mx-auto">
           <motion.h2
-            className="text-4xl sm:text-5xl font-bold text-white mb-4 sm:mb-6 text-center" // Adjusted sizes
+            className="text-4xl sm:text-5xl font-bold text-text-primary mb-4 sm:mb-6 text-center"
             style={{ fontSize: 'clamp(2.2rem, 5vw, 3.0rem)' }} // Adjusted clamp
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -163,21 +163,21 @@ function VerifyEmailPage() {
           </motion.h2>
 
           <motion.p
-            className="mt-2 sm:mt-3 mb-6 sm:mb-8 text-center text-sm text-gray-300" // Adjusted sizes and color
+            className="mt-2 sm:mt-3 mb-6 sm:mb-8 text-center text-sm text-text-secondary"
             style={{ fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)' }} // Adjusted clamp
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
             A verification email has been sent to{' '}
-            <strong className="text-white">{firebaseUser?.email || 'your email address'}</strong>.
+            <strong className="text-text-primary">{firebaseUser?.email || 'your email address'}</strong>.
             Please check your inbox or spam folder and click the link inside.
           </motion.p>
 
-          {/* Keep original error display */}
+          {/* Error display with theme colors */}
           {error && (
             <motion.p
-              className="text-red-400 text-sm mb-4 text-center"
+              className="text-error text-sm mb-4 text-center"
               initial={{ opacity: 0, y: -10 }} // Use y instead of x
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -187,10 +187,10 @@ function VerifyEmailPage() {
             </motion.p>
           )}
 
-          {/* Keep original message display */}
+          {/* Success message display with theme colors */}
           {message && (
             <motion.p
-              className="text-green-400 text-sm mb-4 text-center"
+              className="text-success text-sm mb-4 text-center"
               initial={{ opacity: 0, y: -10 }} // Use y instead of x
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -204,10 +204,10 @@ function VerifyEmailPage() {
           <div className="space-y-4">
             <button
               type="button"
-              className={`w-full p-2.5 sm:p-3 rounded-md font-semibold text-white transition-colors duration-200 ${ // Adjusted padding and font-weight
+              className={`w-full p-2.5 sm:p-3 rounded-md font-semibold text-text-primary transition-colors duration-200 ${
                 isResendDisabled
-                  ? 'bg-gray-600 cursor-not-allowed text-gray-400' // More distinct disabled style
-                  : 'bg-[#9674da] hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#9674da]' // Added focus rings
+                  ? 'bg-border-primary cursor-not-allowed text-text-secondary'
+                  : 'bg-accent-primary hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-primary'
               }`}
               onClick={handleResendEmail}
               disabled={isResendDisabled}
@@ -218,7 +218,7 @@ function VerifyEmailPage() {
 
             <button
               type="button"
-              className="w-full bg-[#7e5cb7] text-white p-2.5 sm:p-3 rounded-md font-semibold hover:bg-[#6a4a9a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2c2638] focus:ring-[#7e5cb7] transition-colors duration-200" // Different color, adjusted padding/font-weight
+              className="w-full bg-bg-tertiary text-text-primary p-2.5 sm:p-3 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-primary transition-colors duration-200"
               onClick={handleCheckVerification}
               aria-label="Check if email has been verified"
             >
@@ -226,15 +226,15 @@ function VerifyEmailPage() {
             </button>
           </div>
 
-          {/* Keep original log in link */}
+          {/* Login link with theme colors */}
           <motion.p
-            className="mt-6 text-center text-xs sm:text-sm text-gray-400" // Adjusted color and size
+            className="mt-6 text-center text-xs sm:text-sm text-text-secondary"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
           >
             Already verified?{' '}
-            <Link to="/login" className="underline font-semibold text-[#9674da] hover:text-[#7e5cb7]"> {/* Adjusted color and weight */}
+            <Link to="/login" className="underline font-semibold text-accent-primary hover:text-accent-hover">
               Log In
             </Link>
           </motion.p>
