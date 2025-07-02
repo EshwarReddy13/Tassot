@@ -314,9 +314,9 @@ export const Default = {
 
 **Made with ❤️ by a jobless and bored dude**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/project-management?style=social)](https://github.com/yourusername/project-management/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/project-management?style=social)](https://github.com/yourusername/project-management/network)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/project-management)](https://github.com/yourusername/project-management/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/yourusername/project-management)](https://github.com/yourusername/project-management/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/EshwarReddy13/Tassot?style=social)](https://github.com/EshwarReddy13/Tassot/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/EshwarReddy13/Tassot?style=social)](https://github.com/EshwarReddy13/Tassot/network)
+[![GitHub issues](https://img.shields.io/github/issues/EshwarReddy13/Tassot)](https://github.com/EshwarReddy13/Tassott/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/EshwarReddy13/Tassot)](https://github.com/EshwarReddy13/Tassot/pulls)
 
 </div>
