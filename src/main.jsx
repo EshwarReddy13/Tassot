@@ -14,7 +14,7 @@ import Signup from './components/login/SignupPage.jsx';
 import VerifyEmailPage from './components/login/VerifyEmailPage.jsx';
 import AcceptInvitePage from './components/projects/pages/AcceptInvitePage.jsx'; 
 
-import Dashboard from './components/dashboard/DashboardPage.jsx';
+import Dashboard from './components/dashboard/HomePage.jsx';
 
 import Projects from './components/projects/pages/ProjectsPage.jsx';
 import ProjectPage from './components/projects/pages/ProjectView.jsx';

@@ -17,6 +17,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.4",
     "clsx": "^2.1.1",
     "data-fns": "^1.1.0",
@@ -24,6 +25,7 @@
     "dotenv": "^16.5.0",
     "firebase": "^11.6.0",
     "framer-motion": "^12.7.4",
+    "heroicons": "^2.2.0",
     "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.510.0",
     "pg": "^8.15.6",
@@ -47,6 +49,8 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.22.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -54,14 +58,12 @@
     "eslint-plugin-storybook": "^9.0.15",
     "globals": "^16.0.0",
     "nodemon": "^3.1.10",
+    "playwright": "^1.53.2",
     "postcss": "^8.5.3",
     "prop-types": "^15.8.1",
     "storybook": "^9.0.15",
     "tailwindcss": "^4.1.4",
     "vite": "^6.3.1",
-    "vitest": "^3.2.4",
-    "@vitest/browser": "^3.2.4",
-    "playwright": "^1.53.2",
-    "@vitest/coverage-v8": "^3.2.4"
+    "vitest": "^3.2.4"
   }
 }

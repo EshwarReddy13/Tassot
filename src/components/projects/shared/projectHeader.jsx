@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { useProjects } from '../../../contexts/ProjectContext';
-import { useUser } from '../../../contexts/UserContext';
+import { useProjects } from '../../../contexts/ProjectContext.jsx';
+import { useUser } from '../../../contexts/UserContext.jsx';
 import ProjectMembers from './ProjectMembers.jsx';
 import InviteModal from '../modals/InviteModal.jsx';
 

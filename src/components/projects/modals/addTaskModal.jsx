@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiUserCircle, HiCalendar, HiViewGrid, HiSparkles } from 'react-icons/hi';
-import { useUser } from '../../../contexts/UserContext';
+import { useUser } from '../../../contexts/UserContext.jsx';
 import { useAI } from '../../../contexts/AIContext.jsx';
 import Select from 'react-select';
 import AIEnhancedInput from '../ai/AIEnhancedInput.jsx';

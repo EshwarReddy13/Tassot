@@ -59,16 +59,12 @@ const Layout = () => {
 
   // Calculate the navbar's width (same as in navbarVariants, including ml-2)
   const navbarWidth = isProjectsRoute ? '16.5rem' : '5rem'; // Expanded: 16.5rem, Collapsed: 5rem
-  const marginLeft = `calc(${navbarWidth})`;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden bg-bg-primary">
       <Navbar />
-      <InvitationHandler /> {/* The handler is now safely inside the Router context */}
-      <div
-        className="flex-1 h-full overflow-auto"
-        style={{ marginLeft }} // Dynamically set margin-left based on navbar width
-      >
+      <InvitationHandler />
+      <div className="flex-1 h-full min-h-0 overflow-auto" style={{ marginLeft: navbarWidth }}>
         <Outlet />
       </div>
     </div>
