@@ -27,6 +27,7 @@ import { auth, googleProvider } from '../../firebase.js';
 import { motion } from 'framer-motion';
 import { useUser } from '../../contexts/UserContext.jsx';
 import login_background from '../../assets/login_background.png';
+import AuthBrandHeader from './AuthBrandHeader.jsx';
 
 export default function LoginPageView() {
   // Get current user from context
@@ -185,243 +186,246 @@ export default function LoginPageView() {
   };
 
   return (
-    <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
-      {/* 
-        Main container with split layout:
-        - Left side: Login form with animations
-        - Right side: Decorative background image
-      */}
+    <>
+      <AuthBrandHeader />
+      <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
+        {/* 
+          Main container with split layout:
+          - Left side: Login form with animations
+          - Right side: Decorative background image
+        */}
 
-      {/* Left Form Section - Contains login form and authentication options */}
-      <motion.div
-        className="w-1/2 h-full flex flex-col justify-center px-8 bg-bg-primary min-w-0 flex-shrink-0"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        {/* Page Title - Animated entrance with responsive font sizing */}
-        <motion.h2
-          className="text-5xl font-bold text-text-primary mb-6 text-center"
-          style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+        {/* Left Form Section - Contains login form and authentication options */}
+        <motion.div
+          className="w-full md:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 bg-bg-primary min-w-0 flex-shrink-0 overflow-y-auto py-8 mt-20 md:mt-0"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          Log In
-        </motion.h2>
-
-        {/* Sign Up Link - Animated entrance with link to registration page */}
-        <motion.p
-          className="mb-10 text-center text-sm text-text-secondary"
-          style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          Don't have an account?{' '}
-          <Link to="/signup" className="underline font-bold text-accent-primary">
-            Sign Up
-          </Link>
-        </motion.p>
-
-        {/* Authentication Error Display - Shows Firebase auth errors with animation */}
-        {authError && (
-          <motion.p
-            className="text-error text-sm mb-4 text-center"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            role="alert"
-          >
-            {authError}
-          </motion.p>
-        )}
-
-        {/* Login Form - Email/password authentication with validation */}
-        <form onSubmit={handleLogin} className="space-y-4 w-full max-w-md mx-auto">
-          {/* Email Input Field - With real-time validation */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-xl font-medium text-text-primary text-left"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-bg-tertiary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-              aria-describedby={emailError ? 'email-error' : undefined}
-            />
-            {emailError && (
-              <motion.p
-                id="email-error"
-                className="text-red-400 text-sm mt-1"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                role="alert"
-              >
-                {emailError}
-              </motion.p>
-            )}
-          </div>
-
-          {/* Password Input Field - With basic validation */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-xl font-medium text-text-primary text-left"
-            >
-              
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => handlePasswordChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-bg-tertiary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-              aria-describedby={passwordError ? 'password-error' : undefined}
-            />
-            {passwordError && (
-              <motion.p
-                id="password-error"
-                className="text-red-400 text-sm mt-1"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                role="alert"
-              >
-                {passwordError}
-              </motion.p>
-            )}
-          </div>
-
-          {/* Submit Button - Email/password login with hover animations */}
-          <motion.button
-            type="submit"
-            className="w-full mt-4 bg-accent-primary text-text-primary p-2 rounded-md font-bold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Log in with email and password"
+          {/* Page Title - Animated entrance with responsive font sizing */}
+          <motion.h2
+            className="text-5xl font-bold text-text-primary mb-6 text-center"
+            style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
             Log In
-          </motion.button>
+          </motion.h2>
 
-          {/* Divider Line - Separates email/password from OAuth options */}
-          <motion.div
-            className="flex items-center mt-6 mb-4"
+          {/* Sign Up Link - Animated entrance with link to registration page */}
+          <motion.p
+            className="mb-10 text-center text-sm text-text-secondary"
+            style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="flex-grow border-t border-gray-600" />
-            <span className="mx-4 text-sm text-gray-400">or sign in with</span>
-            <div className="flex-grow border-t border-gray-600" />
-          </motion.div>
+            Don't have an account?{' '}
+            <Link to="/signup" className="underline font-bold text-accent-primary">
+              Sign Up
+            </Link>
+          </motion.p>
 
-          {/* OAuth Buttons Row - Google and Apple sign-in options */}
-          <motion.div
-            className="flex gap-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.3 }}
-          >
-            {/* Google OAuth Button - Opens Google sign-in popup */}
-            <motion.button
-              type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-bg-tertiary text-text-primary py-2 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-              onClick={handleGoogleSignIn}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Sign in with Google"
+          {/* Authentication Error Display - Shows Firebase auth errors with animation */}
+          {authError && (
+            <motion.p
+              className="text-error text-sm mb-4 text-center"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              role="alert"
             >
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google logo"
-                className="w-5 h-5"
+              {authError}
+            </motion.p>
+          )}
+
+          {/* Login Form - Email/password authentication with validation */}
+          <form onSubmit={handleLogin} className="space-y-4 w-full max-w-md mx-auto">
+            {/* Email Input Field - With real-time validation */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-xl font-medium text-text-primary text-left"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                className="mt-1 w-full p-2 bg-bg-tertiary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                aria-describedby={emailError ? 'email-error' : undefined}
               />
-              Google
-            </motion.button>
-
-            {/* Apple OAuth Button - Currently shows placeholder popup */}
-            <motion.button
-              type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-bg-tertiary text-text-primary py-2 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-              onClick={handleAppleSignIn}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Sign in with Apple"
-            >
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg"
-                alt="Apple logo"
-                className="w-5 h-5"
-              />
-              Apple
-            </motion.button>
-          </motion.div>
-        </form>
-
-        {/* Popup Modal - Currently used for Apple sign-in placeholder */}
-        {showPopup && (
-          <motion.div
-            className="fixed inset-0 bg-[#000]/40 backdrop-blur-sm flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closePopup}
-            aria-modal="true"
-            role="dialog"
-          >
-            <motion.div
-              className="bg-[#2c2638] border-2 border-[#3a3942] p-10 rounded-lg max-w-sm w-full"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Apple Sign-in Placeholder Content */}
-              {popupType === 'apple' && (
-                <>
-                  <h3 className="text-xl font-bold text-text-primary mb-4 text-center">
-                    Apple Sign-In Not Available
-                  </h3>
-                  <p className="text-text-secondary text-sm mb-6 text-center">
-                    We are still working on setting up Apple sign-in. For now, use
-                    Google or email.
-                  </p>
-                  <motion.button
-                    type="button"
-                    className="w-full bg-[#9674da] text-text-primary py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
-                    onClick={closePopup}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Close Apple sign-in popup"
-                  >
-                    Exit
-                  </motion.button>
-                </>
+              {emailError && (
+                <motion.p
+                  id="email-error"
+                  className="text-red-400 text-sm mt-1"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  role="alert"
+                >
+                  {emailError}
+                </motion.p>
               )}
+            </div>
+
+            {/* Password Input Field - With basic validation */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-xl font-medium text-text-primary text-left"
+              >
+                
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                className="mt-1 w-full p-2 bg-bg-tertiary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                aria-describedby={passwordError ? 'password-error' : undefined}
+              />
+              {passwordError && (
+                <motion.p
+                  id="password-error"
+                  className="text-red-400 text-sm mt-1"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  role="alert"
+                >
+                  {passwordError}
+                </motion.p>
+              )}
+            </div>
+
+            {/* Submit Button - Email/password login with hover animations */}
+            <motion.button
+              type="submit"
+              className="w-full mt-4 bg-accent-primary text-text-primary p-2 rounded-md font-bold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Log in with email and password"
+            >
+              Log In
+            </motion.button>
+
+            {/* Divider Line - Separates email/password from OAuth options */}
+            <motion.div
+              className="flex items-center mt-6 mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+            >
+              <div className="flex-grow border-t border-gray-600" />
+              <span className="mx-4 text-sm text-gray-400">or sign in with</span>
+              <div className="flex-grow border-t border-gray-600" />
             </motion.div>
-          </motion.div>
-        )}
-      </motion.div>
 
-      {/* Right Image Section - Decorative background image */}
-      <div className="w-1/2 h-full bg-bg-primary p-2 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
-        <img
-          src={login_background}
-          alt="Decorative login background"
-          className="w-full h-full object-cover rounded-lg scale-100 transition-none"
-        />
+            {/* OAuth Buttons Row - Google and Apple sign-in options */}
+            <motion.div
+              className="flex gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.3 }}
+            >
+              {/* Google OAuth Button - Opens Google sign-in popup */}
+              <motion.button
+                type="button"
+                className="w-1/2 flex items-center justify-center gap-2 bg-bg-tertiary text-text-primary py-2 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                onClick={handleGoogleSignIn}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Sign in with Google"
+              >
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google logo"
+                  className="w-5 h-5"
+                />
+                Google
+              </motion.button>
+
+              {/* Apple OAuth Button - Currently shows placeholder popup */}
+              <motion.button
+                type="button"
+                className="w-1/2 flex items-center justify-center gap-2 bg-bg-tertiary text-text-primary py-2 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                onClick={handleAppleSignIn}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Sign in with Apple"
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg"
+                  alt="Apple logo"
+                  className="w-5 h-5"
+                />
+                Apple
+              </motion.button>
+            </motion.div>
+          </form>
+
+          {/* Popup Modal - Currently used for Apple sign-in placeholder */}
+          {showPopup && (
+            <motion.div
+              className="fixed inset-0 bg-[#000]/40 backdrop-blur-sm flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closePopup}
+              aria-modal="true"
+              role="dialog"
+            >
+              <motion.div
+                className="bg-[#2c2638] border-2 border-[#3a3942] p-10 rounded-lg max-w-sm w-full"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Apple Sign-in Placeholder Content */}
+                {popupType === 'apple' && (
+                  <>
+                    <h3 className="text-xl font-bold text-text-primary mb-4 text-center">
+                      Apple Sign-In Not Available
+                    </h3>
+                    <p className="text-text-secondary text-sm mb-6 text-center">
+                      We are still working on setting up Apple sign-in. For now, use
+                      Google or email.
+                    </p>
+                    <motion.button
+                      type="button"
+                      className="w-full bg-[#9674da] text-text-primary py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                      onClick={closePopup}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label="Close Apple sign-in popup"
+                    >
+                      Exit
+                    </motion.button>
+                  </>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Right Image Section - Decorative background image */}
+        <div className="w-1/2 h-full bg-bg-primary p-2 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+          <img
+            src={login_background}
+            alt="Decorative login background"
+            className="w-full h-full object-cover rounded-lg scale-100 transition-none"
+          />
+        </div>
+
+        
       </div>
-
-      
-    </div>
+    </>
   );
 }
