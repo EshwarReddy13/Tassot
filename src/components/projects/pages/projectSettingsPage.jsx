@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProjects } from '../../contexts/ProjectContext';
-import { useUser } from '../../contexts/UserContext';
+import { useProjects } from '../../../contexts/ProjectContext';
+import { useUser } from '../../../contexts/UserContext';
 import toast from 'react-hot-toast';
-import AISettingsForm from './widgets/aiSettingsForm';
-import ProjectDetailsForm from './widgets/ProjectDetailsForm';
+import AISettingsForm from '../ai/aiSettingsForm';
+import ProjectDetailsForm from '../shared/ProjectDetailsForm';
 
 const ProjectSettingsPage = () => {
     const { projectUrl } = useParams();

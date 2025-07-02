@@ -4,10 +4,10 @@ import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
 import { useAI } from '../../../contexts/AIContext.jsx';
-import KanbanBoard from './kanbanBoard.jsx';
-import TaskDetailsModal from './taskDetails.jsx';
-import AddTaskModal from './addTaskModal.jsx';
-import AITaskCreationModal from './AITaskCreationModal.jsx';
+import KanbanBoard from '../tasks/kanbanBoard.jsx';
+import TaskDetailsModal from '../tasks/taskDetails.jsx';
+import AddTaskModal from '../modals/addTaskModal.jsx';
+import AITaskCreationModal from '../modals/AITaskCreationModal.jsx';
 import toast from 'react-hot-toast';
 
 const ProjectDetails = () => {

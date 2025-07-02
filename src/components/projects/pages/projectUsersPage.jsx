@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProjects } from '../../contexts/ProjectContext';
-import { useUser } from '../../contexts/UserContext';
+import { useProjects } from '../../../contexts/ProjectContext';
+import { useUser } from '../../../contexts/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiTrash, HiUserAdd } from 'react-icons/hi';
 import { toast } from 'react-hot-toast';
-import InviteModal from './widgets/inviteModal.jsx';
-import UserDetailsModal from './widgets/userDetailsModal.jsx';
+import InviteModal from '../modals/inviteModal.jsx';
+import UserDetailsModal from '../modals/userDetailsModal.jsx';
 
 const roleStyles = {
     owner: 'bg-yellow-400/20 text-yellow-300 ring-yellow-400/30',

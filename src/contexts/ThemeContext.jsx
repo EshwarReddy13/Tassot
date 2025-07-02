@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const ThemeContext = createContext();
 
@@ -11,14 +12,15 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
+  const location = useLocation();
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check localStorage for saved preference, default to dark mode
+    // Check localStorage for saved preference, default to light mode
     const saved = localStorage.getItem('theme');
     if (saved !== null) {
       return saved === 'dark';
     }
-    // Default to dark mode if no preference saved
-    return true;
+    // Default to light mode if no preference saved
+    return false;
   });
 
   const toggleTheme = () => {
@@ -29,45 +31,48 @@ export const ThemeProvider = ({ children }) => {
     setIsDarkMode(darkMode);
   };
 
-  // Save theme preference to localStorage whenever it changes
+  // Set initial theme on app load
   useEffect(() => {
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    const root = document.documentElement;
+    const saved = localStorage.getItem('theme');
+    const shouldBeDark = saved === 'dark' || (saved === null && false); // false = light mode default
     
-    // Apply theme to document root for CSS custom properties
+    if (shouldBeDark) {
+      root.classList.add('dark');
+      console.log('Initial theme set to dark mode');
+    } else {
+      root.classList.remove('dark');
+      console.log('Initial theme set to light mode');
+    }
+  }, []);
+
+  // Save theme preference to localStorage and apply theme
+  useEffect(() => {
     const root = document.documentElement;
     
-    if (isDarkMode) {
-      // Dark theme colors
-      root.style.setProperty('--color-bg-primary', '#292830');
-      root.style.setProperty('--color-bg-secondary', '#3a3a44');
-      root.style.setProperty('--color-bg-card', '#17171b');
-      root.style.setProperty('--color-bg-dark', '#17171b');
-      root.style.setProperty('--color-accent-primary', '#9674da');
-      root.style.setProperty('--color-accent-hover', '#7e5cb7');
-      root.style.setProperty('--color-text-primary', '#ffffff');
-      root.style.setProperty('--color-text-secondary', '#a0a0a0');
-      root.style.setProperty('--color-text-placeholder', '#6b7280');
-      root.style.setProperty('--color-error', '#f87171');
-      root.style.setProperty('--color-warning', '#f87171');
-      root.style.setProperty('--color-info', '#3b82f6');
-      root.style.setProperty('--color-success', '#34d399');
+    // Check if we're on the login page
+    const isLoginPage = location.pathname === '/login';
+    
+    if (isLoginPage) {
+      // Force dark mode for login page
+      root.classList.add('dark');
+      console.log('Login page: Forcing dark mode');
     } else {
-      // Light theme colors
-      root.style.setProperty('--color-bg-primary', '#f8fafc');
-      root.style.setProperty('--color-bg-secondary', '#f1f5f9');
-      root.style.setProperty('--color-bg-card', '#ffffff');
-      root.style.setProperty('--color-bg-dark', '#e2e8f0');
-      root.style.setProperty('--color-accent-primary', '#7c3aed');
-      root.style.setProperty('--color-accent-hover', '#6d28d9');
-      root.style.setProperty('--color-text-primary', '#1e293b');
-      root.style.setProperty('--color-text-secondary', '#64748b');
-      root.style.setProperty('--color-text-placeholder', '#94a3b8');
-      root.style.setProperty('--color-error', '#ef4444');
-      root.style.setProperty('--color-warning', '#f59e0b');
-      root.style.setProperty('--color-info', '#3b82f6');
-      root.style.setProperty('--color-success', '#10b981');
+      // Use user's theme preference for other pages
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      
+      if (isDarkMode) {
+        root.classList.add('dark');
+        console.log('Theme set to dark mode');
+      } else {
+        root.classList.remove('dark');
+        console.log('Theme set to light mode');
+      }
     }
-  }, [isDarkMode]);
+    
+    // Debug: Check if the class was set
+    console.log('Current theme classes:', root.className);
+  }, [isDarkMode, location.pathname]);
 
   const value = {
     isDarkMode,

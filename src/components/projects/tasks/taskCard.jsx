@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import clsx from 'clsx';
 import { HiPencil, HiTrash, HiOutlineCalendar } from 'react-icons/hi';
 import { useAI } from '../../../contexts/AIContext.jsx';
-import AIEnhancedInput from './AIEnhancedInput.jsx';
+import AIEnhancedInput from '../ai/aiEnhancedInput.jsx';
 
 const formatDate = (dateString) => {
     if (!dateString) return null;
@@ -73,7 +73,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
             <motion.div
                 layoutId={task.id}
                 className={clsx(
-                    'p-3 rounded-lg touch-none transition-all duration-200 flex flex-col',
+                    'p-4 rounded-sm touch-none transition-all duration-200 flex flex-col',
                     {
                         'bg-bg-card text-text-primary cursor-pointer border-2 border-transparent hover:border-accent-primary focus-visible:border-accent-primary': !isThisCardDragging && !isEditing,
                         'bg-bg-card ring-2 ring-accent-primary': isEditing,
@@ -104,7 +104,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                                     />
                                 </div>
                             ) : (
-                                <p className="font-medium text-text-primary mb-2 break-words" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+                                <p className=" text-text-primary mb-2 break-words font-sans" style={{ fontSize: 'clamp(0.5rem, 2vw, 0.95rem)' }}>
                                     {task.task_name}
                                 </p>
                             )}
@@ -113,7 +113,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                         {!isEditing && (
                             <div className="flex items-end justify-between mt-2 min-h-[2rem]">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold text-text-secondary bg-bg-secondary px-2 py-1 rounded-md">
+                                    <span className="text-xs font-medium text-text-secondary bg-bg-dark px-2 py-1 rounded-md">
                                         {task.task_key}
                                     </span>
                                     {formattedDeadline && (
@@ -128,7 +128,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                                     {assignees.slice(0, 3).map(user => (
                                         <img
                                             key={user.id}
-                                            className="w-6 h-6 rounded-full object-cover border-2 border-bg-card"
+                                            className="w-7.5 h-7.5 rounded-full object-cover border-2 border-bg-card"
                                             src={user.photo_url || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=3a3a44&color=fff`}
                                             alt={user.first_name}
                                             title={`${user.first_name} ${user.last_name}`}

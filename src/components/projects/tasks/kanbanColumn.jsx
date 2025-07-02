@@ -74,7 +74,7 @@ const KanbanColumn = memo(({
     return (
         <motion.div
             ref={setNodeRef}
-            className={clsx('bg-bg-secondary rounded-xl p-4 flex flex-col min-h-[25rem] transition-colors', { 'gradient-border': isOver })}
+            className={clsx('bg-bg-dark rounded-xl p-4 flex flex-col min-h-[25rem] transition-colors', { 'gradient-border': isOver })}
         >
             <div className={clsx("flex justify-between items-start mb-4", { 'pointer-events-none': isDragging })}>
                 
@@ -92,7 +92,7 @@ const KanbanColumn = memo(({
                             aria-label="Column name"
                         />
                     ) : (
-                        <h3 className="text-white font-semibold" style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>
+                        <h3 className="text-white font-medium " style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>
                             {column.name}
                         </h3>
                     )}

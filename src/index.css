@@ -1,29 +1,215 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* COMMENTED OUT - Old Light Theme
 @theme {
-  --color-bg-primary: #292830;
-  --color-bg-secondary: #3a3a44;
-  --color-bg-card: #17171b;
-  --color-bg-dark: #17171b;
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-dark: #e2e8f0;
+  --color-accent-primary: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-placeholder: #94a3b8;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+  --color-success: #10b981;
+}
+*/
+
+@theme {
+  /* Modern Clean Light Theme - Inspired by GitHub Light & Linear */
   
+  /* Background Colors - Clean and sophisticated */
+  --color-bg-primary: #fefefe;       /* Main background - pure white */
+  --color-bg-secondary: #f8f9fa;     /* Secondary surfaces - subtle gray */
+  --color-bg-card: #ffffff;          /* Cards & elevated surfaces - pure white */
+  --color-bg-tertiary: #f1f3f4;      /* Tertiary surfaces - light gray */
+  --color-bg-dark: #e8eaed;          /* Accent surfaces - medium gray */
+  
+  --color-bg-navbar: #ffffff;        /* Navbar background */
+  
+  /* Accent Colors - Refined purple palette (matching dark theme) */
+  --color-accent-primary: #9674da;   /* Primary accent - vibrant purple */
+  --color-accent-hover: #7c3aed;     /* Hover state - deeper purple */
+  --color-accent-secondary: #a78bfa; /* Secondary accent - lighter purple */
+  
+  /* Text Colors - High contrast for readability */
+  --color-text-primary: #1f2937;     /* Primary text - dark gray */
+  --color-text-secondary: #6b7280;   /* Secondary text - medium gray */
+  --color-text-tertiary: #9ca3af;    /* Tertiary text - lighter gray */
+  --color-text-placeholder: #d1d5db; /* Placeholder text - light gray */
+  --color-text-disabled: #e5e7eb;    /* Disabled text - very light gray */
+  
+  /* Semantic Colors - Status indicators */
+  --color-error: #dc2626;            /* Error - clear red */
+  --color-warning: #d97706;          /* Warning - amber */
+  --color-info: #2563eb;             /* Info - clear blue */
+  --color-success: #059669;          /* Success - clear green */
+  
+  /* Border Colors - Clean separators */
+  --color-border-primary: #e5e7eb;   /* Primary borders */
+  --color-border-secondary: #f3f4f6; /* Secondary borders */
+  --color-border-accent: #9674da;    /* Accent borders */
+  
+  /* Shadow Colors - Subtle depth */
+  --color-shadow-sm: rgba(0, 0, 0, 0.05);
+  --color-shadow-md: rgba(0, 0, 0, 0.1);
+  --color-shadow-lg: rgba(0, 0, 0, 0.15);
+}
+
+/* COMMENTED OUT - Old Dark Theme
+@theme dark {
+  --color-bg-primary: #3a3a44;
+  --color-bg-secondary: #2B2C2F;
+  --color-bg-card: #17171b;
+  --color-bg-dark: #18191A;
   --color-accent-primary: #9674da;
   --color-accent-hover: #7e5cb7;
-  
   --color-text-primary: #ffffff;
   --color-text-secondary: #a0a0a0;
   --color-text-placeholder: #6b7280;
-  
   --color-error: #f87171;
   --color-warning: #f87171;
   --color-info: #3b82f6;
   --color-success: #34d399;
 }
+*/
+
+@theme dark {
+  /* Modern Gray-Based Dark Theme - Inspired by GitHub Dark & VS Code Dark */
+  
+  /* Background Colors - Sophisticated gray palette */
+  --color-bg-primary: #1e1e1e;       /* Main background - warm dark gray */
+  --color-bg-secondary: #2d2d30;     /* Secondary surfaces - medium gray */
+  --color-bg-card: #252526;          /* Cards & elevated surfaces - slightly lighter */
+  --color-bg-tertiary: #3e3e42;      /* Tertiary surfaces - lighter gray */
+  --color-bg-dark: #181818;          /* Darkest surfaces - deep gray */
+  
+  /* Accent Colors - Refined purple palette */
+  --color-accent-primary: #9674da;   /* Primary accent - vibrant purple */
+  --color-accent-hover: #7c3aed;     /* Hover state - deeper purple */
+  --color-accent-secondary: #a78bfa; /* Secondary accent - lighter purple */
+  
+  /* Text Colors - High contrast grays */
+  --color-text-primary: #f8f8f2;     /* Primary text - warm white */
+  --color-text-secondary: #a1a1aa;   /* Secondary text - medium gray */
+  --color-text-tertiary: #71717a;    /* Tertiary text - darker gray */
+  --color-text-placeholder: #52525b; /* Placeholder text - muted gray */
+  --color-text-disabled: #3f3f46;    /* Disabled text - very muted */
+  
+  /* Semantic Colors - Status indicators */
+  --color-error: #f87171;            /* Error - soft red */
+  --color-warning: #fbbf24;          /* Warning - amber */
+  --color-info: #60a5fa;             /* Info - soft blue */
+  --color-success: #34d399;          /* Success - mint green */
+  
+  /* Border Colors - Subtle separators */
+  --color-border-primary: #3f3f46;   /* Primary borders */
+  --color-border-secondary: #27272a; /* Secondary borders */
+  --color-border-accent: #8b5cf6;    /* Accent borders */
+  
+  /* Shadow Colors - Depth and elevation */
+  --color-shadow-sm: rgba(0, 0, 0, 0.3);
+  --color-shadow-md: rgba(0, 0, 0, 0.4);
+  --color-shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
+/* StyreneA Font Faces */
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-Thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+  letter-spacing: 1em;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-ThinItalic.otf') format('opentype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-RegularItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'StyreneA';
+  src: url('./assets/fonts/StyreneA-BlackItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'StyreneA', sans-serif;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :focus-visible {

@@ -9,7 +9,7 @@ import {
 import { auth, googleProvider } from '../../firebase.js';
 import { motion } from 'framer-motion';
 import { useUser } from '../../contexts/UserContext.jsx';
-import login_background from '../../assets/login_background.webp';
+import login_background from '../../assets/login_background.png';
 
 export default function LoginPageView() {
   const { firebaseUser } = useUser();
@@ -114,24 +114,16 @@ export default function LoginPageView() {
 
   return (
     <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
-      {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-[#2c2638] p-4 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
-        <img
-          src={login_background}
-          alt="Decorative login background"
-          className="w-full h-full object-cover rounded-lg scale-100 transition-none"
-        />
-      </div>
 
-      {/* Right Form Section */}
+      {/* Left Form Section */}
       <motion.div
-        className="w-1/2 h-full flex flex-col justify-center px-12 bg-[#2c2638] min-w-0 flex-shrink-0"
+        className="w-1/2 h-full flex flex-col justify-center px-8 bg-bg-primary min-w-0 flex-shrink-0"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <motion.h2
-          className="text-5xl font-bold text-white mb-6 text-center"
+          className="text-5xl font-bold text-text-primary mb-6 text-center"
           style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -141,21 +133,21 @@ export default function LoginPageView() {
         </motion.h2>
 
         <motion.p
-          className="mt-3 mb-8 text-center text-sm text-white"
+          className="mt-3 mb-8 text-center text-sm text-text-secondary"
           style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           Don't have an account?{' '}
-          <Link to="/signup" className="underline font-bold text-[#9674da]">
+          <Link to="/signup" className="underline font-bold text-accent-primary">
             Sign Up
           </Link>
         </motion.p>
 
         {authError && (
           <motion.p
-            className="text-red-400 text-sm mb-4 text-center"
+            className="text-error text-sm mb-4 text-center"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -170,7 +162,7 @@ export default function LoginPageView() {
           <div>
             <label
               htmlFor="email"
-              className="block text-xl font-medium text-white text-left"
+              className="block text-xl font-medium text-text-primary text-left"
             >
               Email
             </label>
@@ -179,7 +171,7 @@ export default function LoginPageView() {
               id="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-bg-secondary text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               aria-describedby={emailError ? 'email-error' : undefined}
             />
             {emailError && (
@@ -200,8 +192,9 @@ export default function LoginPageView() {
           <div>
             <label
               htmlFor="password"
-              className="block text-xl font-medium text-white text-left"
+              className="block text-xl font-medium text-text-primary text-left"
             >
+              
               Password
             </label>
             <input
@@ -209,7 +202,7 @@ export default function LoginPageView() {
               id="password"
               value={password}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="mt-1 w-full p-2 bg-[#3a3942] text-white border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="mt-1 w-full p-2 bg-[#3a3942] text-text-primary border border-[#4a4952] rounded-md focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               aria-describedby={passwordError ? 'password-error' : undefined}
             />
             {passwordError && (
@@ -229,7 +222,7 @@ export default function LoginPageView() {
           {/* Submit */}
           <motion.button
             type="submit"
-            className="w-full bg-[#9674da] text-white p-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+            className="w-full bg-accent-primary text-text-primary p-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label="Log in with email and password"
@@ -259,7 +252,7 @@ export default function LoginPageView() {
             {/* Google */}
             <motion.button
               type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-text-primary py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               onClick={handleGoogleSignIn}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -276,7 +269,7 @@ export default function LoginPageView() {
             {/* Apple */}
             <motion.button
               type="button"
-              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+              className="w-1/2 flex items-center justify-center gap-2 bg-[#3a3942] text-text-primary py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
               onClick={handleAppleSignIn}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -313,16 +306,16 @@ export default function LoginPageView() {
             >
               {popupType === 'apple' && (
                 <>
-                  <h3 className="text-xl font-bold text-white mb-4 text-center">
+                  <h3 className="text-xl font-bold text-text-primary mb-4 text-center">
                     Apple Sign-In Not Available
                   </h3>
-                  <p className="text-white text-sm mb-6 text-center">
+                  <p className="text-text-secondary text-sm mb-6 text-center">
                     We are still working on setting up Apple sign-in. For now, use
                     Google or email.
                   </p>
                   <motion.button
                     type="button"
-                    className="w-full bg-[#9674da] text-white py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
+                    className="w-full bg-[#9674da] text-text-primary py-2 rounded-md font-semibold hover:bg-[#7e5cb7] focus:outline-none focus:ring-2 focus:ring-[#9674da]"
                     onClick={closePopup}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -336,6 +329,17 @@ export default function LoginPageView() {
           </motion.div>
         )}
       </motion.div>
+
+      {/* Right Image Section */}
+      <div className="w-1/2 h-full bg-bg-primary p-2 flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+        <img
+          src={login_background}
+          alt="Decorative login background"
+          className="w-full h-full object-cover rounded-lg scale-100 transition-none"
+        />
+      </div>
+
+      
     </div>
   );
 }

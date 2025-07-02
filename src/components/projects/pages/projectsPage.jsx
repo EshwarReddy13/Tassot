@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../../contexts/UserContext.jsx';
-import { useProjects } from '../../contexts/ProjectContext.jsx';
-import ProjectCard from './widgets/ProjectCard.jsx';
-import DraggableProjectGrid from './widgets/DraggableProjectGrid.jsx';
+import { useUser } from '../../../contexts/UserContext.jsx';
+import { useProjects } from '../../../contexts/ProjectContext.jsx';
+import ProjectCard from '../shared/projectCard.jsx';
+import DraggableProjectGrid from '../shared/draggableProjectGrid.jsx';
 import toast from 'react-hot-toast'; // Used for better user feedback
 
 const ProjectsPage = () => {

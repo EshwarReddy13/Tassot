@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProjects } from '../../contexts/ProjectContext';
-import ProjectHealthWidget from './widgets/projectHealthWidget';
-import ActionItemsWidget from './widgets/actionItemsWidget';
-import RecentActivityWidget from './widgets/recentActivityWidget'; // <-- Import
+import { useProjects } from '../../../contexts/ProjectContext';
+import ProjectHealthWidget from '../dashboard/projectHealthWidget';
+import ActionItemsWidget from '../dashboard/actionItemsWidget';
+import RecentActivityWidget from '../dashboard/recentActivityWidget';
 
 const ProjectDashboardPage = () => {
     const { projectUrl } = useParams();

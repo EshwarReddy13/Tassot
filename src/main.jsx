@@ -12,18 +12,18 @@ import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import Login from './components/login/loginPage.jsx';
 import Signup from './components/login/signupPage.jsx';
 import VerifyEmailPage from './components/login/verifyEmailPage.jsx';
-import AcceptInvitePage from './components/projects/acceptInvitePage.jsx'; 
+import AcceptInvitePage from './components/projects/pages/acceptInvitePage.jsx'; 
 
 import Dashboard from './components/dashboard/dashboardPage.jsx';
 
-import Projects from './components/projects/projectsPage.jsx';
-import ProjectPage from './components/projects/projectView.jsx';
-import ProjectSettingsPage from './components/projects/projectSettingsPage.jsx';
-import ProjectDashboardPage from './components/projects/projectDashboardPage.jsx'; 
+import Projects from './components/projects/pages/projectsPage.jsx';
+import ProjectPage from './components/projects/pages/projectView.jsx';
+import ProjectSettingsPage from './components/projects/pages/projectSettingsPage.jsx';
+import ProjectDashboardPage from './components/projects/pages/projectDashboardPage.jsx'; 
 
 import SettingsPage from './components/settings/settingsPage.jsx';
 
-import ProjectUsersPage from './components/projects/projectUsersPage.jsx';
+import ProjectUsersPage from './components/projects/pages/projectUsersPage.jsx';
 
 import PalettePage from './components/palette/palettePage.jsx';
 
@@ -33,35 +33,35 @@ import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <UserProvider>
-        <ProjectProvider>
-          <AIProvider>
-            {/* --- CONFIGURED TOASTER PROVIDER --- */}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 5000,
-                style: {
-                  background: 'var(--color-bg-card)',
-                  color: 'var(--color-text-primary)',
-                  border: '1px solid var(--color-bg-secondary)',
+    <UserProvider>
+      <ProjectProvider>
+        <AIProvider>
+          {/* --- CONFIGURED TOASTER PROVIDER --- */}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 5000,
+              style: {
+                background: 'var(--color-bg-card)',
+                color: 'var(--color-text-primary)',
+                border: '1px solid var(--color-bg-secondary)',
+              },
+              success: {
+                iconTheme: {
+                  primary: 'var(--color-success)',
+                  secondary: 'var(--color-bg-card)',
                 },
-                success: {
-                  iconTheme: {
-                    primary: 'var(--color-success)',
-                    secondary: 'var(--color-bg-card)',
-                  },
+              },
+              error: {
+                iconTheme: {
+                  primary: 'var(--color-error)',
+                  secondary: 'var(--color-bg-card)',
                 },
-                error: {
-                  iconTheme: {
-                    primary: 'var(--color-error)',
-                    secondary: 'var(--color-bg-card)',
-                  },
-                },
-              }}
-            />
-            <BrowserRouter>
+              },
+            }}
+          />
+          <BrowserRouter>
+            <ThemeProvider>
               <Routes>
                 {/* Public routes (no navbar) */}
                 <Route path="/login" element={<Login />} />
@@ -86,10 +86,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   <Route path="/palette" element={<PalettePage />} />
                 </Route>
               </Routes>
-            </BrowserRouter>
-          </AIProvider>
-        </ProjectProvider>
-      </UserProvider>
-    </ThemeProvider>
+            </ThemeProvider>
+          </BrowserRouter>
+        </AIProvider>
+      </ProjectProvider>
+    </UserProvider>
   </React.StrictMode>
 );

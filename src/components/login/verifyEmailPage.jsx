@@ -10,7 +10,7 @@ import { sendEmailVerification } from 'firebase/auth';
 import { motion } from 'framer-motion';
 // Import useUser hook
 import { useUser } from '../../contexts/UserContext.jsx'; // Adjust path as needed
-import login_background from '../../assets/login_background.webp'; // Adjust path as needed
+import login_background from '../../assets/login_background.png'; // Adjust path as needed
 
 function VerifyEmailPage() {
   // Destructure firebaseUser, userData, loading from context

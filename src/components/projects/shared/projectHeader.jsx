@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useProjects } from '../../../contexts/ProjectContext';
 import { useUser } from '../../../contexts/UserContext';
 import ProjectMembers from './projectMembers.jsx';
-import InviteModal from './inviteModal.jsx';
+import InviteModal from '../modals/inviteModal.jsx';
 
 const SearchIcon = (props) => (
   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
