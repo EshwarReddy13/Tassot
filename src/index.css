@@ -1,24 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* COMMENTED OUT - Old Light Theme
-@theme {
-  --color-bg-primary: #f8fafc;
-  --color-bg-secondary: #f1f5f9;
-  --color-bg-card: #ffffff;
-  --color-bg-dark: #e2e8f0;
-  --color-accent-primary: #7c3aed;
-  --color-accent-hover: #6d28d9;
-  --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-text-placeholder: #94a3b8;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-  --color-info: #3b82f6;
-  --color-success: #10b981;
-}
-*/
-
 @theme {
   /* Modern Clean Light Theme - Inspired by GitHub Light & Linear */
   
@@ -59,24 +41,6 @@
   --color-shadow-md: rgba(0, 0, 0, 0.1);
   --color-shadow-lg: rgba(0, 0, 0, 0.15);
 }
-
-/* COMMENTED OUT - Old Dark Theme
-@theme dark {
-  --color-bg-primary: #3a3a44;
-  --color-bg-secondary: #2B2C2F;
-  --color-bg-card: #17171b;
-  --color-bg-dark: #18191A;
-  --color-accent-primary: #9674da;
-  --color-accent-hover: #7e5cb7;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #a0a0a0;
-  --color-text-placeholder: #6b7280;
-  --color-error: #f87171;
-  --color-warning: #f87171;
-  --color-info: #3b82f6;
-  --color-success: #34d399;
-}
-*/
 
 @theme dark {
   /* Modern Gray-Based Dark Theme - Inspired by GitHub Dark & VS Code Dark */

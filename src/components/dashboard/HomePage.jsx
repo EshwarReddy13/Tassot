@@ -15,6 +15,14 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  // Debug function to test drawer opening
+  const handleOpenCreateProject = () => {
+    console.log('handleOpenCreateProject called from onboarding');
+    console.log('Current isDrawerOpen state:', isDrawerOpen);
+    setIsDrawerOpen(true);
+    console.log('Set isDrawerOpen to true');
+  };
+
   // Log state for debugging
   useEffect(() => {
     // This useEffect is just for logging and doesn't change behavior.
@@ -22,10 +30,19 @@ const DashboardPage = () => {
     console.log('DashboardPage context state:', { userData, firebaseUser, loading, error });
     console.log('DEBUG userData:', userData);
     console.log('DEBUG projects:', projects);
+    console.log('DEBUG isDrawerOpen:', isDrawerOpen);
   }, [userData, firebaseUser, loading, error, projects]);
 
   // Use projects array from ProjectContext for onboarding logic
-  const isFirstTimeUser = Array.isArray(projects) && projects.length === 0 && !loadingProjects;
+  const shouldShowOnboarding = userData?.onboarding === false && !loadingProjects;
+
+  // Debug the onboarding logic
+  console.log('=== ONBOARDING DEBUG ===');
+  console.log('userData?.onboarding:', userData?.onboarding);
+  console.log('loadingProjects:', loadingProjects);
+  console.log('shouldShowOnboarding:', shouldShowOnboarding);
+  console.log('handleOpenCreateProject function exists:', typeof handleOpenCreateProject === 'function');
+  console.log('========================');
 
   if (loading || loadingProjects) {
     return (
@@ -76,131 +93,134 @@ const DashboardPage = () => {
   }
 
   return (
-    isFirstTimeUser ? (
-      <Onboarding userData={userData} />
-    ) : (
-      <section className="min-h-screen font-poppins bg-bg-primary flex" aria-label="Dashboard">
-        <main className="flex-1 flex flex-col md:flex-row gap-2 p-2 sm:p-4"> {/* Added some padding */}
-          <div className="md:w-1/2 flex flex-col">
-            <div className="flex-1 flex flex-col items-center justify-center p-2 text-center"> {/* Adjusted for better centering and responsiveness */}
-              {error ? (
-                <p className="text-error text-sm mb-4" role="alert">
-                  Failed to load dashboard data: {error}
-                </p>
-              ) : userData ? ( // Only display welcome if userData is successfully loaded
-                <>
-                  <motion.h1
-                    className="text-text-primary text-3xl font-bold"
-                    style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)' }}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    Welcome to{' '}
-                    <span className="animated-gradient-text font-bold">
-                      Tassot
-                    </span>
-                    , {userData.first_name || firebaseUser.displayName?.split(' ')[0] || 'User'} {/* Corrected to userData.first_name */}
-                  </motion.h1>
-                  <motion.p
-                    className="text-text-secondary text-sm mt-2 max-w-md"
-                    style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1.1rem)' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                  >
-                    Tassot helps you collaborate on projects with ease, bringing your ideas to life through seamless teamwork and innovative tools.
-                  </motion.p>
-                </>
-              ) : (
-                // This case would be if !userData but also no error and not loading.
-                // Could be a brief moment or indicate an issue if persistent.
-                <p className="text-text-secondary">Loading user information...</p>
-              )}
-            </div>
-            <div className="h-auto md:h-48 flex items-center justify-center md:justify-end p-2 md:pr-4"> {/* Adjusted height and padding */}
-              <motion.button
-                className="flex flex-col items-center justify-center gap-2 w-full max-w-xs md:max-w-none md:w-auto h-auto p-6 bg-bg-secondary hover:bg-bg-tertiary text-text-primary text-lg font-semibold rounded-lg overflow-hidden gradient-border"
-                onClick={() => setIsDrawerOpen(true)}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                aria-label="Create a new project"
-              >
-                <img
-                  src="/favicon.svg" // Assuming this is in your public folder
-                  alt="Tassot logo icon"
-                  className="w-16 h-16 sm:w-20 sm:h-20 mb-1 sm:mb-2" // Adjusted size
-                  onError={(e) => {
-                    console.error('Failed to load logo icon: /favicon.svg');
-                    e.target.style.display = 'none'; // Hide if broken
-                  }}
-                />
-                <div className="flex items-center gap-2">
+    <>
+      {shouldShowOnboarding ? (
+        console.log('Rendering Onboarding component with function:', handleOpenCreateProject) ||
+        <Onboarding userData={userData} onOpenCreateProject={handleOpenCreateProject} />
+      ) : (
+        <section className="min-h-screen font-poppins bg-bg-primary flex" aria-label="Dashboard">
+          <main className="flex-1 flex flex-col md:flex-row gap-2 p-2 sm:p-4"> {/* Added some padding */}
+            <div className="md:w-1/2 flex flex-col">
+              <div className="flex-1 flex flex-col items-center justify-center p-2 text-center"> {/* Adjusted for better centering and responsiveness */}
+                {error ? (
+                  <p className="text-error text-sm mb-4" role="alert">
+                    Failed to load dashboard data: {error}
+                  </p>
+                ) : userData ? ( // Only display welcome if userData is successfully loaded
+                  <>
+                    <motion.h1
+                      className="text-text-primary text-3xl font-bold"
+                      style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)' }}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      Welcome to{' '}
+                      <span className="animated-gradient-text font-bold">
+                        Tassot
+                      </span>
+                      , {userData.first_name || firebaseUser.displayName?.split(' ')[0] || 'User'} {/* Corrected to userData.first_name */}
+                    </motion.h1>
+                    <motion.p
+                      className="text-text-secondary text-sm mt-2 max-w-md"
+                      style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1.1rem)' }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                    >
+                      Tassot helps you collaborate on projects with ease, bringing your ideas to life through seamless teamwork and innovative tools.
+                    </motion.p>
+                  </>
+                ) : (
+                  // This case would be if !userData but also no error and not loading.
+                  // Could be a brief moment or indicate an issue if persistent.
+                  <p className="text-text-secondary">Loading user information...</p>
+                )}
+              </div>
+              <div className="h-auto md:h-48 flex items-center justify-center md:justify-end p-2 md:pr-4"> {/* Adjusted height and padding */}
+                <motion.button
+                  className="flex flex-col items-center justify-center gap-2 w-full max-w-xs md:max-w-none md:w-auto h-auto p-6 bg-bg-secondary hover:bg-bg-tertiary text-text-primary text-lg font-semibold rounded-lg overflow-hidden gradient-border"
+                  onClick={() => setIsDrawerOpen(true)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  aria-label="Create a new project"
+                >
                   <img
-                    src="https://api.iconify.design/mdi:plus.svg?color=white" // Added color query param
-                    alt="" // Decorative
-                    className="w-8 h-8 sm:w-10 sm:h-10" // Adjusted size
-                    // Removed style={{ filter: 'invert(100%)' }} as color is in URL
+                    src="/favicon.svg" // Assuming this is in your public folder
+                    alt="Tassot logo icon"
+                    className="w-16 h-16 sm:w-20 sm:h-20 mb-1 sm:mb-2" // Adjusted size
                     onError={(e) => {
-                      console.error('Failed to load plus icon');
+                      console.error('Failed to load logo icon: /favicon.svg');
+                      e.target.style.display = 'none'; // Hide if broken
+                    }}
+                  />
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="https://api.iconify.design/mdi:plus.svg?color=white" // Added color query param
+                      alt="" // Decorative
+                      className="w-8 h-8 sm:w-10 sm:h-10" // Adjusted size
+                      // Removed style={{ filter: 'invert(100%)' }} as color is in URL
+                      onError={(e) => {
+                        console.error('Failed to load plus icon');
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <p className="text-xl sm:text-2xl">Create New Project</p>
+                  </div>
+                </motion.button>
+              </div>
+            </div>
+            <div className="md:w-1/2 flex flex-col">
+              <div
+                className="flex-1 min-h-[200px] sm:min-h-[300px] md:h-2/3 bg-cover bg-center rounded-lg" // Added rounded-lg
+                style={{
+                  backgroundImage: `url(${BackgroundImage})`,
+                  backgroundColor: 'var(--color-bg-secondary)',
+                }}
+                role="img"
+                aria-label="Decorative dashboard background image"
+              ></div>
+              <div className="h-auto md:h-48 flex items-center justify-center md:justify-start p-2 md:pl-4 mt-2 md:mt-0"> {/* Adjusted height, padding, and margin */}
+                 <motion.button
+                  className="flex flex-col items-center justify-center gap-2 w-full max-w-xs md:max-w-none md:w-auto h-auto p-6 bg-bg-secondary hover:bg-bg-tertiary text-text-primary text-lg font-semibold rounded-lg overflow-hidden" // Removed gradient-border for variety
+                  onClick={() => navigate('/join-project')} // Ensure this route exists
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  aria-label="Join an existing project"
+                >
+                  <img
+                    src="/favicon.svg"
+                    alt="Tassot logo icon"
+                    className="w-16 h-16 sm:w-20 sm:h-20 mb-1 sm:mb-2" // Matched size with create button
+                    style={{ filter: 'invert(100%)' }} // Keep invert if needed for this logo variant
+                    onError={(e) => {
+                      console.error('Failed to load logo icon for join: /favicon.svg');
                       e.target.style.display = 'none';
                     }}
                   />
-                  <p className="text-xl sm:text-2xl">Create New Project</p>
-                </div>
-              </motion.button>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="https://api.iconify.design/mdi:arrow-right-bold-circle-outline.svg?color=white" // Changed icon, added color
+                      alt="" // Decorative
+                      className="w-8 h-8 sm:w-10 sm:h-10" // Adjusted size
+                      onError={(e) => {
+                        console.error('Failed to load arrow icon');
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <p className="text-xl sm:text-2xl">Join Existing Project</p>
+                  </div>
+                </motion.button>
+              </div>
             </div>
-          </div>
-          <div className="md:w-1/2 flex flex-col">
-            <div
-              className="flex-1 min-h-[200px] sm:min-h-[300px] md:h-2/3 bg-cover bg-center rounded-lg" // Added rounded-lg
-              style={{
-                backgroundImage: `url(${BackgroundImage})`,
-                backgroundColor: 'var(--color-bg-secondary)',
-              }}
-              role="img"
-              aria-label="Decorative dashboard background image"
-            ></div>
-            <div className="h-auto md:h-48 flex items-center justify-center md:justify-start p-2 md:pl-4 mt-2 md:mt-0"> {/* Adjusted height, padding, and margin */}
-               <motion.button
-                className="flex flex-col items-center justify-center gap-2 w-full max-w-xs md:max-w-none md:w-auto h-auto p-6 bg-bg-secondary hover:bg-bg-tertiary text-text-primary text-lg font-semibold rounded-lg overflow-hidden" // Removed gradient-border for variety
-                onClick={() => navigate('/join-project')} // Ensure this route exists
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                aria-label="Join an existing project"
-              >
-                <img
-                  src="/favicon.svg"
-                  alt="Tassot logo icon"
-                  className="w-16 h-16 sm:w-20 sm:h-20 mb-1 sm:mb-2" // Matched size with create button
-                  style={{ filter: 'invert(100%)' }} // Keep invert if needed for this logo variant
-                  onError={(e) => {
-                    console.error('Failed to load logo icon for join: /favicon.svg');
-                    e.target.style.display = 'none';
-                  }}
-                />
-                <div className="flex items-center gap-2">
-                  <img
-                    src="https://api.iconify.design/mdi:arrow-right-bold-circle-outline.svg?color=white" // Changed icon, added color
-                    alt="" // Decorative
-                    className="w-8 h-8 sm:w-10 sm:h-10" // Adjusted size
-                    onError={(e) => {
-                      console.error('Failed to load arrow icon');
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                  <p className="text-xl sm:text-2xl">Join Existing Project</p>
-                </div>
-              </motion.button>
-            </div>
-          </div>
-        </main>
-        <CreateProjectDrawer
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-        />
-      </section>
-    )
+          </main>
+        </section>
+      )}
+      <CreateProjectDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      />
+    </>
   );
 };
 

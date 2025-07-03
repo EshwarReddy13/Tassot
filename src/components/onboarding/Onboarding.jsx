@@ -5,6 +5,9 @@ import { CheckCircleIcon, UserPlusIcon, RocketLaunchIcon } from '@heroicons/reac
 import { HiOutlineClipboardList } from 'react-icons/hi';
 import { FaUserFriends, FaRobot, FaRegCheckCircle } from 'react-icons/fa';
 import { MdDashboard, MdViewColumn } from 'react-icons/md';
+import { useUser } from '../../contexts/UserContext';
+import { auth } from '../../firebase';
+import { toast } from 'react-hot-toast';
 import avatarPointingDownward from '../../assets/AvatarPointingDownward.png';
 import avatarWithChecklist from '../../assets/AvatarWithChecklistInAir.png';
 
@@ -47,8 +50,17 @@ const onboardingSteps = [
   }
 ];
 
-const Onboarding = ({ userData }) => {
+const Onboarding = ({ userData, onOpenCreateProject }) => {
+  const { updateUser } = useUser();
   const [completed, setCompleted] = useState([]);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Debug props
+  console.log('=== ONBOARDING PROPS DEBUG ===');
+  console.log('userData:', userData);
+  console.log('onOpenCreateProject:', onOpenCreateProject);
+  console.log('onOpenCreateProject type:', typeof onOpenCreateProject);
+  console.log('================================');
 
   const handleStepClick = (key) => {
     setCompleted((prev) =>
@@ -56,8 +68,57 @@ const Onboarding = ({ userData }) => {
     );
   };
 
-  const handleFinish = () => {
-    window.location.reload();
+  const handleStartUsing = async () => {
+    console.log('handleStartUsing called');
+    console.log('completed array:', completed);
+    console.log('includes create_project:', completed.includes('create_project'));
+    console.log('onOpenCreateProject function:', onOpenCreateProject);
+    
+    if (completed.includes('create_project')) {
+      console.log('Calling onOpenCreateProject');
+      onOpenCreateProject?.();
+      return;
+    }
+    
+    console.log('Finishing onboarding instead');
+    await handleFinish();
+  };
+
+  const handleFinish = async () => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) {
+        throw new Error('Authentication required.');
+      }
+
+      const response = await fetch('/api/users/onboarding', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ completed: true })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update onboarding status.');
+      }
+
+      toast.success('Welcome to Tassot! 🎉');
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error updating onboarding status:', error);
+      toast.error(error.message || 'Failed to complete onboarding. Please try again.');
+      setIsUpdating(false);
+    }
   };
 
   const progress = (completed.length / onboardingSteps.length) * 100;
@@ -129,6 +190,28 @@ const Onboarding = ({ userData }) => {
             Follow these steps to set up your workspace and begin collaborating.
           </motion.p>
           <div className="w-40 h-1 rounded-full bg-accent-primary mb-8" aria-hidden="true"></div>
+          {/* Helpful message when create project is selected */}
+          <AnimatePresence>
+            {completed.includes('create_project') && (
+              <motion.div
+                className="w-full mb-6 p-4 bg-accent-primary/10 border border-accent-primary/30 rounded-xl"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-accent-primary/20 rounded-full flex items-center justify-center">
+                    <HiOutlineClipboardList className="w-4 h-4 text-accent-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-text-primary font-semibold text-sm">Ready to create your first project!</h3>
+                    <p className="text-text-secondary text-xs mt-1">Click "Create Your First Project" below to open the project creation form and get started.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Checklist */}
           <ul className="w-full mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {onboardingSteps.map((step, idx) => {
@@ -175,18 +258,20 @@ const Onboarding = ({ userData }) => {
           <div className="w-full flex flex-col sm:flex-row gap-3 mt-2">
             <button
               className="flex-1 py-3 px-6 bg-accent-primary hover:bg-accent-primary/90 text-text-inverse font-bold rounded-lg text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 flex items-center justify-center gap-2 shadow-md"
-              onClick={handleFinish}
-              aria-label="Finish onboarding and start using Tassot"
+              onClick={handleStartUsing}
+              disabled={isUpdating}
+              aria-label={completed.includes('create_project') ? 'Create your first project' : 'Finish onboarding and start using Tassot'}
             >
               <RocketLaunchIcon className="w-6 h-6 mr-1" />
-              Start Using Tassot
+              {isUpdating ? 'Finishing...' : completed.includes('create_project') ? 'Create Your First Project' : 'Start Using Tassot'}
             </button>
             <button
               className="flex-1 py-3 px-6 bg-bg-tertiary hover:bg-bg-secondary text-text-secondary rounded-lg text-base transition-colors focus:outline-none focus:ring-2 focus:ring-border-primary focus:ring-offset-2 flex items-center justify-center gap-2 shadow-sm"
               onClick={handleFinish}
+              disabled={isUpdating}
               aria-label="Skip onboarding"
             >
-              Skip for now
+              {isUpdating ? 'Finishing...' : 'Skip for now'}
             </button>
           </div>
         </motion.div>
@@ -203,6 +288,7 @@ const Onboarding = ({ userData }) => {
 
 Onboarding.propTypes = {
   userData: PropTypes.object,
+  onOpenCreateProject: PropTypes.func,
 };
 
 export default Onboarding; 

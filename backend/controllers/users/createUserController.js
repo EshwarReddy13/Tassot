@@ -37,9 +37,9 @@ export async function createUser(req, res) {
     const { rows } = await pool.query(
       `
       INSERT INTO users (
-        firebase_uid, email, provider, first_name, last_name, photo_url, created_at, updated_at
+        firebase_uid, email, provider, first_name, last_name, photo_url, onboarding, created_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, NOW(), NOW()
+        $1, $2, $3, $4, $5, $6, false, NOW(), NOW()
       )
       ON CONFLICT (firebase_uid) DO UPDATE
       SET
@@ -57,6 +57,7 @@ export async function createUser(req, res) {
         first_name,
         last_name,
         photo_url, -- Return the saved photo_url
+        onboarding,
         settings,
         created_at,
         updated_at;

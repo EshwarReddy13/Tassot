@@ -89,8 +89,8 @@ export const UserProvider = ({ children }) => {
     try {
       const token = await firebaseUser.getIdToken();
 
-      const res = await fetch(`/api/users/${firebaseUser.uid}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/users/me', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
