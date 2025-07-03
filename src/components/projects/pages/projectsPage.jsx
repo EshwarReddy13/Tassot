@@ -147,30 +147,30 @@ const ProjectsPage = () => {
   const unpinnedProjects = projects.filter(project => !project.isPinned);
 
   return (
-    <div className="min-h-screen bg-[#292830]">
+    <div className="min-h-screen bg-bg-primary">
       <main className="ml-0 md:ml-[4rem] mr-4 pt-6 pb-4 px-4 sm:px-6">
         
-        <motion.h1 className="text-white font-bold mb-6" style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+        <motion.h1 className="text-text-primary font-bold mb-6" style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
           Your Projects
         </motion.h1>
 
         {isLoading && (
           <motion.div className="flex justify-center items-center py-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-            <div className="w-8 h-8 border-4 border-t-[#9674da] border-[#ffffff33] rounded-full animate-spin" role="status" aria-label="Loading projects" />
-            <span className="ml-3 text-white">Loading projects...</span>
+            <div className="w-8 h-8 border-4 border-t-accent-primary border-border-primary rounded-full animate-spin" role="status" aria-label="Loading projects" />
+            <span className="ml-3 text-text-primary">Loading projects...</span>
           </motion.div>
         )}
 
         {displayError && !isLoading && (
-          <motion.p className="text-red-400 text-center p-4 bg-red-900/20 rounded mb-4" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert">
+          <motion.p className="text-error text-center p-4 bg-error/20 rounded mb-4" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert">
             Error loading data: {displayError}
           </motion.p>
         )}
 
         {!isLoading && !displayError && projects.length === 0 && (
-          <motion.p className="text-gray-400 text-center py-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+          <motion.p className="text-text-secondary text-center py-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
             You have no projects yet.{' '}
-            <button className="text-[#9674da] hover:underline font-semibold" onClick={() => navigate('/dashboard')}>Create one</button>.
+            <button className="text-accent-primary hover:underline font-semibold" onClick={() => navigate('/dashboard')}>Create one</button>.
           </motion.p>
         )}
 
@@ -184,7 +184,7 @@ const ProjectsPage = () => {
                   animate={{ opacity: 1, y: 0 }} 
                   transition={{ duration: 0.5 }}
                 >
-                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center">
                     <span className="mr-2">📌</span>
                     Pinned Projects
                   </h2>
@@ -212,7 +212,7 @@ const ProjectsPage = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
                 {pinnedProjects.length > 0 && (
-                  <h2 className="text-lg font-semibold text-white mb-4">All Projects</h2>
+                  <h2 className="text-lg font-semibold text-text-primary mb-4">All Projects</h2>
                 )}
                 <DraggableProjectGrid
                   projects={unpinnedProjects}
@@ -229,29 +229,29 @@ const ProjectsPage = () => {
         </AnimatePresence>
 
         {editing && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
-            <motion.div initial={{opacity: 0, scale: 0.9}} animate={{opacity: 1, scale: 1}} className="bg-[#292830] p-6 rounded-lg w-96 shadow-xl">
-              <h2 className="text-white text-lg mb-4 font-semibold">Edit Project</h2>
-              <label className="block text-gray-300 mb-1 text-sm">Project Name</label>
-              <input type="text" className="w-full mb-3 p-2 rounded bg-[#1e1e23] text-white border-2 border-transparent focus:border-accent-primary focus:outline-none" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}/>
-              <label className="block text-gray-300 mb-1 text-sm">Project Key (3-4 letters)</label>
-              <input type="text" className="w-full mb-4 p-2 rounded bg-[#1e1e23] text-white border-2 border-transparent focus:border-accent-primary focus:outline-none" value={formData.key} onChange={(e) => setFormData({ ...formData, key: e.target.value })}/>
+          <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+            <motion.div initial={{opacity: 0, scale: 0.9}} animate={{opacity: 1, scale: 1}} className="bg-bg-secondary p-6 rounded-lg w-96 shadow-xl">
+              <h2 className="text-text-primary text-lg mb-4 font-semibold">Edit Project</h2>
+              <label className="block text-text-secondary mb-1 text-sm">Project Name</label>
+              <input type="text" className="w-full mb-3 p-2 rounded bg-bg-tertiary text-text-primary border-2 border-transparent focus:border-accent-primary focus:outline-none" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}/>
+              <label className="block text-text-secondary mb-1 text-sm">Project Key (3-4 letters)</label>
+              <input type="text" className="w-full mb-4 p-2 rounded bg-bg-tertiary text-text-primary border-2 border-transparent focus:border-accent-primary focus:outline-none" value={formData.key} onChange={(e) => setFormData({ ...formData, key: e.target.value })}/>
               <div className="flex justify-end space-x-3">
-                <button className="px-4 py-2 bg-gray-600 rounded text-white hover:bg-gray-500 transition-colors" onClick={() => setEditing(null)}>Cancel</button>
-                <button className="px-4 py-2 bg-[#9674da] rounded text-white hover:bg-accent-hover transition-colors" onClick={saveEdit}>Save Changes</button>
+                <button className="px-4 py-2 bg-bg-tertiary rounded text-text-secondary hover:bg-bg-card transition-colors" onClick={() => setEditing(null)}>Cancel</button>
+                <button className="px-4 py-2 bg-accent-primary rounded text-text-primary hover:bg-accent-hover transition-colors" onClick={saveEdit}>Save Changes</button>
               </div>
             </motion.div>
           </div>
         )}
 
         {deleting && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
-             <motion.div initial={{opacity: 0, scale: 0.9}} animate={{opacity: 1, scale: 1}} className="bg-[#292830] p-6 rounded-lg w-96 shadow-xl">
-              <h2 className="text-white text-lg mb-2 font-semibold">Confirm Deletion</h2>
-              <p className="text-gray-300 mb-4 text-sm">Are you sure you want to delete <strong>{deleting.project_name ?? deleting.projectName}</strong>? This action cannot be undone.</p>
+          <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+             <motion.div initial={{opacity: 0, scale: 0.9}} animate={{opacity: 1, scale: 1}} className="bg-bg-secondary p-6 rounded-lg w-96 shadow-xl">
+              <h2 className="text-text-primary text-lg mb-2 font-semibold">Confirm Deletion</h2>
+              <p className="text-text-secondary mb-4 text-sm">Are you sure you want to delete <strong>{deleting.project_name ?? deleting.projectName}</strong>? This action cannot be undone.</p>
               <div className="flex justify-end space-x-3">
-                <button className="px-4 py-2 bg-gray-600 rounded text-white hover:bg-gray-500 transition-colors" onClick={() => setDeleting(null)}>Cancel</button>
-                <button className="px-4 py-2 bg-red-600 rounded text-white hover:bg-red-500 transition-colors" onClick={confirmDelete}>Delete Project</button>
+                <button className="px-4 py-2 bg-bg-tertiary rounded text-text-secondary hover:bg-bg-card transition-colors" onClick={() => setDeleting(null)}>Cancel</button>
+                <button className="px-4 py-2 bg-error rounded text-text-primary hover:bg-error/80 transition-colors" onClick={confirmDelete}>Delete Project</button>
               </div>
             </motion.div>
           </div>

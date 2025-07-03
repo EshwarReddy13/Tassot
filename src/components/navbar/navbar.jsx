@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useUser } from '../../contexts/UserContext';
-import clsx from 'clsx'; // --- [THIS IS THE FIX] The missing import is now re-added ---
+import clsx from 'clsx';
 
 // Define main navigation icons
 const icons = [
@@ -75,7 +75,6 @@ const UserAvatar = ({ user }) => {
   );
 };
 
-
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,7 +84,6 @@ const Navbar = () => {
 
   const isProjectsRoute = location.pathname.startsWith('/projects/');
   const projectUrl = isProjectsRoute ? location.pathname.split('/')[2] : null;
-
 
   useEffect(() => {
     setIsSubmenuOpen(isProjectsRoute);
@@ -109,7 +107,7 @@ const Navbar = () => {
       aria-label="Primary navigation"
     >
       <div className="flex flex-row h-full w-full bg-bg-dark p-2.5 rounded-xl mt-2 mb-2">
-        <div className="flex flex-col items-center w-[4rem] py-4 space-y-4 flex-shrink-0">
+        <div className="flex flex-col items-center w-[4rem] py-4 space-y-8 flex-shrink-0">
           {icons.map((icon) => (
             <div key={icon.id} className="relative group flex-shrink-0">
               <motion.button
@@ -166,11 +164,20 @@ const Navbar = () => {
               {subMenuItems.map((item, index) => (
                 <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
                   <NavLink
-                      to={item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`} end
-                      className={({ isActive }) => clsx("w-full text-left p-2 rounded-lg text-text-secondary text-sm hover:bg-accent-primary hover:text-text-primary focus:bg-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-secondary", { 'bg-accent-primary text-text-primary': isActive })}
-                      style={{ fontSize: 'clamp(0.875rem, 1.2vw, 1rem)' }} aria-label={item.label}
+                    to={item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`} end
+                    className={({ isActive }) =>
+                      clsx(
+                        "w-full text-left px-4 py-3 rounded-lg text-text-secondary text-base font-medium transition-all duration-150 hover:bg-accent-primary/20 focus:bg-accent-primary/20 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-secondary",
+                        {
+                          'bg-accent-primary/10 text-accent-primary border-l-4 border-accent-primary': isActive,
+                          'border-l-4 border-transparent': !isActive
+                        }
+                      )
+                    }
+                    style={{ fontSize: 'clamp(0.95rem, 1.2vw, 1.08rem)' }}
+                    aria-label={item.label}
                   >
-                      {item.label}
+                    {item.label}
                   </NavLink>
                 </motion.div>
               ))}

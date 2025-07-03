@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProjects } from '../../../contexts/ProjectContext';
-import { useUser } from '../../../contexts/UserContext';
+import { useProjects } from '../../../contexts/ProjectContext.jsx';
+import { useUser } from '../../../contexts/UserContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiTrash, HiUserAdd } from 'react-icons/hi';
 import { toast } from 'react-hot-toast';

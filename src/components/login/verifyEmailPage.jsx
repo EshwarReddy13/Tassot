@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 // Import useUser hook
 import { useUser } from '../../contexts/UserContext.jsx'; // Adjust path as needed
 import login_background from '../../assets/login_background.png'; // Adjust path as needed
+import AuthBrandHeader from './AuthBrandHeader.jsx';
 
 function VerifyEmailPage() {
   // Destructure firebaseUser, userData, loading from context
@@ -134,113 +135,116 @@ function VerifyEmailPage() {
 
   // --- RETURN JSX (Keep original structure and UI) ---
   return (
-    <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
-      {/* Left Image Section */}
-      <div className="w-1/2 h-full bg-bg-primary p-4 hidden md:flex items-center justify-center transition-none min-w-0 flex-shrink-0">
-        <img
-          src={login_background}
-          alt="Decorative verify email background"
-          className="w-full h-full object-cover rounded-lg scale-100 transition-none"
-        />
-      </div>
+    <>
+      <AuthBrandHeader />
+      <div className="min-h-screen flex font-poppins w-full h-screen overflow-hidden">
 
-      {/* Right Content Section */}
-       <motion.div
-        className="w-full md:w-1/2 h-full flex items-center justify-center px-6 sm:px-12 bg-bg-primary min-w-0 flex-shrink-0 overflow-y-auto"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <div className="w-full max-w-md mx-auto">
-          <motion.h2
-            className="text-4xl sm:text-5xl font-bold text-text-primary mb-4 sm:mb-6 text-center"
-            style={{ fontSize: 'clamp(2.2rem, 5vw, 3.0rem)' }} // Adjusted clamp
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            Verify Your Email
-          </motion.h2>
+        {/* Right Content Section */}
+         <motion.div
+          className="w-full md:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 bg-bg-primary min-w-0 flex-shrink-0 overflow-y-auto py-8 mt-20 md:mt-0"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <div className="w-full max-w-md mx-auto">
+            <motion.h2
+              className="text-4xl sm:text-5xl font-bold text-text-primary mb-4 sm:mb-6 text-center"
+              style={{ fontSize: 'clamp(2.2rem, 5vw, 3.0rem)' }} // Adjusted clamp
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              Verify Your Email
+            </motion.h2>
 
-          <motion.p
-            className="mt-2 sm:mt-3 mb-6 sm:mb-8 text-center text-sm text-text-secondary"
-            style={{ fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)' }} // Adjusted clamp
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            A verification email has been sent to{' '}
-            <strong className="text-text-primary">{firebaseUser?.email || 'your email address'}</strong>.
-            Please check your inbox or spam folder and click the link inside.
-          </motion.p>
-
-          {/* Error display with theme colors */}
-          {error && (
             <motion.p
-              className="text-error text-sm mb-4 text-center"
-              initial={{ opacity: 0, y: -10 }} // Use y instead of x
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              role="alert"
+              className="mt-2 sm:mt-3 mb-6 sm:mb-8 text-center text-sm text-text-secondary"
+              style={{ fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)' }} // Adjusted clamp
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
             >
-              {error}
+              A verification email has been sent to{' '}
+              <strong className="text-text-primary">{firebaseUser?.email || 'your email address'}</strong>.
+              Please check your inbox or spam folder and click the link inside.
             </motion.p>
-          )}
 
-          {/* Success message display with theme colors */}
-          {message && (
+            {/* Error display with theme colors */}
+            {error && (
+              <motion.p
+                className="text-error text-sm mb-4 text-center"
+                initial={{ opacity: 0, y: -10 }} // Use y instead of x
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                role="alert"
+              >
+                {error}
+              </motion.p>
+            )}
+
+            {/* Success message display with theme colors */}
+            {message && (
+              <motion.p
+                className="text-success text-sm mb-4 text-center"
+                initial={{ opacity: 0, y: -10 }} // Use y instead of x
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                role="status"
+              >
+                {message}
+              </motion.p>
+            )}
+
+             {/* Keep original button layout */}
+            <div className="space-y-4">
+              <button
+                type="button"
+                className={`w-full p-2.5 sm:p-3 rounded-md font-semibold text-text-primary transition-colors duration-200 ${
+                  isResendDisabled
+                    ? 'bg-border-primary cursor-not-allowed text-text-secondary'
+                    : 'bg-accent-primary hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-primary'
+                }`}
+                onClick={handleResendEmail}
+                disabled={isResendDisabled}
+                aria-label={isResendDisabled ? `Resend email in ${cooldown} seconds` : 'Resend verification email'}
+              >
+                {isResendDisabled ? `Resend Email (${cooldown}s)` : 'Resend Verification Email'}
+              </button>
+
+              <button
+                type="button"
+                className="w-full bg-bg-tertiary text-text-primary p-2.5 sm:p-3 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-primary transition-colors duration-200"
+                onClick={handleCheckVerification}
+                aria-label="Check if email has been verified"
+              >
+                I've Verified My Email
+              </button>
+            </div>
+
+            {/* Login link with theme colors */}
             <motion.p
-              className="text-success text-sm mb-4 text-center"
-              initial={{ opacity: 0, y: -10 }} // Use y instead of x
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              role="status"
+              className="mt-6 text-center text-xs sm:text-sm text-text-secondary"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
             >
-              {message}
+              Already verified?{' '}
+              <Link to="/logout" className="underline font-semibold text-accent-primary hover:text-accent-hover">
+                Log Out
+              </Link>
             </motion.p>
-          )}
-
-           {/* Keep original button layout */}
-          <div className="space-y-4">
-            <button
-              type="button"
-              className={`w-full p-2.5 sm:p-3 rounded-md font-semibold text-text-primary transition-colors duration-200 ${
-                isResendDisabled
-                  ? 'bg-border-primary cursor-not-allowed text-text-secondary'
-                  : 'bg-accent-primary hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-primary'
-              }`}
-              onClick={handleResendEmail}
-              disabled={isResendDisabled}
-              aria-label={isResendDisabled ? `Resend email in ${cooldown} seconds` : 'Resend verification email'}
-            >
-              {isResendDisabled ? `Resend Email (${cooldown}s)` : 'Resend Verification Email'}
-            </button>
-
-            <button
-              type="button"
-              className="w-full bg-bg-tertiary text-text-primary p-2.5 sm:p-3 rounded-md font-semibold hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-primary transition-colors duration-200"
-              onClick={handleCheckVerification}
-              aria-label="Check if email has been verified"
-            >
-              I've Verified My Email
-            </button>
           </div>
-
-          {/* Login link with theme colors */}
-          <motion.p
-            className="mt-6 text-center text-xs sm:text-sm text-text-secondary"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-          >
-            Already verified?{' '}
-            <Link to="/login" className="underline font-semibold text-accent-primary hover:text-accent-hover">
-              Log In
-            </Link>
-          </motion.p>
+        </motion.div>
+        {/* Left Image Section */}
+        <div className="w-1/2 h-full bg-bg-primary p-2 hidden md:flex items-center justify-center transition-none min-w-0 flex-shrink-0">
+          <img
+            src={login_background}
+            alt="Decorative verify email background"
+            className="w-full h-full object-cover rounded-lg scale-100 transition-none"
+          />
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -25,7 +25,7 @@ const PinButton = ({ isPinned, onPinToggle, disabled = false, className = '' }) 
       className={`p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary ${
         isPinned 
           ? 'text-accent-primary bg-accent-primary/10 hover:bg-accent-primary/20' 
-          : 'text-gray-400 hover:text-accent-primary hover:bg-accent-primary/10'
+          : 'text-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       whileHover={!disabled ? { scale: 1.1 } : {}}
       whileTap={!disabled ? { scale: 0.95 } : {}}

@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiOutlineNewspaper, HiOutlineCollection, HiOutlineUser, HiOutlineChatAlt2, HiCalendar, HiUserCircle } from 'react-icons/hi';
-import CommentList from '../comments/CommentList';
+import CommentList from '../comments/CommentList.jsx';
 import Select from 'react-select';
 import { useAI } from '../../../contexts/AIContext.jsx';
 import AIEnhancedInput from '../ai/AIEnhancedInput.jsx';
