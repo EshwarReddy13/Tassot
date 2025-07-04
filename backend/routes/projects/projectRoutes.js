@@ -27,6 +27,10 @@ import { getProjectDashboardSummaryController } from '../../controllers/projects
 import { getProjectActionItemsController } from '../../controllers/projects/dashboard/getProjectActionItemsController.js';
 import { getProjectActivityController } from '../../controllers/projects/dashboard/getProjectActivityController.js';
 
+import { getMyTasksController } from '../../controllers/projects/tasks/getMyTasksController.js';
+import { getRecentActivitiesController } from '../../controllers/projects/getRecentActivitiesController.js';
+import { getDashboardStatsController } from '../../controllers/projects/getDashboardStatsController.js';
+
 import { requireAuth } from '../../auth/authMiddleware.js'; 
 import { requireProjectRole } from '../../auth/requireProjectRole.js';
 
@@ -36,6 +40,9 @@ router.use(requireAuth);
 // === Project Routes ===
 router.post('/', createProjectController);
 router.get('/', getProjectsController);
+router.get('/my-tasks', getMyTasksController);
+router.get('/recent-activities', getRecentActivitiesController);
+router.get('/dashboard-stats', getDashboardStatsController);
 router.get('/:projectUrl', getProjectDetailsController);
 router.put('/:projectUrl', requireProjectRole(['owner']), editProjectController);
 router.delete('/:projectUrl', requireProjectRole(['owner']), deleteProjectController);
@@ -70,6 +77,5 @@ router.put('/:projectUrl/settings', requireProjectRole(['owner', 'editor']), upd
 router.get('/:projectUrl/dashboard/summary', requireProjectRole(['owner', 'editor', 'user']), getProjectDashboardSummaryController);
 router.get('/:projectUrl/dashboard/action-items', requireProjectRole(['owner', 'editor', 'user']),getProjectActionItemsController);
 router.get('/:projectUrl/dashboard/activity', requireProjectRole(['owner', 'editor', 'user']), getProjectActivityController);
-
 
 export default router;

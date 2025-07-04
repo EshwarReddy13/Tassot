@@ -61,10 +61,34 @@ const Layout = () => {
   const navbarWidth = isProjectsRoute ? '16.5rem' : '5rem'; // Expanded: 16.5rem, Collapsed: 5rem
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg-primary">
+    <div className="flex h-screen overflow-hidden bg-bg-primary relative">
+      {/* Global Background Pattern */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none">
+        {/* Gradient circles */}
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl"></div>
+        
+        {/* Additional subtle circles for more color */}
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-56 h-56 bg-violet-500/15 rounded-full blur-3xl"></div>
+        
+        {/* Subtle grid pattern */}
+        <div 
+          className="absolute inset-0 opacity-25"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}
+        ></div>
+      </div>
+      
       <Navbar />
       <InvitationHandler />
-      <div className="flex-1 h-full min-h-0 overflow-auto" style={{ marginLeft: navbarWidth }}>
+      <div className="flex-1 h-full min-h-0 overflow-auto relative z-10" style={{ marginLeft: navbarWidth }}>
         <Outlet />
       </div>
     </div>
