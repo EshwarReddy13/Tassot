@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useUser } from './UserContext.jsx';
 
 const ProjectContext = createContext();
@@ -258,6 +258,13 @@ export const ProjectProvider = ({ children }) => {
             return data;
         } catch (err) {
             throw err;
+        }
+    }, [firebaseUser, fetchUserProjects]);
+
+    // Auto-fetch projects when user is available
+    useEffect(() => {
+        if (firebaseUser) {
+            fetchUserProjects();
         }
     }, [firebaseUser, fetchUserProjects]);
 

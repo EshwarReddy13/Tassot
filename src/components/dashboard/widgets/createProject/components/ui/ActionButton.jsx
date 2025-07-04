@@ -65,45 +65,61 @@ const ActionButton = ({
 
   return (
     <div className="w-80 flex items-center justify-center relative">
-      {/* Glowing accent animation on the rightmost edge to guide users */}
+      {/* Enhanced glowing accent animation spanning full height */}
       <motion.div
-        className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-32 rounded-l-2xl"
+        className="absolute -right-6 top-0 bottom-0 w-12 rounded-l-2xl"
         animate={{ 
           boxShadow: [
             '0 0 0 0 rgba(167, 139, 250, 0)',
-            '-10px 0 30px 5px rgba(167, 139, 250, 0.4)',
-            '-20px 0 50px 10px rgba(167, 139, 250, 0.3)',
-            '-10px 0 30px 5px rgba(167, 139, 250, 0.4)',
+            '-15px 0 40px 8px rgba(167, 139, 250, 0.6)',
+            '-25px 0 60px 15px rgba(167, 139, 250, 0.5)',
+            '-15px 0 40px 8px rgba(167, 139, 250, 0.6)',
             '0 0 0 0 rgba(167, 139, 250, 0)'
           ],
           background: [
             'rgba(167, 139, 250, 0)',
-            'rgba(167, 139, 250, 0.1)',
             'rgba(167, 139, 250, 0.2)',
-            'rgba(167, 139, 250, 0.1)',
+            'rgba(167, 139, 250, 0.3)',
+            'rgba(167, 139, 250, 0.2)',
             'rgba(167, 139, 250, 0)'
           ]
         }}
         transition={{ 
-          duration: 3,
+          duration: 2.5,
           repeat: Infinity,
           ease: "easeInOut"
         }}
       />
       
-      {/* Additional subtle pulse on the right edge */}
+      {/* Enhanced pulse spanning full height */}
       <motion.div
-        className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-20 bg-accent-primary/10 rounded-l-xl"
+        className="absolute -right-3 top-0 bottom-0 w-6 bg-accent-primary/20 rounded-l-xl"
         animate={{ 
-          opacity: [0, 0.5, 0],
-          scaleY: [0.8, 1.1, 0.8],
-          scaleX: [0.5, 1, 0.5]
+          opacity: [0, 0.7, 0],
+          scaleY: [0.8, 1.2, 0.8],
+          scaleX: [0.6, 1.1, 0.6]
         }}
         transition={{ 
-          duration: 2.5,
+          duration: 2,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: 0.5
+          delay: 0.3
+        }}
+      />
+
+      {/* Additional prominent pulsing element spanning full height */}
+      <motion.div
+        className="absolute -right-4 top-0 bottom-0 w-8 bg-accent-primary/15 rounded-l-xl"
+        animate={{ 
+          opacity: [0, 0.8, 0],
+          scaleY: [0.7, 1.3, 0.7],
+          scaleX: [0.4, 1.2, 0.4]
+        }}
+        transition={{ 
+          duration: 1.8,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.8
         }}
       />
 
@@ -116,7 +132,7 @@ const ActionButton = ({
       >
         <div className="flex items-center gap-4">
           <motion.span
-            className={`text-text-secondary ${getHoverColor()} text-2xl font-semibold transition-colors flex items-center gap-3`}
+            className={`text-text-secondary ${getHoverColor()} text-3xl font-semibold transition-colors flex items-center gap-3`}
             whileHover={{ scale: 1.1 }}
           >
             {step === FORM_STEPS.INVITE && (projectCreationLoading || userLoading) ? (

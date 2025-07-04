@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import { UserProvider } from './contexts/UserContext.jsx'; 
 import { ProjectProvider } from './contexts/ProjectContext.jsx';
+import { DashboardProvider } from './contexts/DashboardContext.jsx';
 import { AIProvider } from './contexts/AIContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
 
@@ -37,7 +38,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <UserProvider>
       <ProjectProvider>
-        <AIProvider>
+        <DashboardProvider>
+          <AIProvider>
           {/* --- CONFIGURED TOASTER PROVIDER --- */}
           <Toaster
             position="top-right"
@@ -95,6 +97,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             </ThemeProvider>
           </BrowserRouter>
         </AIProvider>
+        </DashboardProvider>
       </ProjectProvider>
     </UserProvider>
   </React.StrictMode>

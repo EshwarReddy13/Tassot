@@ -398,7 +398,7 @@ const CreateProjectDrawer = ({ isOpen, onClose }) => {
                 </div>
                 
                 {/* Center - Form content */}
-                <div className="flex-1 max-w-4xl mx-auto px-8 py-8">
+                <div className="flex-1 max-w-3xl mx-auto px-8 py-8">
                 <AnimatePresence mode="wait">
                   {step === 'create' ? (
                     <motion.div key="create-step" variants={fieldVariants} initial="initial" animate="animate" exit="exit" className="space-y-8">
