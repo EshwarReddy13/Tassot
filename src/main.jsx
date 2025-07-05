@@ -23,6 +23,7 @@ import ProjectSettingsPage from './components/projects/pages/ProjectSettingsPage
 import ProjectDashboardPage from './components/projects/pages/ProjectDashboardPage.jsx'; 
 
 import SettingsPage from './components/settings/SettingsPage.jsx';
+import EmailPage from './components/email/EmailPage.jsx';
 
 import ProjectUsersPage from './components/projects/pages/ProjectUsersPage.jsx';
 
@@ -88,6 +89,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                       {/* You could add other nested project pages like "settings", "reports", etc. here later */}
                   </Route>
                   <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/email" element={<EmailPage />} />
                   <Route path="/palette" element={<PalettePage />} />
                 </Route>
 

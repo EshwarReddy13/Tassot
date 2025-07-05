@@ -82,7 +82,10 @@ const DashboardStats = ({ userData, projects, tasks, dashboardStats }) => {
       {/* Minimal Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-text-primary text-2xl font-bold">Dashboard</h1>
+          <div>
+            <h1 className="text-text-primary text-3xl font-bold">Home</h1>
+            <div className="w-12 h-0.5 bg-accent-primary mt-1 rounded-full ml-6"></div>
+          </div>
           <div className="text-text-secondary text-sm">
             {new Date().toLocaleDateString('en-US', { 
               weekday: 'long', 

@@ -38,10 +38,10 @@ export const ThemeProvider = ({ children }) => {
     const shouldBeDark = saved === 'dark' || (saved === null && false); // false = light mode default
     
     if (shouldBeDark) {
-      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
       console.log('Initial theme set to dark mode');
     } else {
-      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
       console.log('Initial theme set to light mode');
     }
   }, []);
@@ -55,23 +55,23 @@ export const ThemeProvider = ({ children }) => {
     
     if (isLoginPage) {
       // Force dark mode for login page
-      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
       console.log('Login page: Forcing dark mode');
     } else {
       // Use user's theme preference for other pages
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
       
       if (isDarkMode) {
-        root.classList.add('dark');
+        root.setAttribute('data-theme', 'dark');
         console.log('Theme set to dark mode');
       } else {
-        root.classList.remove('dark');
+        root.setAttribute('data-theme', 'light');
         console.log('Theme set to light mode');
       }
     }
     
-    // Debug: Check if the class was set
-    console.log('Current theme classes:', root.className);
+    // Debug: Check if the attribute was set
+    console.log('Current theme attribute:', root.getAttribute('data-theme'));
   }, [isDarkMode, location.pathname]);
 
   const value = {

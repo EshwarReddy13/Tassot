@@ -7,7 +7,7 @@ import React, {
   useCallback
 } from 'react';
 import { auth } from '../firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const UserContext = createContext();
 
@@ -147,9 +147,20 @@ export const UserProvider = ({ children }) => {
     }
   }, [firebaseUser]); // Add firebaseUser to the dependency array.
 
+  const logout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      setFirebaseUser(null);
+      setUserData(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  }, []);
+
   const value = useMemo(
-    () => ({ firebaseUser, userData, loading, error, updateUser, updateUserError: error, getUserByEmail }),
-    [firebaseUser, userData, loading, error, getUserByEmail]
+    () => ({ firebaseUser, userData, loading, error, updateUser, updateUserError: error, getUserByEmail, logout }),
+    [firebaseUser, userData, loading, error, getUserByEmail, logout]
   );
 
   return (

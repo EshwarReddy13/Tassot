@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useUser } from '../../contexts/UserContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import clsx from 'clsx';
 
 // Define main navigation icons
@@ -9,7 +11,7 @@ const icons = [
     { id: 'logo', label: 'Logo', path: '/home', url: '/favicon.svg' },
     { id: 'home', label: 'Home', path: '/home', url: 'https://api.iconify.design/mdi:home.svg' },
     { id: 'projects', label: 'Projects', path: '/projects', url: 'https://api.iconify.design/mdi:folder.svg' },
-    { id: 'settings', label: 'Settings', path: '/settings', url: 'https://api.iconify.design/mdi:cog.svg' },
+    { id: 'email', label: 'Email', path: '/email', url: 'https://api.iconify.design/mdi:email.svg' },
 ];
 
 // Define submenu items for Projects
@@ -43,8 +45,56 @@ const submenuItemVariants = {
   }),
 };
 
-// UserAvatar component for displaying profile picture or initials
+// UserAvatar component with dropdown menu
 const UserAvatar = ({ user }) => {
+  const navigate = useNavigate();
+  const { logout } = useUser();
+  const { isDarkMode, toggleTheme } = useTheme();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const avatarRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (avatarRef.current && !avatarRef.current.contains(event.target) && 
+          dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isDropdownOpen]);
+
+  // Calculate dropdown position when opening
+  const handleToggleDropdown = () => {
+    if (!isDropdownOpen && avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      const dropdownWidth = 256; // w-64 = 16rem = 256px
+      
+      // Position dropdown to the right of the avatar, but ensure it doesn't go off-screen
+      let left = rect.right + 24;
+      if (left + dropdownWidth > window.innerWidth) {
+        // If it would go off-screen, position it to the left of the avatar
+        left = rect.left - dropdownWidth - 8;
+      }
+      
+      // Estimate dropdown height (header + menu items + padding)
+      const dropdownHeight = 180; // Approximate height of the dropdown
+      
+      setDropdownPosition({
+        top: rect.top - dropdownHeight + 24, // Position so bottom aligns with avatar
+        left: Math.max(16, left) // Ensure it doesn't go too far left
+      });
+    }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   if (!user) return null;
 
   const getInitials = (firstName, lastName) => {
@@ -52,26 +102,243 @@ const UserAvatar = ({ user }) => {
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
+  const handleLogout = async () => {
+    setShowLogoutModal(true);
+    setIsDropdownOpen(false);
+  };
+
+  const confirmLogout = async () => {
+    try {
+      await logout();
+      navigate('/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const menuItems = [
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: 'https://api.iconify.design/mdi:cog.svg',
+      action: () => navigate('/settings'),
+      className: ''
+    },
+    {
+      id: 'theme',
+      label: 'Theme',
+      icon: isDarkMode 
+        ? 'https://api.iconify.design/mdi:weather-night.svg' 
+        : 'https://api.iconify.design/mdi:weather-sunny.svg',
+      action: toggleTheme,
+      className: '',
+      isToggle: true,
+      toggleValue: isDarkMode
+    },
+    {
+      id: 'logout',
+      label: 'Logout',
+      icon: 'https://api.iconify.design/mdi:logout.svg',
+      action: handleLogout,
+      className: 'text-[var(--color-error)] hover:text-red-400'
+    }
+  ];
+
   return (
-    <div className="relative group">
-      <div className="flex items-center justify-center w-10 h-10 overflow-hidden rounded-full cursor-pointer bg-accent-primary ring-2 ring-offset-2 ring-offset-bg-card ring-accent-hover">
-        {user.photo_url ? (
-          <img
-            src={user.photo_url}
-            alt="User profile"
-            className="object-cover w-full h-full"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <span className="text-base font-semibold text-text-primary">
-            {getInitials(user.first_name, user.last_name)}
-          </span>
-        )}
+    <>
+      <div className="relative" ref={avatarRef}>
+        <motion.button
+          className="flex items-center justify-center w-10 h-10 overflow-hidden rounded-full cursor-pointer bg-accent-primary ring-2 ring-offset-2 ring-offset-bg-card ring-accent-hover hover:ring-accent-primary transition-all duration-200"
+          onClick={handleToggleDropdown}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="User menu"
+        >
+          {user.photo_url ? (
+            <img
+              src={user.photo_url}
+              alt="User profile"
+              className="object-cover w-full h-full"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="text-base font-semibold text-text-primary">
+              {getInitials(user.first_name, user.last_name)}
+            </span>
+          )}
+        </motion.button>
       </div>
-       <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-        {user.first_name} {user.last_name}
-      </span>
-    </div>
+
+      {/* Dropdown Menu Portal */}
+      {isDropdownOpen && createPortal(
+        <AnimatePresence>
+          <motion.div
+            ref={dropdownRef}
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed w-64 bg-bg-card border border-white/10 rounded-xl shadow-xl backdrop-blur-xl z-[9999]"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 100%)',
+              backdropFilter: 'blur(20px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(200%)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* User Info Header */}
+            <div className="p-4 border-b border-white/10" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-accent-primary/20 flex items-center justify-center overflow-hidden">
+                  {user.photo_url ? (
+                    <img
+                      src={user.photo_url}
+                      alt="User profile"
+                      className="w-full h-full rounded-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="text-accent-primary font-semibold text-lg">
+                      {getInitials(user.first_name, user.last_name)}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-text-primary font-semibold text-sm">
+                    {user.first_name} {user.last_name}
+                  </h3>
+                  <p className="text-text-secondary text-xs">{user.email}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="p-2" onClick={(e) => e.stopPropagation()}>
+              {menuItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: index * 0.05 }}
+                >
+                  {item.isToggle ? (
+                    <div className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/10 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={item.icon}
+                          alt=""
+                          className="w-4 h-4"
+                          style={{ filter: 'invert(100%)' }}
+                        />
+                        <span className="text-sm font-medium text-text-secondary">{item.label}</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          item.action();
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-transparent ${
+                          item.toggleValue ? 'bg-accent-primary' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            item.toggleValue ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ) : (
+                    <motion.button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        item.action();
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-text-secondary hover:text-text-primary hover:bg-white/10 transition-all duration-200 ${item.className}`}
+                      whileHover={{ x: 5 }}
+                    >
+                      <img
+                        src={item.icon}
+                        alt=""
+                        className="w-4 h-4"
+                        style={{ filter: 'invert(100%)' }}
+                      />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </motion.button>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && createPortal(
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[10000] flex items-center justify-center"
+          style={{
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-bg-card border border-white/20 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              backdropFilter: 'blur(20px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(200%)'
+            }}
+          >
+            <div className="text-center">
+              
+              {/* Title */}
+              <h3 className="text-xl font-bold text-text-primary mb-3">
+                Confirm Logout
+              </h3>
+              
+              {/* Message */}
+              <p className="text-text-secondary mb-8">
+                Are you sure you want to logout? You'll need to sign in again to access your account.
+              </p>
+              
+              {/* Buttons */}
+              <div className="flex gap-4 justify-center">
+                <motion.button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="px-6 py-3 rounded-lg bg-white/10 text-text-secondary hover:bg-white/20 transition-colors font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={confirmLogout}
+                  className="px-6 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Logout
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>,
+        document.body
+      )}
+    </>
   );
 };
 
@@ -106,7 +373,7 @@ const Navbar = () => {
       variants={navbarVariants}
       aria-label="Primary navigation"
     >
-      <div className="flex flex-row h-full w-full bg-bg-dark p-2.5 rounded-xl mt-2 mb-2">
+      <div className="flex flex-row h-full w-full bg-black/80 p-2.5 rounded-xl mt-2 mb-2">
         <div className="flex flex-col items-center w-[4rem] py-4 space-y-8 flex-shrink-0">
           {icons.map((icon) => (
             <div key={icon.id} className="relative group flex-shrink-0">
