@@ -31,7 +31,7 @@ const ProjectMembers = ({ members = [], onInviteClick }) => {
   const canInvite = currentUser?.role === 'owner' || currentUser?.role === 'editor';
   // --- END OF UI LOGIC ---
 
-  const maxVisible = 3;
+  const maxVisible = 4;
   const visibleMembers = members.slice(0, maxVisible);
   const hiddenCount = Math.max(0, members.length - maxVisible);
   const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 }}};

@@ -12,7 +12,7 @@ const EmailPage = () => {
     return () => clearTimeout(timer);
   }, []);
   return (
-    <div className="min-h-screen bg-bg-primary p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -173,7 +173,7 @@ const EmailPage = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed top-0 left-20 right-0 bottom-0 z-[10000] flex items-center justify-center"
+            className="fixed inset-0 z-[10000] flex items-center justify-center"
             style={{
               background: 'rgba(0, 0, 0, 0.7)',
               backdropFilter: 'blur(12px)',

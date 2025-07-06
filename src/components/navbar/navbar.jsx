@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useUser } from '../../contexts/UserContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useNavbar } from '../../contexts/NavbarContext';
 import clsx from 'clsx';
 
 // Define main navigation icons
@@ -12,6 +13,7 @@ const icons = [
     { id: 'home', label: 'Home', path: '/home', url: 'https://api.iconify.design/mdi:home.svg' },
     { id: 'projects', label: 'Projects', path: '/projects', url: 'https://api.iconify.design/mdi:folder.svg' },
     { id: 'email', label: 'Email', path: '/email', url: 'https://api.iconify.design/mdi:email.svg' },
+    { id: 'storage', label: 'Storage', path: '/storage', url: 'https://api.iconify.design/mdi:cloud.svg' },
 ];
 
 // Define submenu items for Projects
@@ -24,8 +26,9 @@ const subMenuItems = [
 
 // Animation variants for the navbar width
 const navbarVariants = {
-  collapsed: { width: '5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
+  collapsed: { width: '4.5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
   expanded: { width: '16.5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
+  fullExpanded: { width: '10rem', transition: { duration: 0.5, ease: 'easeInOut' } },
 };
 
 // Animation variants for the subnavbar
@@ -46,7 +49,7 @@ const submenuItemVariants = {
 };
 
 // UserAvatar component with dropdown menu
-const UserAvatar = ({ user }) => {
+const UserAvatar = ({ user, isExpanded }) => {
   const navigate = useNavigate();
   const { logout } = useUser();
   const { isDarkMode, toggleTheme } = useTheme();
@@ -102,6 +105,22 @@ const UserAvatar = ({ user }) => {
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
+  const formatUserName = (firstName, lastName) => {
+    if (!firstName && !lastName) return 'User';
+    if (!firstName) return lastName;
+    if (!lastName) return firstName;
+    
+    const fullName = `${firstName} ${lastName}`;
+    const words = fullName.split(' ');
+    
+    if (words.length <= 2) {
+      return fullName;
+    } else {
+      // For 3+ words, split into multiple lines
+      return words.join('\n');
+    }
+  };
+
   const handleLogout = async () => {
     setShowLogoutModal(true);
     setIsDropdownOpen(false);
@@ -148,23 +167,35 @@ const UserAvatar = ({ user }) => {
     <>
       <div className="relative" ref={avatarRef}>
         <motion.button
-          className="flex items-center justify-center w-10 h-10 overflow-hidden rounded-full cursor-pointer bg-accent-primary ring-2 ring-offset-2 ring-offset-bg-card ring-accent-hover hover:ring-accent-primary transition-all duration-200"
+          className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-accent-primary transition-all duration-200"
           onClick={handleToggleDropdown}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="User menu"
         >
-          {user.photo_url ? (
-            <img
-              src={user.photo_url}
-              alt="User profile"
-              className="object-cover w-full h-full"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <span className="text-base font-semibold text-text-primary">
-              {getInitials(user.first_name, user.last_name)}
-            </span>
+          <div className="w-10 h-10 overflow-hidden rounded-full flex items-center justify-center">
+            {user.photo_url ? (
+              <img
+                src={user.photo_url}
+                alt="User profile"
+                className="object-cover w-full h-full"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span className="text-base font-semibold text-text-primary">
+                {getInitials(user.first_name, user.last_name)}
+              </span>
+            )}
+          </div>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-sm font-medium text-white whitespace-pre-line leading-tight"
+            >
+              {formatUserName(user.first_name, user.last_name)}
+            </motion.div>
           )}
         </motion.button>
       </div>
@@ -346,6 +377,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userData } = useUser();
+  const { isNavbarExpanded, toggleNavbar } = useNavbar();
   const [selectedIcon, setSelectedIcon] = useState('home');
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
 
@@ -365,55 +397,115 @@ const Navbar = () => {
     setIsSubmenuOpen(icon.id === 'projects');
   };
 
+
+
+  // Determine navbar state
+  const getNavbarState = () => {
+    if (isNavbarExpanded) return 'fullExpanded';
+    if (isProjectsRoute && isSubmenuOpen) return 'expanded';
+    return 'collapsed';
+  };
+
+  // Show all icons except expand (expand will be added separately)
+  const visibleIcons = icons.filter(icon => icon.id !== 'expand');
+
   return (
     <motion.nav
       className="fixed top-0 left-0 h-screen flex flex-col items-start ml-2 bg-bg-primary"
       initial="collapsed"
-      animate={isProjectsRoute && isSubmenuOpen ? 'expanded' : 'collapsed'}
+      animate={getNavbarState()}
       variants={navbarVariants}
       aria-label="Primary navigation"
     >
       <div className="flex flex-row h-full w-full bg-black/80 p-2.5 rounded-xl mt-2 mb-2">
-        <div className="flex flex-col items-center w-[4rem] py-4 space-y-8 flex-shrink-0">
-          {icons.map((icon) => (
-            <div key={icon.id} className="relative group flex-shrink-0">
+        <div className="flex flex-col items-center w-full py-4 space-y-8 flex-shrink-0">
+          {visibleIcons.filter(icon => icon.id !== 'expand').map((icon) => (
+            <div key={icon.id} className="relative group flex-shrink-0 w-full">
               <motion.button
-                className={`p-2 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card ${
-                  icon.id === 'logo' ? '' : 'hover:bg-accent-primary'
-                } ${selectedIcon === icon.id && icon.id !== 'logo' ? 'bg-accent-primary' : ''}`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card transition-all duration-200 ${
+                  isNavbarExpanded && icon.id !== 'logo' ? 'justify-start' : 'justify-center'
+                } ${icon.id === 'logo' ? '' : 'hover:bg-accent-primary'} ${selectedIcon === icon.id && icon.id !== 'logo' ? 'bg-accent-primary' : ''}`}
                 aria-label={icon.label}
                 title={icon.label}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => handleIconClick(icon)}
               >
-                <img
+                <motion.img
                   src={icon.url}
                   alt={`${icon.label} icon`}
-                  className={icon.id === 'logo' ? 'w-12 h-12' : 'w-7 h-7'}
+                  className={icon.id === 'logo' ? 'w-12 h-12 flex-shrink-0' : 'w-7 h-7 flex-shrink-0'}
                   style={{
                     filter: icon.id !== 'logo' ? 'invert(100%)' : undefined,
-                    minWidth: icon.id === 'logo' ? '3rem' : '1.75rem',
-                    minHeight: icon.id === 'logo' ? '3rem' : '1.75rem',
+                    objectFit: 'contain',
                   }}
+                  transition={{ duration: 0.3 }}
                   onError={(e) => {
                     e.target.src = 'https://api.iconify.design/mdi:alert-circle.svg';
                   }}
                 />
+
+                {isNavbarExpanded && icon.id !== 'logo' && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-sm font-medium whitespace-nowrap"
+                  >
+                    {icon.label}
+                  </motion.span>
+                )}
               </motion.button>
-              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                {icon.label}
-              </span>
+              {!isNavbarExpanded && icon.id !== 'logo' && (
+                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                  {icon.label}
+                </span>
+              )}
             </div>
           ))}
-          {/* User Avatar pushed to the bottom */}
-          <div className="mt-auto">
-            <UserAvatar user={userData} />
+          {/* Expand/Collapse button above profile */}
+          <div className="mt-auto w-full flex justify-center mb-4">
+            <motion.button
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-white hover:bg-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card transition-all duration-200 ${
+                isNavbarExpanded ? 'justify-start' : 'justify-center'
+              }`}
+              onClick={toggleNavbar}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              aria-label="Toggle navbar"
+            >
+              <motion.img
+                src="https://api.iconify.design/mdi:chevron-right.svg"
+                alt="Toggle navbar"
+                className="w-7 h-7 flex-shrink-0"
+                style={{
+                  filter: 'invert(100%)',
+                  objectFit: 'contain',
+                }}
+                animate={{ rotate: isNavbarExpanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              />
+              {isNavbarExpanded && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-sm font-medium whitespace-nowrap"
+                >
+                  Collapse
+                </motion.span>
+              )}
+            </motion.button>
+          </div>
+          
+          {/* User Avatar at the bottom */}
+          <div className="w-full flex justify-center">
+            <UserAvatar user={userData} isExpanded={isNavbarExpanded} />
           </div>
         </div>
 
         <AnimatePresence mode="wait">
-          {isProjectsRoute && isSubmenuOpen && (
+          {isProjectsRoute && isSubmenuOpen && !isNavbarExpanded && (
             <motion.div
               key="submenu"
               className="h-full w-[12rem] p-4 flex flex-col space-y-2 bg-bg-secondary rounded-lg ml-2"

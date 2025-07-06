@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 const ProjectCard = ({ project, onNavigate }) => (
   <motion.div
-    className="bg-bg-card border border-border-secondary rounded-xl p-4 hover:border-border-primary transition-all duration-300 hover:shadow-lg cursor-pointer group"
+    className="glass-dark rounded-xl p-4 cursor-pointer group"
     whileHover={{ y: -2 }}
     onClick={() => onNavigate(`/projects/${project.projectUrl || project.project_url}`)}
   >
@@ -52,14 +52,7 @@ const PinnedProjects = ({ projects, onCreateProject, onNavigate }) => {
   };
 
   return (
-    <div 
-      className="border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 h-full flex flex-col"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-      }}
-    >
+    <div className="glass-card p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="text-2xl">📌</span>

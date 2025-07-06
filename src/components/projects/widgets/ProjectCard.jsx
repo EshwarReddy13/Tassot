@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi';
 import PinButton from './PinButton.jsx';
+import ProjectCardMembers from './ProjectCardMembers.jsx';
 
 const ProjectCard = ({ 
   project, 
@@ -14,6 +15,7 @@ const ProjectCard = ({
   isDragging = false,
   isGlobalDragging = false
 }) => {
+
   const handleCardClick = () => {
     if (!isDragging && !isGlobalDragging) {
       onNavigate(`/projects/${project.projectUrl ?? project.project_url}`);
@@ -36,10 +38,10 @@ const ProjectCard = ({
 
   return (
     <motion.div 
-      className={`relative bg-[#17171b] rounded-lg p-4 group transition-all duration-300 ${
+      className={`relative bg-bg-dark rounded-lg p-4 group transition-all duration-300 ${
         project.isPinned 
-          ? 'ring-2 ring-accent-primary/50 bg-[#17171b]/90' 
-          : 'hover:bg-[#17171b]/80'
+          ? 'ring-2 ring-accent-primary bg-bg-card' 
+          : 'hover:bg-bg-card/80'
       }`}
       initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
@@ -73,20 +75,28 @@ const ProjectCard = ({
       {/* Main content */}
       <div className="cursor-pointer" onClick={handleCardClick}>
         <div className="flex items-start justify-between mb-2">
-          <p className={`text-xl font-semibold mb-2 truncate group-hover:text-accent-primary transition-colors ${
-            project.isPinned ? 'text-accent-primary' : 'text-white'
-          }`} title={project.projectName ?? project.project_name}>
+          <p 
+            className={`text-xl font-semibold mb-2 truncate group-hover:text-accent-primary transition-colors ${
+              project.isPinned ? 'text-accent-primary' : 'text-text-primary'
+            }`} 
+            title={project.projectName ?? project.project_name}
+          >
             {project.projectName ?? project.project_name}
           </p>
         </div>
         
-        <p className="text-gray-400 text-sm font-mono mb-2">
+        <p className="text-text-secondary text-sm font-mono mb-2">
           KEY: {project.projectKey ?? project.project_key}
         </p>
         
-        <p className="text-gray-500 text-sm">
+        <p className="text-text-tertiary text-sm mb-4">
           Created: {new Date(project.createdAt ?? project.created_at).toLocaleDateString()}
         </p>
+        
+        {/* Project Members */}
+        <div className="flex items-center justify-end">
+          <ProjectCardMembers members={project.members} />
+        </div>
       </div>
       
       {/* Action buttons */}
@@ -101,7 +111,7 @@ const ProjectCard = ({
         <button 
           onClick={handleEditClick} 
           aria-label="Edit project"
-          className="p-2 rounded-full text-gray-400 hover:text-[#9674da] hover:bg-[#9674da]/10 transition-colors"
+          className="p-2 rounded-full text-text-tertiary hover:text-accent-primary hover:bg-accent-primary/10 transition-colors"
         >
           <HiOutlinePencil className="w-4 h-4" />
         </button>
@@ -109,7 +119,7 @@ const ProjectCard = ({
         <button 
           onClick={handleDeleteClick} 
           aria-label="Delete project"
-          className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+          className="p-2 rounded-full text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
         >
           <HiOutlineTrash className="w-4 h-4" />
         </button>

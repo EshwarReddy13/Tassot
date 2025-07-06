@@ -2,11 +2,8 @@ import { motion } from 'framer-motion';
 
 const StatCard = ({ title, value, icon, color, trend }) => (
   <motion.div
-    className="bg-bg-card/50 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent-primary/10"
+    className="glass-card p-6"
     whileHover={{ y: -2 }}
-    style={{
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
-    }}
   >
     <div className="flex items-center justify-between">
       <div>
@@ -102,12 +99,7 @@ const DashboardStats = ({ userData, projects, tasks, dashboardStats }) => {
             <input
               type="text"
               placeholder="Search projects, tasks..."
-              className="bg-bg-card/50 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 pl-10 text-text-primary text-sm placeholder-text-secondary focus:outline-none focus:border-white/20 transition-all duration-300"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                backdropFilter: 'blur(16px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-              }}
+              className="glass-input px-4 py-2 pl-10 text-text-primary text-sm placeholder-text-secondary"
             />
             <img 
               src="https://api.iconify.design/mdi:magnify.svg?color=white" 
@@ -118,14 +110,9 @@ const DashboardStats = ({ userData, projects, tasks, dashboardStats }) => {
           
           {/* Help Icon */}
           <motion.button
-            className="p-2 rounded-lg border border-white/10 hover:border-white/20 transition-all duration-300"
+            className="glass-button p-2 rounded-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-              backdropFilter: 'blur(16px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-            }}
           >
             <img 
               src="https://api.iconify.design/mdi:help-circle-outline.svg?color=white" 

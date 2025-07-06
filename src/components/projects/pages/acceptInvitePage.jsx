@@ -123,7 +123,7 @@ export default function AcceptInvitePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-primary p-4">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-lg rounded-xl bg-bg-card p-8 text-center shadow-2xl">
         {renderContent()}
       </div>

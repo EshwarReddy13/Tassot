@@ -48,7 +48,7 @@ const DashboardPage = () => {
 
   if (loading || loadingProjects) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-secondary font-poppins">
+      <div className="min-h-screen flex items-center justify-center font-poppins">
         <div
           className="w-[2.5rem] h-[2.5rem] border-[0.25rem] border-t-accent border-border-secondary rounded-full animate-spin"
           role="status"

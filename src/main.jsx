@@ -9,6 +9,7 @@ import { ProjectProvider } from './contexts/ProjectContext.jsx';
 import { DashboardProvider } from './contexts/DashboardContext.jsx';
 import { AIProvider } from './contexts/AIContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
+import { NavbarProvider } from './contexts/NavbarContext.jsx';
 
 import Login from './components/login/LoginPage.jsx';
 import Signup from './components/login/SignupPage.jsx';
@@ -24,6 +25,7 @@ import ProjectDashboardPage from './components/projects/pages/ProjectDashboardPa
 
 import SettingsPage from './components/settings/SettingsPage.jsx';
 import EmailPage from './components/email/EmailPage.jsx';
+import StoragePage from './components/storage/StoragePage.jsx';
 
 import ProjectUsersPage from './components/projects/pages/ProjectUsersPage.jsx';
 
@@ -67,7 +69,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           />
           <BrowserRouter>
             <ThemeProvider>
-              <Routes>
+              <NavbarProvider>
+                <Routes>
                 {/* Public routes (no navbar) */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
@@ -90,12 +93,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   </Route>
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/email" element={<EmailPage />} />
+                  <Route path="/storage" element={<StoragePage />} />
                   <Route path="/palette" element={<PalettePage />} />
                 </Route>
 
                 {/* 404 Catch-all route - Must be last */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
+              </NavbarProvider>
             </ThemeProvider>
           </BrowserRouter>
         </AIProvider>

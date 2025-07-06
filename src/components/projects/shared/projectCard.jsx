@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi';
+import { HiOutlinePencil, HiOutlineTrash, HiOutlineFolder } from 'react-icons/hi';
 import PinButton from './PinButton.jsx';
 
 const ProjectCard = ({ 
@@ -14,6 +14,18 @@ const ProjectCard = ({
   isDragging = false,
   isGlobalDragging = false
 }) => {
+  // Debug statements for members
+  console.log('ProjectCard Debug:', {
+    projectName: project.projectName ?? project.project_name,
+    members: project.members,
+    membersCount: project.members?.length || 0,
+    membersData: project.members ? project.members.map(m => ({ 
+      id: m.id, 
+      name: `${m.first_name} ${m.last_name}`, 
+      role: m.role 
+    })) : 'No members array'
+  });
+
   const handleCardClick = () => {
     if (!isDragging && !isGlobalDragging) {
       onNavigate(`/projects/${project.projectUrl ?? project.project_url}`);
@@ -34,12 +46,60 @@ const ProjectCard = ({
     onPinToggle(project.projectUrl ?? project.project_url);
   };
 
+  // Helper function to render member avatars
+  const renderMembers = () => {
+    const members = project.members || [];
+    if (members.length === 0) {
+      console.log('No members to display for project:', project.projectName ?? project.project_name);
+      return null;
+    }
+
+    const maxVisible = 3;
+    const visibleMembers = members.slice(0, maxVisible);
+    const hiddenCount = Math.max(0, members.length - maxVisible);
+
+    return (
+      <div className="flex items-center -space-x-2">
+        {visibleMembers.map((member, idx) => {
+          const initials = `${member.first_name?.[0] || '?'}${member.last_name?.[0] || ''}`.toUpperCase();
+          return (
+            <div
+              key={member.id || idx}
+              className="w-6 h-6 rounded-full bg-bg-secondary border-2 border-bg-dark flex items-center justify-center overflow-hidden"
+              title={`${member.first_name || 'Unknown'} ${member.last_name || ''} (${member.role || 'user'})`}
+            >
+              {member.photo_url ? (
+                <img
+                  src={member.photo_url}
+                  alt={`${member.first_name} ${member.last_name}`}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="text-[10px] font-semibold text-text-primary">
+                  {initials}
+                </span>
+              )}
+            </div>
+          );
+        })}
+        {hiddenCount > 0 && (
+          <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg-dark flex items-center justify-center">
+            <span className="text-[10px] font-semibold text-text-secondary">
+              +{hiddenCount}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <motion.div 
-      className={`relative bg-bg-card rounded-lg p-4 group transition-all duration-300 ${
+      className={`relative glass-card group transition-all duration-300 ${
         project.isPinned 
-          ? 'ring-2 ring-accent-primary/50 bg-bg-card/90' 
-          : 'hover:bg-bg-card/80'
+          ? 'ring-2 ring-accent-primary/50 bg-accent-primary/5' 
+          : 'glass-hover'
       }`}
       initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
@@ -49,14 +109,14 @@ const ProjectCard = ({
       style={{
         cursor: isDragging ? 'grabbing' : 'pointer',
         zIndex: isDragging ? 1000 : 'auto',
+        height: '150px', // Fixed height for consistency
       }}
       whileHover={!isDragging && !isGlobalDragging ? { 
         scale: 1.02, 
-        boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
         transition: { duration: 0.2 }
       } : {}}
     >
-      {/* Pin indicator for pinned projects */}
+      {/* Simple pin indicator for pinned projects */}
       {project.isPinned && (
         <motion.div 
           className="absolute -top-2 -left-2 z-10"
@@ -64,33 +124,46 @@ const ProjectCard = ({
           animate={{ scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="bg-accent-primary text-text-primary text-xs px-2 py-1 rounded-full font-medium">
-            📌 Pinned
+          <div className="w-6 h-6 rounded-full flex items-center justify-center text-4xl">
+            📌
           </div>
         </motion.div>
       )}
 
       {/* Main content */}
-      <div className="cursor-pointer" onClick={handleCardClick}>
-        <div className="flex items-start justify-between mb-2">
-          <p className={`text-xl font-semibold mb-2 truncate group-hover:text-accent-primary transition-colors ${
+      <div className="cursor-pointer p-5 h-full flex flex-col" onClick={handleCardClick}>
+        {/* Project Title with Folder Icon */}
+        <div className="flex items-center mb-3">
+          <HiOutlineFolder className="w-5 h-5 mr-2 text-accent-primary flex-shrink-0" />
+          <h3 className={`text-lg font-semibold truncate group-hover:text-accent-primary transition-colors ${
             project.isPinned ? 'text-accent-primary' : 'text-text-primary'
           }`} title={project.projectName ?? project.project_name}>
             {project.projectName ?? project.project_name}
-          </p>
+          </h3>
         </div>
         
-        <p className="text-text-secondary text-sm font-mono mb-2">
-          KEY: {project.projectKey ?? project.project_key}
-        </p>
+        {/* Project Key */}
+        <div className="flex items-center mb-3">
+          <span className="text-text-secondary text-sm mr-2">KEY:</span>
+          <span className="text-accent-primary font-semibold text-sm font-mono bg-accent-primary/10 px-2 py-1 rounded">
+            {project.projectKey ?? project.project_key}
+          </span>
+        </div>
         
-        <p className="text-text-tertiary text-sm">
-          Created: {new Date(project.createdAt ?? project.created_at).toLocaleDateString()}
-        </p>
+        {/* Updated Date and Members - Same Line */}
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex items-center text-text-tertiary text-sm">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Updated at: {new Date(project.updatedAt ?? project.updated_at ?? project.createdAt ?? project.created_at).toLocaleDateString()}
+          </div>
+          {renderMembers()}
+        </div>
       </div>
       
-      {/* Action buttons */}
-      <div className="absolute top-2 right-2 flex space-x-1">
+      {/* Action buttons with colors */}
+      <div className="absolute top-3 right-3 flex space-x-1">
         <PinButton
           isPinned={project.isPinned}
           onPinToggle={handlePinToggle}
@@ -101,7 +174,7 @@ const ProjectCard = ({
         <button 
           onClick={handleEditClick} 
           aria-label="Edit project"
-          className="p-2 rounded-full text-text-secondary hover:text-accent-primary hover:bg-accent-primary/10 transition-colors"
+          className="p-2 rounded-full transition-colors"
         >
           <HiOutlinePencil className="w-4 h-4" />
         </button>
@@ -109,7 +182,7 @@ const ProjectCard = ({
         <button 
           onClick={handleDeleteClick} 
           aria-label="Delete project"
-          className="p-2 rounded-full text-text-secondary hover:text-error hover:bg-error/10 transition-colors"
+          className="p-2 rounded-full text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
         >
           <HiOutlineTrash className="w-4 h-4" />
         </button>

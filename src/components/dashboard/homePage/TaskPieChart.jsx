@@ -30,14 +30,7 @@ const TaskPieChart = ({ tasks }) => {
   segments.sort((a, b) => b.count - a.count);
 
   return (
-    <div 
-      className="border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 h-full flex flex-col"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-      }}
-    >
+    <div className="glass-card p-6 h-full flex flex-col">
       <div className="flex items-center gap-3 mb-6">
         <span className="text-2xl">📊</span>
         <h2 className="text-text-primary text-xl font-bold">Task Status</h2>
@@ -100,7 +93,7 @@ const TaskPieChart = ({ tasks }) => {
               {segments.map((segment) => (
                 <motion.div
                   key={segment.status}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors border border-white/5"
+                  className="flex items-center justify-between p-3 rounded-lg glass-hover transition-colors"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3 }}

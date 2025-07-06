@@ -241,7 +241,7 @@ const ProjectDetails = () => {
     }
 
     return (
-        <div className="px-4 sm:px-6 lg:px-8 py-6 bg-bg-primary min-h-[calc(100vh-4rem)]">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 min-h-[calc(100vh-4rem)]">
             <KanbanBoard
                 columns={columns}
                 tasks={tasks}

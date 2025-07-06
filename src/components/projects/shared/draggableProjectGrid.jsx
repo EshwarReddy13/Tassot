@@ -20,6 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectCard from './ProjectCard.jsx';
+import CreateProjectCard from '../widgets/CreateProjectCard.jsx';
 
 const SortableProjectCard = ({ project, index, onEdit, onDelete, onPinToggle, onNavigate, isPinning, isGlobalDragging }) => {
   const {
@@ -95,7 +96,8 @@ const DraggableProjectGrid = ({
   onPinToggle, 
   onNavigate, 
   pinningProject,
-  onReorder 
+  onReorder,
+  onCreateProject
 }) => {
   const [activeId, setActiveId] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -208,6 +210,24 @@ const DraggableProjectGrid = ({
                 />
               </motion.div>
             ))}
+            
+            {/* Create New Project Card */}
+            <motion.div
+              key="create-project"
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 0.3,
+                delay: projects.length * 0.05,
+                ease: "easeOut"
+              }}
+            >
+              <CreateProjectCard
+                onClick={onCreateProject}
+                index={projects.length}
+              />
+            </motion.div>
           </AnimatePresence>
         </motion.div>
       </SortableContext>
