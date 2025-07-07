@@ -25,8 +25,8 @@ const subMenuItems = [
     icon: 'https://api.iconify.design/mdi:view-dashboard-outline.svg',
   },
   { 
-    id: 'board', 
-    label: 'Board', 
+    id: 'task', 
+    label: 'Tasks', 
     path: '',
     icon: 'https://api.iconify.design/mdi:view-column-outline.svg',
   }, 

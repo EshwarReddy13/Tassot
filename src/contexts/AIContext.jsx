@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { useUser } from './UserContext';
+import { useUser } from './UserContext.jsx';
 
 const AIContext = createContext();
 

@@ -4,7 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import TaskCard from './TaskCard.jsx';
 import clsx from 'clsx';
-import { HiDotsVertical, HiPencil, HiTrash, HiSparkles } from 'react-icons/hi';
+import { HiDotsVertical, HiPencil, HiTrash, HiSparkles, HiPlus } from 'react-icons/hi';
 
 const KanbanColumn = memo(({ 
     column, 
@@ -74,10 +74,17 @@ const KanbanColumn = memo(({
     return (
         <motion.div
             ref={setNodeRef}
-            className={clsx('bg-bg-dark rounded-xl p-4 flex flex-col min-h-[25rem] transition-colors', { 'gradient-border': isOver })}
+            className={clsx(
+                'glass-column p-6 flex flex-col min-h-[25rem] relative',
+                { 
+                    'ring-2 ring-accent-primary/50 shadow-accent-primary/20': isOver,
+                }
+            )}
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
         >
-            <div className={clsx("flex justify-between items-start mb-4", { 'pointer-events-none': isDragging })}>
-                
+            {/* Column Header */}
+            <div className={clsx("flex justify-between items-center mb-6", { 'pointer-events-none': isDragging })}>
                 <div className="flex-grow">
                     {isEditing ? (
                         <input
@@ -87,31 +94,33 @@ const KanbanColumn = memo(({
                             onChange={(e) => setColumnName(e.target.value)}
                             onBlur={handleSaveName}
                             onKeyDown={handleKeyDown}
-                            className="w-full bg-bg-primary text-text-primary font-semibold p-1 -m-1 rounded-md outline-none ring-2 ring-accent-primary"
+                            className="w-full glass-input text-text-primary font-semibold p-2 rounded-lg focus:border-accent-primary/50 focus:outline-none focus:ring-2 focus:ring-accent-primary/20 transition-all duration-200"
                             style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}
                             aria-label="Column name"
                         />
                     ) : (
-                        <h3 className="text-white font-medium " style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>
+                        <h3 className="text-white font-semibold" style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>
                             {column.name}
                         </h3>
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                    <span className="text-sm font-medium text-text-secondary bg-bg-primary px-2 py-1 rounded-full">
+                <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                    <span className="text-sm font-semibold text-text-primary bg-gradient-to-r from-accent-primary/20 to-accent-primary/10 px-3 py-1 rounded-full backdrop-blur-sm">
                         {tasks.length}
                     </span>
                     {/* --- FIX: Use canManageBoards instead of isOwner --- */}
                     {canManageBoards && !isEditing && (
                         <div ref={menuRef} className="relative">
-                            <button 
+                            <motion.button 
                                 onClick={() => setIsMenuOpen(o => !o)} 
-                                className="p-1 rounded-full hover:bg-bg-primary"
+                                className="p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 aria-label="Column options"
                             >
                                 <HiDotsVertical className="w-5 h-5 text-text-secondary" />
-                            </button>
+                            </motion.button>
                             <AnimatePresence>
                                 {isMenuOpen && (
                                     <motion.div
@@ -119,26 +128,30 @@ const KanbanColumn = memo(({
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                                         transition={{ duration: 0.15, ease: 'easeOut' }}
-                                        className="absolute right-0 top-full mt-2 w-48 bg-bg-card rounded-md shadow-lg z-20 border border-bg-secondary overflow-hidden"
+                                        className="absolute right-0 top-full mt-2 w-48 glass-column-menu z-20 overflow-hidden"
                                     >
-                                        <ul className="py-1" role="menu">
+                                        <ul className="py-2" role="menu">
                                             <li role="none">
-                                                <button 
+                                                <motion.button 
                                                     onClick={() => { setIsEditing(true); setIsMenuOpen(false); }}
-                                                    className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-accent-primary flex items-center gap-3 transition-colors"
+                                                    className="w-full text-left px-4 py-3 text-sm text-text-primary hover:bg-white/10 flex items-center gap-3 transition-all duration-200"
+                                                    whileHover={{ x: 5 }}
                                                     role="menuitem"
                                                 >
-                                                    <HiPencil className="w-4 h-4"/> Edit name
-                                                </button>
+                                                    <HiPencil className="w-4 h-4 text-blue-400"/> 
+                                                    <span>Edit name</span>
+                                                </motion.button>
                                             </li>
                                             <li role="none">
-                                                <button
+                                                <motion.button
                                                     onClick={() => { onDeleteBoard(column.id); setIsMenuOpen(false); }}
-                                                    className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error hover:text-white flex items-center gap-3 transition-colors"
+                                                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 flex items-center gap-3 transition-all duration-200"
+                                                    whileHover={{ x: 5 }}
                                                     role="menuitem"
                                                 >
-                                                    <HiTrash className="w-4 h-4"/> Delete column
-                                                </button>
+                                                    <HiTrash className="w-4 h-4"/> 
+                                                    <span>Delete column</span>
+                                                </motion.button>
                                             </li>
                                         </ul>
                                     </motion.div>
@@ -149,8 +162,9 @@ const KanbanColumn = memo(({
                 </div>
             </div>
 
+            {/* Tasks Container */}
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex-grow space-y-3 overflow-y-auto pr-1">
+                <div className="flex-grow space-y-3 overflow-y-auto pr-1 custom-scrollbar">
                     <AnimatePresence>
                         {tasks.map((task) => (
                             <TaskCard 
@@ -167,31 +181,52 @@ const KanbanColumn = memo(({
                 </div>
             </SortableContext>
             
-            <div className="mt-3 space-y-2">
-              {!isDragging && canManageBoards && (
-                  <>
-                      <motion.button
-                          onClick={() => onShowAddTaskModal(column.id)}
-                          className="w-full text-left p-2 rounded-md text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-colors"
-                          whileTap={{ scale: 0.98 }}
-                          aria-label={`Add a task to ${column.name}`}
-                      >
-                          + Add a task
-                      </motion.button>
-                      <motion.button
-                          onClick={() => onShowAITaskModal(column.id)}
-                          className="w-full text-left p-2 rounded-md text-text-secondary hover:bg-bg-card hover:text-accent-primary transition-colors"
-                          whileTap={{ scale: 0.98 }}
-                          aria-label={`Create task with AI in ${column.name}`}
-                      >
-                          <div className="flex items-center gap-2">
-                              <HiSparkles className="w-4 h-4" />
-                              <span>Create with AI</span>
-                          </div>
-                      </motion.button>
-                  </>
-              )}
+            {/* Add Task Buttons */}
+            <div className="mt-6 space-y-3">
+                {!isDragging && canManageBoards && (
+                    <>
+                        <motion.button
+                            onClick={() => onShowAddTaskModal(column.id)}
+                            className="w-full text-left p-3 glass-column-button text-text-secondary hover:text-accent-primary"
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.98 }}
+                            aria-label={`Add a task to ${column.name}`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-lg flex items-center justify-center">
+                                    <HiPlus className="w-4 h-4 text-accent-primary" />
+                                </div>
+                                <span className="font-medium">Add a task</span>
+                            </div>
+                        </motion.button>
+                        
+                        <motion.button
+                            onClick={() => onShowAITaskModal(column.id)}
+                            className="w-full text-left p-3 glass-column-button text-text-secondary hover:text-accent-primary"
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.98 }}
+                            aria-label={`Create task with AI in ${column.name}`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-lg flex items-center justify-center">
+                                    <HiSparkles className="w-4 h-4 text-purple-400" />
+                                </div>
+                                <span className="font-medium">Create with AI</span>
+                            </div>
+                        </motion.button>
+                    </>
+                )}
             </div>
+
+            {/* Drop Zone Indicator */}
+            {isOver && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute inset-0 glass-drop-zone pointer-events-none"
+                />
+            )}
         </motion.div>
     );
 });

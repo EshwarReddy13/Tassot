@@ -6,7 +6,7 @@ import PinnedProjects from './PinnedProjects.jsx';
 import TaskCalendar from './TaskCalendar.jsx';
 import MyTasks from './MyTasks.jsx';
 import TaskPieChart from './TaskPieChart.jsx';
-import TaskDetailsModal from '../../projects/tasks/TaskDetails.jsx';
+import TaskDetailsModal from '../../projects/board/TaskDetails.jsx';
 import RecentActivity from './RecentActivity.jsx';
 import AITools from './AITools.jsx';
 

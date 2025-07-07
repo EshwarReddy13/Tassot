@@ -1,4 +1,4 @@
-import SignUpPageView from './signupPage';
+import SignUpPageView from './SignupPage';
 
 export default {
   title: 'Pages/SignUp',

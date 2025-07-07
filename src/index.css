@@ -374,3 +374,204 @@ body {
     transition: none !important;
   }
 }
+
+/* Kanban Board Glass Components */
+.glass-column {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.glass-column:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.glass-task {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.glass-task:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.glass-task.editing {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(150, 116, 218, 0.2);
+}
+
+.glass-task.dragging {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+  transform: rotate(3deg) scale(1.05);
+}
+
+.glass-add-column {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.glass-add-column:hover {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.glass-add-column-form {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-radius: 1rem;
+}
+
+.glass-column-menu {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+  border-radius: 0.75rem;
+}
+
+.glass-task-action {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.glass-task-action:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transform: scale(1.1);
+}
+
+.glass-column-button {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.glass-column-button:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.glass-drop-zone {
+  background: rgba(150, 116, 218, 0.1);
+  border: 2px dashed rgba(150, 116, 218, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 1rem;
+}
+
+/* Custom Scrollbar for Kanban Board */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Glass Effects */
+@media (max-width: 768px) {
+  .glass-column,
+  .glass-task,
+  .glass-add-column,
+  .glass-add-column-form {
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+  
+  .glass-column {
+    padding: 1rem;
+  }
+  
+  .glass-task {
+    padding: 0.75rem;
+  }
+}
+
+/* Animation Performance Optimization */
+@media (prefers-reduced-motion: reduce) {
+  .glass-column,
+  .glass-task,
+  .glass-add-column,
+  .glass-column-button,
+  .glass-task-action {
+    transition: none;
+  }
+}
+
+/* Enhanced Tab Styling */
+.glass-tab-active {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.glass-tab-inactive {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-tab-inactive:hover {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}

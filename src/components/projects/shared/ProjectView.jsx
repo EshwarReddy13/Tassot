@@ -1,12 +1,17 @@
 import { useEffect } from 'react';
-import { useParams, Link, Outlet } from 'react-router-dom'; // <-- [NEW] Import Outlet
+import { useParams, Link, Outlet, useLocation } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
-import ProjectHeader from '../shared/ProjectHeader.jsx';
-import ProjectDetails from '../shared/ProjectDetails.jsx';
+import ProjectHeader from './ProjectHeader.jsx';
+import BoardTabs from '../board/BoardTabs.jsx';
+import BoardDetails from '../board/BoardDetails.jsx';
+import TimelineView from '../board/TimelineView.jsx';
+import ListView from '../board/ListView.jsx';
+import AllWorkView from '../board/AllWorkView.jsx';
 
 const ProjectView = () => {
   const { projectUrl } = useParams();
+  const location = useLocation();
   const { getProjectDetails, loadingDetails, errorDetails, currentProject } = useProjects();
   const { loading: userLoading, userData } = useUser(); 
 
@@ -52,19 +57,48 @@ const ProjectView = () => {
     );
   }
   
-  // To handle the Kanban board being the "index" or default view, we determine if a child route is active.
-  const location = window.location.pathname;
-  const showKanbanBoard = location.endsWith(projectUrl) || location.endsWith(`${projectUrl}/`);
+  // Check if we're on a board-related route (kanban, timeline, list, all-work)
+  const isBoardRoute = () => {
+    const path = location.pathname;
+    const boardRoutes = ['timeline', 'list', 'all-work'];
+    return path.endsWith(projectUrl) || 
+           path.endsWith(`${projectUrl}/`) || 
+           boardRoutes.some(route => path.includes(`/${route}`));
+  };
+
+  // Render board content based on current route
+  const renderBoardContent = () => {
+    const path = location.pathname;
+    
+    if (path.includes('/timeline')) {
+      return <TimelineView />;
+    } else if (path.includes('/list')) {
+      return <ListView />;
+    } else if (path.includes('/all-work')) {
+      return <AllWorkView />;
+    } else {
+      // Default to kanban board
+      return <BoardDetails />;
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
       <ProjectHeader />
-      <main className="pt-[4rem]">
-        {/* --- MODIFIED --- */}
-        {/* If no sub-route is active (e.g. /users), show the kanban board */}
-        {showKanbanBoard && <ProjectDetails />}
-        {/* React Router will render the nested route component (ProjectUsersPage) here */}
-        <Outlet />
+      <main>
+        {isBoardRoute() ? (
+          <div className="min-h-screen">
+            <BoardTabs />
+            <div className="bg-gradient-to-b from-bg-primary/30 to-bg-primary/10">
+              {renderBoardContent()}
+            </div>
+          </div>
+        ) : (
+          // For non-board routes (users, dashboard, settings), render the Outlet
+          <div className="pt-[4rem]">
+            <Outlet />
+          </div>
+        )}
       </main>
     </div>
   );

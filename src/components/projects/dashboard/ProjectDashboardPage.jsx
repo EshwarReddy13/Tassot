@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext';
-import ProjectHealthWidget from '../dashboard/ProjectHealthWidget';
-import ActionItemsWidget from '../dashboard/ActionItemsWidget';
-import RecentActivityWidget from '../dashboard/RecentActivityWidget';
+import ProjectHealthWidget from './ProjectHealthWidget.jsx';
+import ActionItemsWidget from './ActionItemsWidget.jsx';
+import RecentActivityWidget from './RecentActivityWidget.jsx';
 import { motion } from 'framer-motion';
 
 const ProjectDashboardPage = () => {
@@ -77,30 +77,6 @@ const ProjectDashboardPage = () => {
             <div className="fixed inset-0 bg-gradient-to-br from-accent-primary/5 via-transparent to-accent-secondary/5 pointer-events-none"></div>
             
             <div className="relative z-10 p-4 md:p-6 lg:p-8 space-y-8">
-                {/* Header section with glass effect */}
-                <motion.header 
-                    className="p-6 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    style={{
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                        backdropFilter: 'blur(20px) saturate(180%)',
-                        WebkitBackdropFilter: 'blur(20px) saturate(180%)'
-                    }}
-                >
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="w-12 h-12 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                            <svg className="w-6 h-6 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                        </div>
-                        <h1 className="text-3xl font-bold text-text-primary">
-                            {dashboardSummary?.projectName || 'Project'} Dashboard
-                        </h1>
-                    </div>
-                    <p className="text-text-secondary">A high-level overview of your project's progress and status.</p>
-                </motion.header>
                 
                 {/* Main content grid */}
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">

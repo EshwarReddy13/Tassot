@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '../../../contexts/UserContext';
-import Comment from './Comment';
-import AddCommentForm from './AddCommentForm';
+import { useUser } from '../../../contexts/UserContext.jsx';
+import Comment from './Comment.jsx';
+import AddCommentForm from './AddCommentForm.jsx';
 
 const CommentList = ({ taskId }) => {
   const { firebaseUser } = useUser();

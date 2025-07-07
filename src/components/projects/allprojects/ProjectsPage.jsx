@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../../contexts/UserContext.jsx';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
-import ProjectCard from '../shared/ProjectCard.jsx';
-import CreateProjectCard from '../widgets/CreateProjectCard.jsx';
-import DraggableProjectGrid from '../shared/DraggableProjectGrid.jsx';
+import ProjectCard from './ProjectCard.jsx';
+import CreateProjectCard from './CreateProjectCard.jsx';
+import DraggableProjectGrid from './DraggableProjectGrid.jsx';
 import toast from 'react-hot-toast'; // Used for better user feedback
 
 const ProjectsPage = () => {

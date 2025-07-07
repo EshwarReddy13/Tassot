@@ -35,8 +35,6 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
         transition: transition || 'transform 0.2s ease',
         opacity: isThisCardDragging && !isOverlay ? 0.5 : 1,
         zIndex: isOverlay ? 100 : 'auto',
-        boxShadow: isOverlay ? '0 1rem 1.5rem rgba(0, 0, 0, 0.3)' : 'none',
-        rotate: isOverlay ? '5deg' : '0deg',
     };
 
     const handleCardClick = (e) => {
@@ -73,12 +71,13 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
             <motion.div
                 layoutId={task.id}
                 className={clsx(
-                    'p-4 rounded-sm touch-none transition-all duration-200 flex flex-col',
+                    'p-4 touch-none flex flex-col cursor-pointer',
                     {
-                        'bg-bg-card text-text-primary cursor-pointer border-2 border-transparent hover:border-accent-primary focus-visible:border-accent-primary': !isThisCardDragging && !isEditing,
-                        'bg-bg-card ring-2 ring-accent-primary': isEditing,
-                        'bg-transparent border-2 border-dashed border-accent-primary/60 min-h-[5.25rem]': isThisCardDragging && !isOverlay,
+                        'glass-card': !isThisCardDragging && !isEditing && !isOverlay,
+                        'glass-task editing': isEditing,
+                        'bg-transparent border-2 border-dashed border-accent-primary/40 min-h-[5.25rem]': isThisCardDragging && !isOverlay,
                         'invisible': isThisCardDragging && !isOverlay,
+                        'glass-task dragging': isOverlay,
                     }
                 )}
                 onClick={handleCardClick}
@@ -88,37 +87,42 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                 role="button"
                 tabIndex={isEditing ? -1 : 0}
                 aria-label={`View or drag task ${task.task_name}`}
+                whileHover={!isThisCardDragging && !isEditing ? { scale: 1.02, y: -2 } : {}}
+                whileTap={!isThisCardDragging && !isEditing ? { scale: 0.98 } : {}}
             >
                 {(!isThisCardDragging || isOverlay) && (
                     <>
                         <div className="flex-grow">
-                             {isEditing ? (
-                                <div onBlur={handleSave}>
-                                    <AIEnhancedInput
-                                        value={taskName}
-                                        onChange={(e) => setTaskName(e.target.value)}
-                                        name="task_name"
-                                        placeholder="Enter a task name..."
-                                        rows={3}
-                                        onEnhance={enhanceTaskName}
-                                    />
+                            {isEditing ? (
+                                <div onBlur={handleSave} className="relative">
+                                    <div className="glass-input p-2 rounded-lg">
+                                        <AIEnhancedInput
+                                            value={taskName}
+                                            onChange={(e) => setTaskName(e.target.value)}
+                                            name="task_name"
+                                            placeholder="Enter a task name..."
+                                            rows={3}
+                                            onEnhance={enhanceTaskName}
+                                            className="w-full bg-transparent text-text-primary placeholder-text-placeholder resize-none focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
                             ) : (
-                                <p className=" text-text-primary mb-2 break-words font-sans" style={{ fontSize: 'clamp(0.5rem, 2vw, 0.95rem)' }}>
+                                <p className="text-text-primary mb-3 break-words font-medium leading-relaxed" style={{ fontSize: 'clamp(0.875rem, 2vw, 0.95rem)' }}>
                                     {task.task_name}
                                 </p>
                             )}
                         </div>
                        
                         {!isEditing && (
-                            <div className="flex items-end justify-between mt-2 min-h-[2rem]">
+                            <div className="flex items-end justify-between mt-3 min-h-[2rem]">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-medium text-text-secondary bg-bg-dark px-2 py-1 rounded-md">
+                                    <span className="text-xs font-semibold text-text-primary bg-gradient-to-r from-accent-primary/20 to-accent-primary/10 px-2 py-1 rounded-md backdrop-blur-sm">
                                         {task.task_key}
                                     </span>
                                     {formattedDeadline && (
-                                        <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
-                                            <HiOutlineCalendar />
+                                        <div className="flex items-center gap-1 text-xs font-medium text-text-secondary bg-gradient-to-r from-white/10 to-white/5 px-2 py-1 rounded-md backdrop-blur-sm">
+                                            <HiOutlineCalendar className="w-3 h-3" />
                                             <span>{formattedDeadline}</span>
                                         </div>
                                     )}
@@ -126,16 +130,17 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                                 
                                 <div className="flex items-center -space-x-2">
                                     {assignees.slice(0, 3).map(user => (
-                                        <img
-                                            key={user.id}
-                                            className="w-7.5 h-7.5 rounded-full object-cover border-2 border-bg-card"
-                                            src={user.photo_url || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=3a3a44&color=fff`}
-                                            alt={user.first_name}
-                                            title={`${user.first_name} ${user.last_name}`}
-                                        />
+                                        <div key={user.id} className="relative">
+                                            <img
+                                                className="w-7 h-7 rounded-full object-cover border-2 border-white/20 shadow-md"
+                                                src={user.photo_url || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=3a3a44&color=fff`}
+                                                alt={user.first_name}
+                                                title={`${user.first_name} ${user.last_name}`}
+                                            />
+                                        </div>
                                     ))}
                                     {assignees.length > 3 && (
-                                         <div className="w-6 h-6 rounded-full bg-bg-secondary flex items-center justify-center text-xs font-bold text-text-secondary border-2 border-bg-card">
+                                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-xs font-bold text-text-primary shadow-md">
                                             +{assignees.length - 3}
                                         </div>
                                     )}
@@ -146,17 +151,30 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                 )}
             </motion.div>
 
+            {/* Action Buttons */}
             {!isEditing && (
                 <div
-                    className="absolute top-1 right-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     aria-hidden="true"
                 >
-                    <button onClick={handleEditClick} className="p-1 rounded-md text-text-secondary hover:bg-bg-primary hover:text-white" aria-label={`Edit task name for ${task.task_name}`} >
+                    <motion.button 
+                        onClick={handleEditClick} 
+                        className="p-2 glass-task-action text-text-secondary hover:text-blue-400 hover:border-blue-400/30"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label={`Edit task name for ${task.task_name}`}
+                    >
                         <HiPencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={handleDeleteClick} className="p-1 rounded-md text-red-400 hover:bg-red-900/50 hover:text-red-300" aria-label={`Delete task ${task.task_name}`}>
+                    </motion.button>
+                    <motion.button 
+                        onClick={handleDeleteClick} 
+                        className="p-2 glass-task-action text-text-secondary hover:text-red-400 hover:border-red-400/30"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label={`Delete task ${task.task_name}`}
+                    >
                         <HiTrash className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                 </div>
             )}
         </div>

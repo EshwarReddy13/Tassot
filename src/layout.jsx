@@ -430,7 +430,7 @@ const Layout = () => {
       <Navbar />
       <InvitationHandler />
       <motion.div 
-        className="flex-1 h-full min-h-0 overflow-auto relative z-10"
+        className="flex-1 pl-2 h-full min-h-0 overflow-auto relative z-10"
         animate={{ marginLeft: navbarWidth }}
         transition={{ duration: 0.5, ease: 'easeInOut' }}
       >

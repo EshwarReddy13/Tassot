@@ -20,7 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectCard from './ProjectCard.jsx';
-import CreateProjectCard from '../widgets/CreateProjectCard.jsx';
+import CreateProjectCard from './CreateProjectCard.jsx';
 
 const SortableProjectCard = ({ project, index, onEdit, onDelete, onPinToggle, onNavigate, isPinning, isGlobalDragging }) => {
   const {
