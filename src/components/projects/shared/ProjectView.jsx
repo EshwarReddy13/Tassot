@@ -83,21 +83,23 @@ const ProjectView = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="min-h-screen">
       <ProjectHeader />
       <main>
         {isBoardRoute() ? (
-          <div className="min-h-screen">
-            <BoardTabs />
-            <div className="bg-gradient-to-b from-bg-primary/30 to-bg-primary/10">
+          <>
+            <div className="z-30 mt-16">
+              <BoardTabs />
+            </div>
+            <div 
+              className="bg-gradient-to-b from-bg-primary/30 to-bg-primary/10"
+            >
               {renderBoardContent()}
             </div>
-          </div>
+          </>
         ) : (
           // For non-board routes (users, dashboard, settings), render the Outlet
-          <div className="pt-[4rem]">
-            <Outlet />
-          </div>
+          <div className="mt-18 ml-4"><Outlet /></div>
         )}
       </main>
     </div>

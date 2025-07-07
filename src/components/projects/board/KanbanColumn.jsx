@@ -17,7 +17,8 @@ const KanbanColumn = memo(({
     onDeleteBoard,
     onUpdateBoardName,
     onShowAddTaskModal,
-    onShowAITaskModal
+    onShowAITaskModal,
+    uniformHeight
 }) => {
     const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
@@ -75,17 +76,21 @@ const KanbanColumn = memo(({
         <motion.div
             ref={setNodeRef}
             className={clsx(
-                'glass-column p-6 flex flex-col min-h-[25rem] relative',
+                'glass-column p-3 flex flex-col relative overflow-hidden',
                 { 
                     'ring-2 ring-accent-primary/50 shadow-accent-primary/20': isOver,
                 }
             )}
+            style={{ 
+                height: uniformHeight ? `${uniformHeight}px` : 'auto',
+                minHeight: '20rem'
+            }}
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
         >
-            {/* Column Header */}
-            <div className={clsx("flex justify-between items-center mb-6", { 'pointer-events-none': isDragging })}>
-                <div className="flex-grow">
+            {/* Column Header - Sticky */}
+            <div className={clsx("flex justify-between items-center mb-2 flex-shrink-0 sticky top-0 z-10 ", { 'pointer-events-none': isDragging })}>
+                <div className="flex-grow p-2">
                     {isEditing ? (
                         <input
                             ref={inputRef}
@@ -164,7 +169,7 @@ const KanbanColumn = memo(({
 
             {/* Tasks Container */}
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex-grow space-y-3 overflow-y-auto pr-1 custom-scrollbar">
+                <div className="flex-grow space-y-1 pt-2">
                     <AnimatePresence>
                         {tasks.map((task) => (
                             <TaskCard 
@@ -182,7 +187,7 @@ const KanbanColumn = memo(({
             </SortableContext>
             
             {/* Add Task Buttons */}
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-2 flex-shrink-0">
                 {!isDragging && canManageBoards && (
                     <>
                         <motion.button

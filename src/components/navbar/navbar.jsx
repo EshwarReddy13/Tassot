@@ -25,7 +25,7 @@ const subMenuItems = [
     icon: 'https://api.iconify.design/mdi:view-dashboard-outline.svg',
   },
   { 
-    id: 'task', 
+    id: 'board', 
     label: 'Tasks', 
     path: '',
     icon: 'https://api.iconify.design/mdi:view-column-outline.svg',
@@ -435,13 +435,13 @@ const Navbar = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 h-screen flex flex-col items-start ml-2 bg-bg-primary"
+      className="fixed top-0 left-0 h-screen flex flex-col items-start ml-1"
       initial="collapsed"
       animate={getNavbarState()}
       variants={navbarVariants}
       aria-label="Primary navigation"
     >
-              <div className="flex flex-row h-full w-full bg-black/80 p-2.5 rounded-xl mt-2 mb-2">
+              <div className="flex flex-row h-full w-full bg-black/80 p-2.5 rounded-xl mt-1 mb-1">
          {/* Main navbar column */}
          <div className={`flex flex-col items-center py-4 flex-shrink-0 transition-all duration-500 ease-in-out ${
            getNavbarState() === 'fullExpanded' ? 'w-[4rem] space-y-8 overflow-hidden' : 'w-full space-y-8'
@@ -488,7 +488,7 @@ const Navbar = () => {
                 )}
               </motion.button>
               {getNavbarState() !== 'expanded' && icon.id !== 'logo' && (
-                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
                   {icon.label}
                 </span>
               )}
@@ -554,7 +554,7 @@ const Navbar = () => {
                 key="submenu"
                 className="h-full flex flex-col bg-gradient-to-b from-bg-secondary/90 to-bg-secondary/70 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.01) 100%)',
                   backdropFilter: 'blur(20px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(20px) saturate(180%)'
                 }}

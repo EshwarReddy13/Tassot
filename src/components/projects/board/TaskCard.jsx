@@ -95,7 +95,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                         <div className="flex-grow">
                             {isEditing ? (
                                 <div onBlur={handleSave} className="relative">
-                                    <div className="glass-input p-2 rounded-lg">
+                                    <div className="glass-input p-2">
                                         <AIEnhancedInput
                                             value={taskName}
                                             onChange={(e) => setTaskName(e.target.value)}
@@ -108,16 +108,17 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-text-primary mb-3 break-words font-medium leading-relaxed" style={{ fontSize: 'clamp(0.875rem, 2vw, 0.95rem)' }}>
+                                <p className="text-text-primary mb-3 break-words leading-relaxed" style={{ fontSize: 'clamp(0.875rem, 2vw, 0.95rem)' }}>
                                     {task.task_name}
                                 </p>
                             )}
                         </div>
                        
                         {!isEditing && (
-                            <div className="flex items-end justify-between mt-3 min-h-[2rem]">
+                            <div className="flex items-end justify-between min-h-[2rem]">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold text-text-primary bg-gradient-to-r from-accent-primary/20 to-accent-primary/10 px-2 py-1 rounded-md backdrop-blur-sm">
+                                    <div className="w-2 h-2 bg-accent-primary rounded-full"></div>
+                                    <span className="text-xs font-semibold text-text-primary py-1">
                                         {task.task_key}
                                     </span>
                                     {formattedDeadline && (

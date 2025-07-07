@@ -74,9 +74,9 @@ const ProjectDashboardPage = () => {
             transition={{ duration: 0.5 }}
         >
             {/* Background overlay for glass effect */}
-            <div className="fixed inset-0 bg-gradient-to-br from-accent-primary/5 via-transparent to-accent-secondary/5 pointer-events-none"></div>
+        <div className="fixed inset-0 bg-gradient-to-br from-accent-primary/5 via-transparent to-accent-secondary/5 pointer-events-none"></div>
             
-            <div className="relative z-10 p-4 md:p-6 lg:p-8 space-y-8">
+            <div className="relative z-10 p-2">
                 
                 {/* Main content grid */}
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">

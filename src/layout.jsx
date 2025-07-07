@@ -421,6 +421,8 @@ const Layout = () => {
   };
 
   const navbarWidth = getNavbarWidth();
+  // Add small gap between navbar and content
+  const contentMargin = `calc(${navbarWidth} + 0.25rem)`;
 
   return (
     <div className="flex h-screen overflow-hidden relative">
@@ -430,8 +432,8 @@ const Layout = () => {
       <Navbar />
       <InvitationHandler />
       <motion.div 
-        className="flex-1 pl-2 h-full min-h-0 overflow-auto relative z-10"
-        animate={{ marginLeft: navbarWidth }}
+        className="flex-1 h-full min-h-0 overflow-auto relative z-0"
+        animate={{ marginLeft: contentMargin }}
         transition={{ duration: 0.5, ease: 'easeInOut' }}
       >
         <Outlet />

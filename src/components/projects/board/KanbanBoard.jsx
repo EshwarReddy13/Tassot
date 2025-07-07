@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
+import { useEffect, useRef, useState } from 'react';
 import TaskCard from './TaskCard.jsx';
 import KanbanColumn from './KanbanColumn.jsx';
 import { HiX, HiPlus } from 'react-icons/hi';
@@ -33,7 +34,8 @@ const AddColumnForm = ({
   if (!isAdding) {
     return (
       <motion.div
-        className="min-h-[25rem] glass-add-column"
+        className="h-auto glass-add-column"
+        style={{ minHeight: '20rem' }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -141,18 +143,52 @@ const KanbanBoard = ({
     );
 
     const columnsToRender = [...columns, { id: 'add-column-placeholder' }];
+    
+    // Refs for measuring column heights
+    const columnRefs = useRef({});
+    const [uniformHeight, setUniformHeight] = useState(null);
+
+    // Calculate uniform height for all columns
+    useEffect(() => {
+        const calculateUniformHeight = () => {
+            const heights = Object.values(columnRefs.current)
+                .filter(ref => ref && ref.offsetHeight)
+                .map(ref => ref.offsetHeight);
+            
+            if (heights.length > 0) {
+                const maxHeight = Math.max(...heights);
+                // Add some buffer for smooth interactions
+                setUniformHeight(maxHeight + 20);
+            }
+        };
+
+        // Calculate after render
+        const timer = setTimeout(calculateUniformHeight, 100);
+        
+        // Recalculate on window resize
+        const handleResize = () => {
+            setTimeout(calculateUniformHeight, 100);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [columns, tasks, newColumn.isAdding]);
 
     return (
         <motion.div
-            className="min-h-screen"
+            className="w-full"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
             {/* Background overlay for glass effect */}
-            <div className="fixed inset-0 bg-gradient-to-br from-accent-primary/3 via-transparent to-accent-secondary/3 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/3 via-transparent to-accent-secondary/3 pointer-events-none"></div>
             
-            <div className="relative z-10 py-2">
+            <div className="relative z-20">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCorners}
@@ -161,8 +197,7 @@ const KanbanBoard = ({
                 >
                     <section aria-label="Kanban board">
                         <motion.div 
-                            className="grid gap-6" 
-                            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(20rem, 1fr))' }}
+                            className="flex gap-2"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
@@ -173,9 +208,14 @@ const KanbanBoard = ({
                                     return canAddColumn ? (
                                         <motion.div 
                                             key="add-column"
-                                            initial={{ opacity: 0, x: 20 }}
+                                            className="flex-shrink-0"
+                                            style={{ 
+                                                width: '20rem',
+                                                height: uniformHeight ? `${uniformHeight}px` : 'auto'
+                                            }}
+                                            initial={{ opacity: 0, x: 30 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                                            transition={{ duration: 0.3, delay: index * 0.05 }}
                                         >
                                             <AddColumnForm
                                                 isAdding={newColumn.isAdding}
@@ -196,9 +236,19 @@ const KanbanBoard = ({
                                 return (
                                     <motion.div
                                         key={column.id}
-                                        initial={{ opacity: 0, x: 20 }}
+                                        className="flex-shrink-0"
+                                        style={{ 
+                                            width: '20rem',
+                                            height: uniformHeight ? `${uniformHeight}px` : 'auto'
+                                        }}
+                                        initial={{ opacity: 0, x: 30 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                                        ref={(el) => {
+                                            if (el) {
+                                                columnRefs.current[column.id] = el;
+                                            }
+                                        }}
                                     >
                                         <KanbanColumn
                                             column={column}
@@ -212,6 +262,7 @@ const KanbanBoard = ({
                                             onUpdateBoardName={onUpdateBoardName}
                                             onShowAddTaskModal={onShowAddTaskModal}
                                             onShowAITaskModal={onShowAITaskModal}
+                                            uniformHeight={uniformHeight}
                                         />
                                     </motion.div>
                                 );
