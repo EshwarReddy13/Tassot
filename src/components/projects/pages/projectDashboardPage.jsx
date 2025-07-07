@@ -4,20 +4,21 @@ import { useProjects } from '../../../contexts/ProjectContext';
 import ProjectHealthWidget from '../dashboard/ProjectHealthWidget';
 import ActionItemsWidget from '../dashboard/ActionItemsWidget';
 import RecentActivityWidget from '../dashboard/RecentActivityWidget';
+import { motion } from 'framer-motion';
 
 const ProjectDashboardPage = () => {
     const { projectUrl } = useParams();
     const { 
         dashboardSummary, isSummaryLoading, summaryError, getDashboardSummary,
         actionItems, isActionItemsLoading, actionItemsError, getActionItems,
-        activityFeed, isActivityLoading, activityError, getActivityFeed // <-- Get activity data
+        activityFeed, isActivityLoading, activityError, getActivityFeed
     } = useProjects();
     
     useEffect(() => {
         if (projectUrl) {
             getDashboardSummary(projectUrl);
             getActionItems(projectUrl);
-            getActivityFeed(projectUrl); // <-- Fetch activity data
+            getActivityFeed(projectUrl);
         }
     }, [projectUrl, getDashboardSummary, getActionItems, getActivityFeed]);
     
@@ -25,37 +26,107 @@ const ProjectDashboardPage = () => {
     const error = summaryError || actionItemsError || activityError;
 
     if (isLoading) {
-        return <div className="p-8 text-text-primary animate-pulse">Loading Dashboard...</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <motion.div 
+                    className="p-8 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 border-4 border-accent-primary/20 border-t-accent-primary rounded-full animate-spin"></div>
+                        <span className="text-text-primary font-medium">Loading Dashboard...</span>
+                    </div>
+                </motion.div>
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="p-8 text-error">Error loading dashboard: {error}</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <motion.div 
+                    className="p-8 bg-gradient-to-br from-red-500/10 to-red-600/5 backdrop-blur-xl rounded-2xl border border-red-500/20 shadow-2xl max-w-md w-full"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <div className="text-center">
+                        <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-text-primary mb-2">Error Loading Dashboard</h3>
+                        <p className="text-text-secondary text-sm">{error}</p>
+                    </div>
+                </motion.div>
+            </div>
+        );
     }
     
     return (
-        <div className="p-4 md:p-6 lg:p-8 space-y-8">
-             <header>
-                <h1 className="text-3xl font-bold text-text-primary">
-                    {dashboardSummary?.projectName || 'Project'} Dashboard
-                </h1>
-                <p className="text-text-secondary mt-1">A high-level overview of your project's progress and status.</p>
-            </header>
+        <motion.div 
+            className="min-h-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
+            {/* Background overlay for glass effect */}
+            <div className="fixed inset-0 bg-gradient-to-br from-accent-primary/5 via-transparent to-accent-secondary/5 pointer-events-none"></div>
             
-            {/* Switched to a more complex grid layout */}
-            <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main content on the left */}
-                <div className="lg:col-span-2 space-y-8">
-                    {dashboardSummary && <ProjectHealthWidget summaryData={dashboardSummary} />}
-                    {actionItems && <ActionItemsWidget actionItems={actionItems} />}
-                </div>
+            <div className="relative z-10 p-4 md:p-6 lg:p-8 space-y-8">
+                {/* Header section with glass effect */}
+                <motion.header 
+                    className="p-6 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                        backdropFilter: 'blur(20px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+                    }}
+                >
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="w-12 h-12 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                            <svg className="w-6 h-6 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h1 className="text-3xl font-bold text-text-primary">
+                            {dashboardSummary?.projectName || 'Project'} Dashboard
+                        </h1>
+                    </div>
+                    <p className="text-text-secondary">A high-level overview of your project's progress and status.</p>
+                </motion.header>
+                
+                {/* Main content grid */}
+                <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Main content on the left */}
+                    <motion.div 
+                        className="lg:col-span-2 space-y-8"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                        {dashboardSummary && <ProjectHealthWidget summaryData={dashboardSummary} />}
+                        {actionItems && <ActionItemsWidget actionItems={actionItems} />}
+                    </motion.div>
 
-                {/* Sidebar content on the right */}
-                <div className="lg:col-span-1 space-y-8">
-                     {activityFeed && <RecentActivityWidget activityFeed={activityFeed} />}
-                     {/* The Team Workload widget will go here later */}
-                </div>
-            </main>
-        </div>
+                    {/* Sidebar content on the right */}
+                    <motion.div 
+                        className="lg:col-span-1 space-y-8"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                    >
+                         {activityFeed && <RecentActivityWidget activityFeed={activityFeed} />}
+                    </motion.div>
+                </main>
+            </div>
+        </motion.div>
     );
 };
 

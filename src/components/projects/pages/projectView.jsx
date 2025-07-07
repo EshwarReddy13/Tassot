@@ -18,7 +18,7 @@ const ProjectView = () => {
 
   if (userLoading || loadingDetails) {
     return (
-      <div className="ml-[17rem] flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <p className="text-lg text-text-secondary">Loading Project...</p>
       </div>
     );
@@ -26,7 +26,7 @@ const ProjectView = () => {
 
   if (errorDetails) {
     return (
-      <div className="ml-[17rem] flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-bold text-error">Failed to Load Project</h2>
           <p className="mt-2 text-text-secondary">{errorDetails}</p>
@@ -40,7 +40,7 @@ const ProjectView = () => {
 
   if (!currentProject) {
     return (
-      <div className="ml-[17rem] flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-bold text-text-primary">Project Not Found</h2>
           <p className="mt-2 text-text-secondary">The project may have been deleted or you may not have access.</p>

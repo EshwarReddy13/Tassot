@@ -379,7 +379,7 @@ const DynamicBackgroundCircles = () => {
       
       {/* Subtle grid pattern */}
       <div 
-        className="absolute inset-0 opacity-15"
+        className="absolute inset-0 opacity-60"
         style={{
           backgroundImage: `
             linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
@@ -399,11 +399,24 @@ const Layout = () => {
 
   // Check if the current URL starts with /projects/ (same logic as in Navbar)
   const isProjectsRoute = location.pathname.startsWith('/projects/');
+  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
 
-  // Calculate the navbar's width based on state
+  useEffect(() => {
+    setIsSubmenuOpen(isProjectsRoute);
+  }, [location.pathname, isProjectsRoute]);
+
+  // Determine navbar state (same logic as in Navbar)
+  const getNavbarState = () => {
+    if (isProjectsRoute && isSubmenuOpen) return 'fullExpanded';
+    if (isNavbarExpanded) return 'expanded';
+    return 'collapsed';
+  };
+
+  // Calculate the navbar's width based on state (matching Navbar.jsx)
   const getNavbarWidth = () => {
-    if (isNavbarExpanded) return '10rem'; // fullExpanded
-    if (isProjectsRoute) return '16.5rem'; // expanded (with submenu)
+    const state = getNavbarState();
+    if (state === 'expanded') return '10rem'; // When user clicks expand
+    if (state === 'fullExpanded') return '16rem'; // When subnavbar opens
     return '4.5rem'; // collapsed
   };
 
@@ -416,9 +429,13 @@ const Layout = () => {
       
       <Navbar />
       <InvitationHandler />
-      <div className="flex-1 h-full min-h-0 overflow-auto relative z-10" style={{ marginLeft: navbarWidth }}>
+      <motion.div 
+        className="flex-1 h-full min-h-0 overflow-auto relative z-10"
+        animate={{ marginLeft: navbarWidth }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
+      >
         <Outlet />
-      </div>
+      </motion.div>
     </div>
   );
 };

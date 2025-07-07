@@ -38,7 +38,7 @@ const ProjectHeader = () => {
   if (!currentProject || !userData) {
       return (
           // Render a placeholder or nothing to prevent crashes
-          <header className="fixed top-0 left-[17rem] right-0 z-10 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary bg-bg-primary px-6 animate-pulse">
+          <header className="fixed top-0 left-[17rem] right-0 z-10 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary px-6 animate-pulse">
              <div className="h-6 w-1/4 bg-bg-secondary rounded"></div>
              <div className="h-9 w-1/3 bg-bg-secondary rounded-full"></div>
           </header>
@@ -47,7 +47,7 @@ const ProjectHeader = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-[17rem] right-0 z-10 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary bg-bg-primary px-6">
+      <header className="fixed top-0 left-[17rem] right-0 z-10 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary px-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
           <h1 className="font-bold text-text-primary" style={{ fontSize: 'clamp(1.125rem, 1.5vw, 1.25rem)' }}>
             {currentProject.project.project_name}

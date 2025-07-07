@@ -154,7 +154,7 @@ const ProjectsPage = () => {
 
   return (
     <div className="min-h-screen">
-      <main className="ml-0 md:ml-[2rem] mr-4 pt-6 pb-4 px-4 sm:px-6">
+      <main className="ml-0 mr-4 pt-6 pb-4 px-4 sm:px-6">
         
         <motion.h1 className="text-text-primary font-bold" style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
           Projects

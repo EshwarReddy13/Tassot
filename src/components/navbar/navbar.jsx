@@ -18,24 +18,44 @@ const icons = [
 
 // Define submenu items for Projects
 const subMenuItems = [ 
-  { id: 'dashboard', label: 'Dashboard', path: 'dashboard' },
-  { id: 'board', label: 'Board', path: '' }, 
-  { id: 'users', label: 'Users', path: 'users' },
-  { id: 'settings', label: 'Settings', path: 'settings' },
+  { 
+    id: 'dashboard', 
+    label: 'Dashboard', 
+    path: 'dashboard',
+    icon: 'https://api.iconify.design/mdi:view-dashboard-outline.svg',
+  },
+  { 
+    id: 'board', 
+    label: 'Board', 
+    path: '',
+    icon: 'https://api.iconify.design/mdi:view-column-outline.svg',
+  }, 
+  { 
+    id: 'users', 
+    label: 'Users', 
+    path: 'users',
+    icon: 'https://api.iconify.design/mdi:account-group-outline.svg',
+  },
+  { 
+    id: 'settings', 
+    label: 'Settings', 
+    path: 'settings',
+    icon: 'https://api.iconify.design/mdi:cog-outline.svg',
+  },
 ];
 
 // Animation variants for the navbar width
 const navbarVariants = {
   collapsed: { width: '4.5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
-  expanded: { width: '16.5rem', transition: { duration: 0.5, ease: 'easeInOut' } },
-  fullExpanded: { width: '10rem', transition: { duration: 0.5, ease: 'easeInOut' } },
+  expanded: { width: '10rem', transition: { duration: 0.5, ease: 'easeInOut' } },
+  fullExpanded: { width: '16rem', transition: { duration: 0.5, ease: 'easeInOut' } },
 };
 
 // Animation variants for the subnavbar
 const subnavVariants = {
-  hidden: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] } },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1], delay: 0.3 } },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] } },
+  hidden: { opacity: 0, scale: 0.95, transition: { duration: 0.3, ease: 'easeInOut' } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: 'easeInOut', delay: 0.2 } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.3, ease: 'easeInOut' } },
 };
 
 // Animation variants for submenu items (staggered)
@@ -44,7 +64,7 @@ const submenuItemVariants = {
   visible: (i) => ({
     opacity: 1,
     x: 0,
-    transition: { duration: 0.1, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.2 + 0.9 },
+    transition: { duration: 0.3, ease: 'easeInOut', delay: i * 0.1 + 0.4 },
   }),
 };
 
@@ -388,8 +408,12 @@ const Navbar = () => {
     setIsSubmenuOpen(isProjectsRoute);
     if (isProjectsRoute) {
       setSelectedIcon('projects');
+      // Reset manual expansion when entering project route to let subnavbar take priority
+      if (isNavbarExpanded) {
+        toggleNavbar();
+      }
     }
-  }, [location.pathname, isProjectsRoute]);
+  }, [location.pathname, isProjectsRoute, isNavbarExpanded, toggleNavbar]);
 
   const handleIconClick = (icon) => {
     setSelectedIcon(icon.id);
@@ -401,8 +425,8 @@ const Navbar = () => {
 
   // Determine navbar state
   const getNavbarState = () => {
-    if (isNavbarExpanded) return 'fullExpanded';
-    if (isProjectsRoute && isSubmenuOpen) return 'expanded';
+    if (isProjectsRoute && isSubmenuOpen) return 'fullExpanded';
+    if (isNavbarExpanded) return 'expanded';
     return 'collapsed';
   };
 
@@ -417,14 +441,21 @@ const Navbar = () => {
       variants={navbarVariants}
       aria-label="Primary navigation"
     >
-      <div className="flex flex-row h-full w-full bg-black/80 p-2.5 rounded-xl mt-2 mb-2">
-        <div className="flex flex-col items-center w-full py-4 space-y-8 flex-shrink-0">
+              <div className="flex flex-row h-full w-full bg-black/80 p-2.5 rounded-xl mt-2 mb-2">
+         {/* Main navbar column */}
+         <div className={`flex flex-col items-center py-4 flex-shrink-0 transition-all duration-500 ease-in-out ${
+           getNavbarState() === 'fullExpanded' ? 'w-[4rem] space-y-8 overflow-hidden' : 'w-full space-y-8'
+         }`}>
           {visibleIcons.filter(icon => icon.id !== 'expand').map((icon) => (
             <div key={icon.id} className="relative group flex-shrink-0 w-full">
               <motion.button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card transition-all duration-200 ${
-                  isNavbarExpanded && icon.id !== 'logo' ? 'justify-start' : 'justify-center'
-                } ${icon.id === 'logo' ? '' : 'hover:bg-accent-primary'} ${selectedIcon === icon.id && icon.id !== 'logo' ? 'bg-accent-primary' : ''}`}
+                className={`w-full flex items-center gap-3 ${
+                  getNavbarState() === 'collapsed' ? 'px-0 py-2' : 'px-1 py-2'
+                } rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card transition-all duration-500 ease-in-out ${
+                  getNavbarState() === 'expanded' && icon.id !== 'logo' ? 'justify-start' : 'justify-center'
+                } ${icon.id === 'logo' ? '' : 'hover:bg-accent-primary'} ${
+                  selectedIcon === icon.id && icon.id !== 'logo' && getNavbarState() !== 'fullExpanded' ? 'bg-accent-primary' : ''
+                }`}
                 aria-label={icon.label}
                 title={icon.label}
                 whileHover={{ scale: 1.02 }}
@@ -445,101 +476,179 @@ const Navbar = () => {
                   }}
                 />
 
-                {isNavbarExpanded && icon.id !== 'logo' && (
+                {getNavbarState() === 'expanded' && icon.id !== 'logo' && (
                   <motion.span
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.4, delay: 0.2, ease: 'easeInOut' }}
                     className="text-sm font-medium whitespace-nowrap"
                   >
                     {icon.label}
                   </motion.span>
                 )}
               </motion.button>
-              {!isNavbarExpanded && icon.id !== 'logo' && (
+              {getNavbarState() !== 'expanded' && icon.id !== 'logo' && (
                 <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-bg-secondary text-text-primary text-sm font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
                   {icon.label}
                 </span>
               )}
             </div>
           ))}
-          {/* Expand/Collapse button above profile */}
-          <div className="mt-auto w-full flex justify-center mb-4">
-            <motion.button
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-white hover:bg-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-card transition-all duration-200 ${
-                isNavbarExpanded ? 'justify-start' : 'justify-center'
-              }`}
-              onClick={toggleNavbar}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              aria-label="Toggle navbar"
-            >
-              <motion.img
-                src="https://api.iconify.design/mdi:chevron-right.svg"
-                alt="Toggle navbar"
-                className="w-7 h-7 flex-shrink-0"
-                style={{
-                  filter: 'invert(100%)',
-                  objectFit: 'contain',
-                }}
-                animate={{ rotate: isNavbarExpanded ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              />
-              {isNavbarExpanded && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
+          {/* Expand/Collapse button above profile - hidden when subnavbar is open */}
+          {getNavbarState() !== 'fullExpanded' && (
+            <div className="mt-auto w-full flex justify-center mb-4">
+              <motion.button
+                className={`w-full flex items-center ${
+                  getNavbarState() === 'fullExpanded' ? 'gap-1' : 'gap-3'
+                } ${
+                  getNavbarState() === 'collapsed' ? 'px-0 py-2' : 'px-3 py-2'
+                } rounded-md text-white hover:bg-accent-primary focus:outline-none transition-all duration-500 ease-in-out ${
+                  getNavbarState() === 'fullExpanded' 
+                    ? 'focus:ring-1 focus:ring-accent-primary focus:ring-offset-1' 
+                    : 'focus:ring-2 focus:ring-accent-primary focus:ring-offset-2'
+                } focus:ring-offset-bg-card ${
+                  getNavbarState() === 'expanded' ? 'justify-start' : 'justify-center'
+                }`}
+                onClick={toggleNavbar}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                aria-label="Toggle navbar"
+              >
+                <motion.img
+                  src="https://api.iconify.design/mdi:chevron-right.svg"
+                  alt="Toggle navbar"
+                  className="w-7 h-7 flex-shrink-0"
+                  style={{
+                    filter: 'invert(100%)',
+                    objectFit: 'contain',
+                  }}
+                  animate={{ rotate: getNavbarState() === 'expanded' ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
-                  className="text-sm font-medium whitespace-nowrap"
-                >
-                  Collapse
-                </motion.span>
-              )}
-            </motion.button>
-          </div>
+                />
+                {getNavbarState() === 'expanded' && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2, ease: 'easeInOut' }}
+                    className="text-sm font-medium whitespace-nowrap"
+                  >
+                    Collapse
+                  </motion.span>
+                )}
+              </motion.button>
+            </div>
+          )}
           
           {/* User Avatar at the bottom */}
-          <div className="w-full flex justify-center">
-            <UserAvatar user={userData} isExpanded={isNavbarExpanded} />
+          <div className={`w-full flex justify-center ${
+            getNavbarState() === 'fullExpanded' ? 'mt-auto' : ''
+          }`}>
+            <UserAvatar user={userData} isExpanded={getNavbarState() === 'expanded'} />
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          {isProjectsRoute && isSubmenuOpen && !isNavbarExpanded && (
-            <motion.div
-              key="submenu"
-              className="h-full w-[12rem] p-4 flex flex-col space-y-2 bg-bg-secondary rounded-lg ml-2"
-              variants={subnavVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              aria-label="Secondary navigation"
-            >
-              <motion.div variants={submenuItemVariants} custom={0} initial="hidden" animate="visible">
-                <h2 className="text-text-primary text-lg font-semibold px-2 py-1" style={{ fontSize: 'clamp(1rem, 1.5vw, 1.2rem)' }}>
-                  Project
-                </h2>
+                  {/* Subnavbar - integrated within the navbar */}
+          <AnimatePresence mode="wait">
+            {getNavbarState() === 'fullExpanded' && (
+              <motion.div
+                key="submenu"
+                className="h-full flex flex-col bg-gradient-to-b from-bg-secondary/90 to-bg-secondary/70 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+                }}
+                variants={subnavVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                aria-label="Secondary navigation"
+              >
+              {/* Header Section */}
+              <motion.div 
+                variants={submenuItemVariants} 
+                custom={0} 
+                initial="hidden" 
+                animate="visible"
+                className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-accent-primary/10 to-transparent"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-accent-primary/20 flex items-center justify-center">
+                    <img
+                      src="https://api.iconify.design/mdi:folder-open-outline.svg"
+                      alt="Project"
+                      className="w-4 h-4"
+                      style={{ filter: 'invert(100%)' }}
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-white text-base font-semibold tracking-wide">
+                      Project
+                    </h2>
+                    <p className="text-text-secondary text-xs opacity-80">
+                      Navigation
+                    </p>
+                  </div>
+                </div>
               </motion.div>
-              {subMenuItems.map((item, index) => (
-                <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
-                  <NavLink
-                    to={item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`} end
-                    className={({ isActive }) =>
-                      clsx(
-                        "w-full text-left px-4 py-3 rounded-lg text-text-secondary text-base font-medium transition-all duration-150 hover:bg-accent-primary/20 focus:bg-accent-primary/20 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-bg-secondary",
-                        {
-                          'bg-accent-primary/10 text-accent-primary border-l-4 border-accent-primary': isActive,
-                          'border-l-4 border-transparent': !isActive
-                        }
-                      )
-                    }
-                    style={{ fontSize: 'clamp(0.95rem, 1.2vw, 1.08rem)' }}
-                    aria-label={item.label}
-                  >
-                    {item.label}
-                  </NavLink>
-                </motion.div>
-              ))}
+
+              {/* Menu Items Section */}
+              <div className="flex-1 p-3 space-y-3">
+                {subMenuItems.map((item, index) => (
+                  <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
+                    <NavLink
+                      to={item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`} 
+                      end
+                      aria-label={item.label}
+                    >
+                      {({ isActive }) => (
+                        <div className={clsx(
+                          "group relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary font-medium transition-all duration-200 hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:ring-offset-2 focus:ring-offset-transparent overflow-hidden",
+                          {
+                            'bg-gradient-to-r from-accent-primary/20 to-accent-primary/10 text-accent-primary shadow-lg border border-accent-primary/20': isActive,
+                            'hover:shadow-md': !isActive
+                          }
+                        )}>
+                          {/* Background glow effect for active state */}
+                          {isActive && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-accent-primary/10 to-transparent opacity-50 blur-sm" />
+                          )}
+                          
+                          {/* Icon */}
+                          <div className={`relative z-10 w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                            isActive ? 'scale-110' : ''
+                          }`}>
+                            <img
+                              src={item.icon}
+                              alt={item.label}
+                              className="w-full h-full"
+                              style={{ 
+                                filter: isActive 
+                                  ? 'invert(47%) sepia(100%) saturate(300%) hue-rotate(190deg) brightness(120%) contrast(95%)'
+                                  : 'invert(70%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%)'
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="relative z-10 flex-1 min-w-0">
+                            <div className={`text-sm font-semibold transition-colors duration-200 ${
+                              isActive ? 'text-accent-primary' : 'text-white group-hover:text-white'
+                            }`}>
+                              {item.label}
+                            </div>
+                          </div>
+                          
+
+                          
+                          {/* Hover effect */}
+                          <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
+                        </div>
+                      )}
+                    </NavLink>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
