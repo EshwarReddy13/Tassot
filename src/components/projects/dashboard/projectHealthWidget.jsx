@@ -14,14 +14,9 @@ const COLORS = {
 
 const KpiCard = ({ title, value, icon, colorClass }) => (
   <motion.div 
-    className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg p-4 flex items-center gap-4 hover:shadow-xl transition-all duration-300"
+    className="glass-project-card p-4 flex items-center gap-4"
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    style={{
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(180%)'
-    }}
   >
     <div className={`p-3 rounded-xl ${colorClass} backdrop-blur-sm`}>
       {React.createElement(icon, { className: 'h-6 w-6 text-white' })}
@@ -135,17 +130,13 @@ const ProjectHealthWidget = ({ summaryData }) => {
 
   return (
     <motion.div 
-      className="p-6 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl"
+      className="glass-project-widget p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)'
-      }}
     >
-      <div className="flex items-center gap-3 mb-6">
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
           <svg className="w-5 h-5 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -210,6 +201,7 @@ const ProjectHealthWidget = ({ summaryData }) => {
           <KpiCard title="Unassigned" value={kpis.unassignedTasks} icon={HiOutlineViewGridAdd} colorClass="bg-gradient-to-br from-yellow-500/80 to-yellow-600/60" />
           <KpiCard title="Team Members" value={kpis.totalMembers} icon={HiOutlineUsers} colorClass="bg-gradient-to-br from-green-500/80 to-green-600/60" />
         </div>
+      </div>
       </div>
     </motion.div>
   );

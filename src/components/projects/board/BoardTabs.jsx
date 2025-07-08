@@ -60,7 +60,7 @@ const BoardTabs = () => {
   };
 
   return (
-    <div className="bg-gradient-to-b from-bg-primary/90 to-bg-primary/70 backdrop-blur-xl border-b border-white/10 shadow-lg">
+    <div className="bg-gradient-to-b from-bg-black/90 to-bg-black/50 backdrop-blur-xl border-b border-white/10 shadow-lg">
       <div className="flex items-end px-6 pt-4 pb-0 gap-2">
         {tabs.map((tab, index) => {
           const isActive = activeTab === tab.id;

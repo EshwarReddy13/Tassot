@@ -74,17 +74,13 @@ const ActivityText = ({ type, user, item }) => {
 const RecentActivityWidget = ({ activityFeed }) => {
     return (
         <motion.div 
-            className="p-6 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl"
+            className="glass-project-widget p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            style={{
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                backdropFilter: 'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)'
-            }}
         >
-            <div className="flex items-center gap-3 mb-6">
+            <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
                     <svg className="w-5 h-5 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -98,16 +94,11 @@ const RecentActivityWidget = ({ activityFeed }) => {
                     activityFeed.map((activity, index) => (
                         <motion.div 
                             key={index} 
-                            className="bg-gradient-to-r from-white/5 to-white/2 backdrop-blur-xl rounded-lg border border-white/10 p-4 hover:shadow-lg transition-all duration-300"
+                            className="glass-project-card p-4"
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.1 }}
                             whileHover={{ scale: 1.01, y: -2 }}
-                            style={{
-                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                                backdropFilter: 'blur(15px) saturate(180%)',
-                                WebkitBackdropFilter: 'blur(15px) saturate(180%)'
-                            }}
                         >
                             <div className="flex items-start gap-4">
                                 <ActivityIcon type={activity.type} />
@@ -127,15 +118,10 @@ const RecentActivityWidget = ({ activityFeed }) => {
                     ))
                 ) : (
                     <motion.div 
-                        className="bg-gradient-to-r from-white/5 to-white/2 backdrop-blur-xl rounded-lg border border-white/10 p-8 text-center"
+                        className="glass-project-card p-8 text-center"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}
-                        style={{
-                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                            backdropFilter: 'blur(15px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(15px) saturate(180%)'
-                        }}
                     >
                         <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,6 +132,7 @@ const RecentActivityWidget = ({ activityFeed }) => {
                         <p className="text-xs text-text-placeholder">Activity will appear here as your team works</p>
                     </motion.div>
                 )}
+            </div>
             </div>
         </motion.div>
     );

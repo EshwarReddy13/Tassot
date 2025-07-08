@@ -88,7 +88,7 @@ const ProjectView = () => {
       <main>
         {isBoardRoute() ? (
           <>
-            <div className="z-30 mt-16">
+            <div className="z-30 mt-12">
               <BoardTabs />
             </div>
             <div 
