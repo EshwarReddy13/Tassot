@@ -421,8 +421,6 @@ const Navbar = () => {
     setIsSubmenuOpen(icon.id === 'projects');
   };
 
-
-
   // Determine navbar state
   const getNavbarState = () => {
     if (isProjectsRoute && isSubmenuOpen) return 'fullExpanded';
@@ -594,60 +592,61 @@ const Navbar = () => {
 
               {/* Menu Items Section */}
               <div className="flex-1 p-3 space-y-3">
-                {subMenuItems.map((item, index) => (
-                  <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
-                    <NavLink
-                      to={item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`} 
-                      end
-                      aria-label={item.label}
-                    >
-                      {({ isActive }) => (
-                        <div className={clsx(
+                {subMenuItems.map((item, index) => {
+                  const isActive = location.pathname === (item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`);
+                  
+                  return (
+                    <motion.div key={item.id} variants={submenuItemVariants} custom={index + 1} initial="hidden" animate="visible">
+                      <button
+                        onClick={() => {
+                          const targetPath = item.path ? `/projects/${projectUrl}/${item.path}` : `/projects/${projectUrl}`;
+                          navigate(targetPath);
+                        }}
+                        aria-label={item.label}
+                        className={clsx(
                           "group relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary font-medium transition-all duration-200 hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:ring-offset-2 focus:ring-offset-transparent overflow-hidden",
                           {
                             'bg-gradient-to-r from-accent-primary/20 to-accent-primary/10 text-accent-primary shadow-lg border border-accent-primary/20': isActive,
                             'hover:shadow-md': !isActive
                           }
-                        )}>
-                          {/* Background glow effect for active state */}
-                          {isActive && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-accent-primary/10 to-transparent opacity-50 blur-sm" />
-                          )}
-                          
-                          {/* Icon */}
-                          <div className={`relative z-10 w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                            isActive ? 'scale-110' : ''
-                          }`}>
-                            <img
-                              src={item.icon}
-                              alt={item.label}
-                              className="w-full h-full"
-                              style={{ 
-                                filter: isActive 
-                                  ? 'invert(47%) sepia(100%) saturate(300%) hue-rotate(190deg) brightness(120%) contrast(95%)'
-                                  : 'invert(70%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%)'
-                              }}
-                            />
-                          </div>
-                          
-                          {/* Content */}
-                          <div className="relative z-10 flex-1 min-w-0">
-                            <div className={`text-sm font-semibold transition-colors duration-200 ${
-                              isActive ? 'text-accent-primary' : 'text-white group-hover:text-white'
-                            }`}>
-                              {item.label}
-                            </div>
-                          </div>
-                          
-
-                          
-                          {/* Hover effect */}
-                          <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
+                        )}
+                      >
+                        {/* Background glow effect for active state */}
+                        {isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-accent-primary/10 to-transparent opacity-50 blur-sm" />
+                        )}
+                        
+                        {/* Icon */}
+                        <div className={`relative z-10 w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                          isActive ? 'scale-110' : ''
+                        }`}>
+                          <img
+                            src={item.icon}
+                            alt={item.label}
+                            className="w-full h-full"
+                            style={{ 
+                              filter: isActive 
+                                ? 'invert(47%) sepia(100%) saturate(300%) hue-rotate(190deg) brightness(120%) contrast(95%)'
+                                : 'invert(70%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%)'
+                            }}
+                          />
                         </div>
-                      )}
-                    </NavLink>
-                  </motion.div>
-                ))}
+                        
+                        {/* Content */}
+                        <div className="relative z-10 flex-1 min-w-0">
+                          <div className={`text-sm font-semibold transition-colors duration-200 ${
+                            isActive ? 'text-accent-primary' : 'text-white group-hover:text-white'
+                          }`}>
+                            {item.label}
+                          </div>
+                        </div>
+                        
+                        {/* Hover effect */}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
+                      </button>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           )}

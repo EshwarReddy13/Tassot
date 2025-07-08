@@ -84,7 +84,6 @@ const ProjectUsersPage = () => {
             >
                 <header className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-text-primary">Project Members</h1>
                         <p className="text-text-secondary mt-1">{members.length} member(s) in this project.</p>
                     </div>
                     {(currentUserRole === 'owner' || currentUserRole === 'editor') && (

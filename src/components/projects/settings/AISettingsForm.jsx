@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
+import { motion } from 'framer-motion';
+import { HiSave, HiLockClosed, HiSparkles, HiCog, HiLightningBolt, HiDocumentText, HiCheckCircle } from 'react-icons/hi';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import isEqual from 'lodash.isequal';
@@ -24,45 +26,86 @@ const presets = {
   }
 };
 
-const FormSection = ({ title, description, children }) => (
-    <div className="mb-8 p-6 bg-bg-secondary rounded-lg border border-bg-tertiary">
-        <h3 className="text-lg font-semibold text-text-primary mb-1">{title}</h3>
-        {description && <p className="text-text-secondary text-sm mb-6">{description}</p>}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+const FormSection = ({ title, description, children, icon: Icon = HiCog }) => (
+    <motion.div 
+        className="glass-settings p-6 mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+    >
+        <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 glass-dark rounded-lg flex items-center justify-center">
+                <Icon className="w-5 h-5 text-accent-primary" />
+            </div>
+            <div>
+                <h3 className="text-xl font-semibold text-text-primary">{title}</h3>
+                {description && <p className="text-text-secondary text-sm">{description}</p>}
+            </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {children}
         </div>
-    </div>
+    </motion.div>
 );
+
 const SelectField = ({ label, value, onChange, children, disabled }) => (
-    <div>
-        <label className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
-        <select value={value} onChange={onChange} disabled={disabled} className="w-full bg-bg-card border border-bg-tertiary rounded-md p-2 focus:ring-2 focus:ring-accent-primary focus:border-accent-primary disabled:opacity-50 disabled:cursor-not-allowed">
+    <div className="space-y-2">
+        <label className="block text-sm font-medium text-text-secondary">{label}</label>
+        <select 
+            value={value} 
+            onChange={onChange} 
+            disabled={disabled} 
+            className="glass-settings-input"
+        >
             {children}
         </select>
     </div>
 );
+
 const TextareaField = ({ label, value, onChange, name, placeholder, disabled }) => (
-     <div className="md:col-span-2">
-        <label htmlFor={name} className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
-        <textarea id={name} name={name} value={value} onChange={onChange} disabled={disabled} rows={3} placeholder={placeholder} className="w-full bg-bg-card border border-bg-tertiary rounded-md p-2 focus:ring-2 focus:ring-accent-primary focus:border-accent-primary disabled:opacity-50" />
+     <div className="md:col-span-2 space-y-2">
+        <label htmlFor={name} className="block text-sm font-medium text-text-secondary">{label}</label>
+        <textarea 
+            id={name} 
+            name={name} 
+            value={value} 
+            onChange={onChange} 
+            disabled={disabled} 
+            rows={4} 
+            placeholder={placeholder} 
+            className="glass-settings-input resize-none" 
+        />
     </div>
 );
-const CheckboxField = ({ label, checked, onChange, disabled, id }) => (
-    <div className="flex items-center">
-        <input type="checkbox" id={id} checked={checked} onChange={onChange} disabled={disabled} className="h-4 w-4 rounded border-bg-tertiary text-accent-primary focus:ring-accent-primary disabled:opacity-50"/>
-        <label htmlFor={id} className="ml-2 block text-sm text-text-secondary">{label}</label>
+
+const CheckboxField = ({ label, checked, onChange, disabled, id, value }) => (
+    <div className="flex items-center space-x-3 p-3 glass-settings-input">
+        <input 
+            type="checkbox" 
+            id={id} 
+            checked={checked} 
+            onChange={onChange} 
+            value={value}
+            disabled={disabled} 
+            className="h-4 w-4 rounded border-white/20 text-accent-primary focus:ring-accent-primary focus:ring-2 disabled:opacity-50"
+        />
+        <label htmlFor={id} className="block text-sm text-text-secondary font-medium">{label}</label>
     </div>
 );
 
 const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
     const contentElementOptions = ['main_heading', 'sub_heading', 'sentences', 'bullet_points', 'numbered_points', 'emojis', 'stylistic_punctuation'];
     const [settings, setSettings] = useState(initialSettings);
+    const [initialData, setInitialData] = useState(initialSettings);
     const [isSaving, setIsSaving] = useState(false);
     
-    useEffect(() => { setSettings(initialSettings); }, [initialSettings]);
+    useEffect(() => {
+        setSettings(initialSettings);
+        setInitialData(initialSettings);
+    }, [initialSettings]);
     
-    const hasChanges = !isEqual(initialSettings, settings);
-    
+    const hasChanges = !isEqual(initialData, settings);
+
     const handleChange = (section, field, value) => {
       const isRootField = section === null;
       setSettings(prev => ({
@@ -115,24 +158,44 @@ const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
             return;
         }
         setIsSaving(true);
-        await onSave(settings);
-        setIsSaving(false);
+        try {
+            await onSave(settings);
+            setInitialData(settings); // Reset initial state after save
+        } catch (error) {
+            console.error('Failed to save AI settings:', error);
+            toast.error(error.message || 'Failed to save AI settings.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <FormSection title="Presets" description="Start with a predefined configuration to quickly set up your AI preferences.">
-                <div className="md:col-span-1">
-                    <SelectField label="Load a Preset" value={settings.ai_preferences.selected_preset} onChange={handlePresetChange} disabled={!isOwner}>
-                        <option value="balanced">Balanced</option>
-                        <option value="creative">Creative</option>
-                        <option value="technical">Technical</option>
-                        <option value="custom">Custom (current settings)</option>
+        <form onSubmit={handleSubmit} className="space-y-8">
+            <FormSection 
+                title="AI Presets" 
+                description="Start with a predefined configuration to quickly set up your AI preferences."
+                icon={HiLightningBolt}
+            >
+                <div className="md:col-span-2">
+                    <SelectField 
+                        label="Load a Preset" 
+                        value={settings.ai_preferences.selected_preset} 
+                        onChange={handlePresetChange} 
+                        disabled={!isOwner}
+                    >
+                        <option value="balanced">⚖️ Balanced - Professional & Goal-Oriented</option>
+                        <option value="creative">🎨 Creative - Motivational & Descriptive</option>
+                        <option value="technical">🔧 Technical - Concise & Formal</option>
+                        <option value="custom">⚙️ Custom (current settings)</option>
                     </SelectField>
                 </div>
             </FormSection>
 
-            <FormSection title="General" description="Overall tone and style for AI content.">
+            <FormSection 
+                title="General Settings" 
+                description="Overall tone and style for AI content."
+                icon={HiCog}
+            >
                 <SelectField label="Tone" value={settings.ai_preferences.general.tone} onChange={(e) => handleChange('general', 'tone', e.target.value)} disabled={!isOwner}>
                     <option value="professional">Professional</option>
                     <option value="friendly">Friendly</option>
@@ -165,7 +228,11 @@ const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
                 </SelectField>
             </FormSection>
             
-            <FormSection title="Task Name Generation" description="Rules for generating task names.">
+            <FormSection 
+                title="Task Name Generation" 
+                description="Rules for generating task names."
+                icon={HiDocumentText}
+            >
                  <SelectField label="Length" value={settings.ai_preferences.task_name.length} onChange={(e) => handleChange('task_name', 'length', e.target.value)} disabled={!isOwner}>
                     <option value="short">Short</option>
                     <option value="medium">Medium</option>
@@ -181,7 +248,11 @@ const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
                 </SelectField>
             </FormSection>
 
-            <FormSection title="Task Description Generation" description="Rules for generating detailed task descriptions.">
+            <FormSection 
+                title="Task Description Generation" 
+                description="Rules for generating detailed task descriptions."
+                icon={HiSparkles}
+            >
                  <SelectField label="Depth" value={settings.ai_preferences.task_description.depth} onChange={(e) => handleChange('task_description', 'depth', e.target.value)} disabled={!isOwner}>
                     <option value="brief">Brief</option>
                     <option value="moderate">Moderate</option>
@@ -199,9 +270,9 @@ const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
                     <option value="hierarchical">Hierarchical</option>
                 </SelectField>
                  
-                <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text-secondary mb-3">Content Elements</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2 space-y-4">
+                    <label className="block text-sm font-medium text-text-secondary">Content Elements</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                        {contentElementOptions.map(option => (
                            <CheckboxField
                                key={option}
@@ -217,7 +288,13 @@ const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <CheckboxField label="Inherit Tone & Style from General Settings" id="match-general-settings" checked={settings.ai_preferences.task_description.match_general_settings} onChange={(e) => handleChange('task_description', 'match_general_settings', e.target.checked)} disabled={!isOwner} />
+                  <CheckboxField 
+                      label="Inherit Tone & Style from General Settings" 
+                      id="match-general-settings" 
+                      checked={settings.ai_preferences.task_description.match_general_settings} 
+                      onChange={(e) => handleChange('task_description', 'match_general_settings', e.target.checked)} 
+                      disabled={!isOwner} 
+                  />
                 </div>
 
                 {!settings.ai_preferences.task_description.match_general_settings && (
@@ -225,39 +302,79 @@ const AISettingsForm = ({ initialSettings, onSave, isOwner }) => {
                         <SelectField label="Description-Specific Tone" value={settings.ai_preferences.task_description.task_description_tone} onChange={(e) => handleChange('task_description', 'task_description_tone', e.target.value)} disabled={!isOwner}>
                             <option value="neutral">Neutral</option>
                             <option value="professional">Professional</option>
+                            <option value="friendly">Friendly</option>
+                            <option value="motivational">Motivational</option>
                             <option value="empathetic">Empathetic</option>
-                            <option value="descriptive">Descriptive</option>
                         </SelectField>
-                        {/* --- THIS IS THE FIX --- */}
+                        
                         <SelectField label="Description-Specific Style" value={settings.ai_preferences.task_description.task_description_style} onChange={(e) => handleChange('task_description', 'task_description_style', e.target.value)} disabled={!isOwner}>
-                        {/* ---------------------- */}
                             <option value="descriptive">Descriptive</option>
+                            <option value="concise">Concise</option>
                             <option value="instructional">Instructional</option>
-                            <option value="goal-focused">Goal-Focused</option>
+                        </SelectField>
+                        
+                        <SelectField label="Clarity Override" value={settings.ai_preferences.task_description.task_description_clarity_level_override} onChange={(e) => handleChange('task_description', 'task_description_clarity_level_override', e.target.value)} disabled={!isOwner}>
+                           <option value="mixed">Mixed</option>
+                           <option value="layman">Layman</option>
+                           <option value="technical">Technical</option>
+                        </SelectField>
+                        
+                        <SelectField label="Verb Style Override" value={settings.ai_preferences.task_description.task_description_verb_style_override} onChange={(e) => handleChange('task_description', 'task_description_verb_style_override', e.target.value)} disabled={!isOwner}>
+                           <option value="descriptive">Descriptive</option>
+                           <option value="imperative">Imperative</option>
                         </SelectField>
                      </>
                 )}
-            </FormSection>
 
-            <FormSection title="Special Instructions">
-                 <TextareaField
-                    label="Additional Notes"
-                    name="special_notes"
-                    value={settings.ai_preferences.special_notes}
+                <TextareaField 
+                    label="Special Notes / Instructions" 
+                    name="special_notes" 
+                    value={settings.ai_preferences.special_notes} 
                     onChange={(e) => handleChange(null, 'special_notes', e.target.value)}
-                    placeholder="e.g., Always refer to users as 'clients'. Do not use emojis."
+                    placeholder="e.g., Always include a one-sentence summary at the top."
                     disabled={!isOwner}
                 />
             </FormSection>
-            
-            <div className="flex justify-end mt-8">
-                <button type="submit" disabled={!isOwner || isSaving || !hasChanges} className={clsx("px-6 py-2 rounded-md font-semibold text-text-primary transition-colors duration-200", { "bg-accent-primary hover:bg-accent-hover": isOwner && hasChanges, "bg-gray-600 cursor-not-allowed": !isOwner || !hasChanges || isSaving, "opacity-70 cursor-wait": isSaving, })}>
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                </button>
-            </div>
-             {!isOwner && <p className="text-right text-sm text-yellow-400 mt-2">Only the project owner can save changes.</p>}
+
+            <motion.div 
+                className="flex items-center justify-between"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+            >
+                {!isOwner && (
+                    <div className="flex items-center gap-2 text-warning">
+                        <HiLockClosed className="w-5 h-5" />
+                        <span className="text-sm">Only the project owner can save changes</span>
+                    </div>
+                )}
+                
+                <motion.button
+                    type="submit"
+                    disabled={!isOwner || isSaving || !hasChanges}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                        isOwner && hasChanges && !isSaving
+                            ? 'glass-button-accent hover:scale-105'
+                            : 'glass-button opacity-50 cursor-not-allowed'
+                    } ${isSaving ? 'cursor-wait' : ''}`}
+                    whileHover={isOwner && hasChanges && !isSaving ? { scale: 1.02 } : {}}
+                    whileTap={isOwner && hasChanges && !isSaving ? { scale: 0.98 } : {}}
+                >
+                    {isSaving ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <HiSave className="w-5 h-5" />
+                            Save Changes
+                        </>
+                    )}
+                </motion.button>
+            </motion.div>
         </form>
     );
 };
 
-export default AISettingsForm;
+export default memo(AISettingsForm);

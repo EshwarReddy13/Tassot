@@ -264,6 +264,32 @@ body {
   transform: translateY(-2px);
 }
 
+.glass-settings {
+  background: linear-gradient(135deg, var(--glass-bg-primary) 0%, var(--glass-bg-secondary) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 0 8px 32px var(--glass-shadow);
+  transition: all 0.3s ease;
+}
+
+.glass-settings:hover {
+  box-shadow: 0 12px 40px var(--glass-shadow);
+  transform: translateY(-2px);
+}
+
+.glass-settings-no-border {
+  background: var(--color-bg-dark);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: 0 4px 24px var(--glass-shadow);
+  transition: all 0.3s ease;
+}
+
+.glass-settings-no-border:hover {
+  box-shadow: 0 8px 32px var(--glass-shadow);
+  transform: translateY(-1px);
+}
+
 .glass-nav {
   background: linear-gradient(135deg, var(--glass-bg-primary) 0%, var(--glass-bg-secondary) 100%);
   backdrop-filter: blur(20px) saturate(200%);
@@ -667,4 +693,59 @@ body {
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   transform: translateY(-1px) scale(1.01);
+}
+
+/* Dropdown options styling for dark mode */
+select option {
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+  padding: 8px 12px;
+}
+
+select option:hover {
+  background-color: var(--color-accent-primary);
+  color: white;
+}
+
+/* Settings page input styling */
+.glass-settings-input {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.glass-settings-input:focus {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px rgba(150, 116, 218, 0.1);
+  outline: none;
+}
+
+.glass-settings-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.glass-settings-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.glass-settings-input.error {
+  border-color: var(--color-error);
+}
+
+/* Checkbox styling for settings page */
+.glass-settings-input input[type="checkbox"] {
+  accent-color: var(--color-accent-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.glass-settings-input input[type="checkbox"]:checked {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
 }
