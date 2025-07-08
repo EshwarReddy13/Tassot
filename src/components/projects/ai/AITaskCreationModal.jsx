@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiSparkles } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -6,6 +6,23 @@ import toast from 'react-hot-toast';
 const AITaskCreationModal = ({ isOpen, onClose, onSubmit, isGenerating = false }) => {
     const [userDescription, setUserDescription] = useState('');
     const [error, setError] = useState('');
+
+    // ESC key handler
+    useEffect(() => {
+        const handleEscKey = (event) => {
+            if (event.key === 'Escape' && isOpen && !isGenerating) {
+                handleClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscKey);
+        };
+    }, [isOpen, isGenerating]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

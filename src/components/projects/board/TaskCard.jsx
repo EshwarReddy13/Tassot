@@ -73,13 +73,14 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                 className={clsx(
                     'p-4 touch-none flex flex-col cursor-pointer',
                     {
-                        'glass-card': !isThisCardDragging && !isEditing && !isOverlay,
+                        'glass-task': !isThisCardDragging && !isEditing && !isOverlay,
                         'glass-task editing': isEditing,
                         'bg-transparent border-2 border-dashed border-accent-primary/40 min-h-[5.25rem]': isThisCardDragging && !isOverlay,
                         'invisible': isThisCardDragging && !isOverlay,
                         'glass-task dragging': isOverlay,
                     }
                 )}
+
                 onClick={handleCardClick}
                 onKeyDown={(e) => {
                     if ((e.key === 'Enter' || e.key === ' ') && !isEditing) handleCardClick(e);
@@ -108,7 +109,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-text-primary mb-3 break-words leading-relaxed" style={{ fontSize: 'clamp(0.875rem, 2vw, 0.95rem)' }}>
+                                <p className="text-text-primary mb-3 break-words leading-relaxed text-sm">
                                     {task.task_name}
                                 </p>
                             )}

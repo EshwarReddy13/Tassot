@@ -46,6 +46,23 @@ const TaskDetailsModal = ({ isOpen, onClose, task, boards, onUpdateTask, creator
     const [updatedTask, setUpdatedTask] = useState(task);
     const [isSaving, setIsSaving] = useState(false);
 
+    // ESC key handler
+    useEffect(() => {
+        const handleEscKey = (event) => {
+            if (event.key === 'Escape' && isOpen && !isSaving) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscKey);
+        };
+    }, [isOpen, isSaving, onClose]);
+
     useEffect(() => {
         setUpdatedTask(task);
     }, [task]);

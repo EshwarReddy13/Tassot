@@ -40,10 +40,9 @@ const ProjectUsersPage = () => {
         }
     }, [currentProject]);
 
-    // When the modal closes after a role change, re-fetch details to ensure roles are synced
+    // When the modal closes, just close it without refreshing
     const handleCloseUserDetails = () => {
         setSelectedUser(null);
-        getProjectDetails(projectUrl);
     }
     
     const currentUser = members.find(m => m.id === userData?.id);
@@ -78,7 +77,7 @@ const ProjectUsersPage = () => {
     return (
         <>
             <motion.div
-                className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+                className=" mx-auto px-16 py-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -89,15 +88,15 @@ const ProjectUsersPage = () => {
                         <p className="text-text-secondary mt-1">{members.length} member(s) in this project.</p>
                     </div>
                     {(currentUserRole === 'owner' || currentUserRole === 'editor') && (
-                         <button onClick={() => setInviteModalOpen(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-accent-primary rounded-lg hover:bg-accent-hover transition-colors">
+                         <button onClick={() => setInviteModalOpen(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold glass-button-accent rounded-lg">
                             <HiUserAdd className="w-5 h-5"/>
                             Add User
                         </button>
                     )}
                 </header>
 
-                <main className="bg-bg-secondary rounded-lg shadow overflow-hidden">
-                    <ul className="divide-y divide-bg-primary">
+                <main className="glass-card overflow-hidden">
+                    <ul className="divide-y divide-glass-border">
                         <AnimatePresence>
                              {members.map(member => (
                                 <motion.li 
@@ -106,9 +105,10 @@ const ProjectUsersPage = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, x: -50, transition: { duration: 0.3 } }}
-                                    className="flex items-center justify-between px-6 py-4"
+                                    className="flex items-center justify-between px-6 py-4 cursor-pointer group hover:bg-white/5 transition-colors"
+                                    onClick={() => setSelectedUser(member)}
                                 >
-                                    <div className="flex items-center gap-4 cursor-pointer group" onClick={() => setSelectedUser(member)}>
+                                    <div className="flex items-center gap-4">
                                         <img 
                                             src={member.photo_url || `https://ui-avatars.com/api/?name=${member.first_name}+${member.last_name}&background=3a3a44&color=fff`} 
                                             alt={`${member.first_name} ${member.last_name}`}
@@ -119,7 +119,7 @@ const ProjectUsersPage = () => {
                                             <p className="text-sm text-text-secondary">{member.email}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
                                         <RoleBadge role={member.role} />
                                         {canManage(member) && (
                                             <button onClick={() => handleRemoveUser(member)} aria-label={`Remove ${member.first_name}`} className="p-2 text-text-secondary hover:text-error rounded-full transition-colors">

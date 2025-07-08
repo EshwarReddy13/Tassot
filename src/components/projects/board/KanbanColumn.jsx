@@ -83,7 +83,7 @@ const KanbanColumn = memo(({
             )}
             style={{ 
                 height: uniformHeight ? `${uniformHeight}px` : 'auto',
-                minHeight: '20rem'
+                minHeight: '50vh'
             }}
             whileHover={{ y: -2 }}
             transition={{ duration: 0.2 }}
@@ -104,7 +104,7 @@ const KanbanColumn = memo(({
                             aria-label="Column name"
                         />
                     ) : (
-                        <h3 className="text-white font-semibold" style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>
+                        <h3 className="text-white font-semibold text-sm uppercase" >
                             {column.name}
                         </h3>
                     )}
@@ -169,7 +169,7 @@ const KanbanColumn = memo(({
 
             {/* Tasks Container */}
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex-grow space-y-1 pt-2">
+                <div className="flex-grow space-y-1.5 pt-2">
                     <AnimatePresence>
                         {tasks.map((task) => (
                             <TaskCard 
@@ -183,45 +183,43 @@ const KanbanColumn = memo(({
                             />
                         ))}
                     </AnimatePresence>
+                    
+                    {/* Add Task Buttons - Now positioned right after tasks */}
+                    {!isDragging && canManageBoards && (
+                        <div className="space-y-1.5 pt-2">
+                            <motion.button
+                                onClick={() => onShowAddTaskModal(column.id)}
+                                className="w-full text-left p-3 hover-gradient hover:rounded-lg transition-all duration-200 text-text-secondary hover:text-accent-primary"
+                                whileHover={{ scale: 1.02, y: -1 }}
+                                whileTap={{ scale: 0.98 }}
+                                aria-label={`Add a task to ${column.name}`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-lg flex items-center justify-center">
+                                        <HiPlus className="w-4 h-4 text-purple-300" />
+                                    </div>
+                                    <span className="font-medium">Create task</span>
+                                </div>
+                            </motion.button>
+                            
+                            <motion.button
+                                onClick={() => onShowAITaskModal(column.id)}
+                                className="w-full text-left p-3 hover-gradient hover:rounded-lg transition-all duration-200 text-text-secondary hover:text-accent-primary"
+                                whileHover={{ scale: 1.02, y: -1 }}
+                                whileTap={{ scale: 0.98 }}
+                                aria-label={`Create task with AI in ${column.name}`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-lg flex items-center justify-center">
+                                        <HiSparkles className="w-4 h-4 text-purple-300" />
+                                    </div>
+                                    <span className="font-medium">Create with AI</span>
+                                </div>
+                            </motion.button>
+                        </div>
+                    )}
                 </div>
             </SortableContext>
-            
-            {/* Add Task Buttons */}
-            <div className="mt-6 space-y-2 flex-shrink-0">
-                {!isDragging && canManageBoards && (
-                    <>
-                        <motion.button
-                            onClick={() => onShowAddTaskModal(column.id)}
-                            className="w-full text-left p-3 glass-column-button text-text-secondary hover:text-accent-primary"
-                            whileHover={{ scale: 1.02, y: -1 }}
-                            whileTap={{ scale: 0.98 }}
-                            aria-label={`Add a task to ${column.name}`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-6 h-6 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-lg flex items-center justify-center">
-                                    <HiPlus className="w-4 h-4 text-accent-primary" />
-                                </div>
-                                <span className="font-medium">Add a task</span>
-                            </div>
-                        </motion.button>
-                        
-                        <motion.button
-                            onClick={() => onShowAITaskModal(column.id)}
-                            className="w-full text-left p-3 glass-column-button text-text-secondary hover:text-accent-primary"
-                            whileHover={{ scale: 1.02, y: -1 }}
-                            whileTap={{ scale: 0.98 }}
-                            aria-label={`Create task with AI in ${column.name}`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-6 h-6 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-lg flex items-center justify-center">
-                                    <HiSparkles className="w-4 h-4 text-purple-400" />
-                                </div>
-                                <span className="font-medium">Create with AI</span>
-                            </div>
-                        </motion.button>
-                    </>
-                )}
-            </div>
 
             {/* Drop Zone Indicator */}
             {isOver && (

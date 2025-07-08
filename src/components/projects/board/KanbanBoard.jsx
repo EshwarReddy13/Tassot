@@ -34,7 +34,7 @@ const AddColumnForm = ({
   if (!isAdding) {
     return (
       <motion.div
-        className="h-auto glass-add-column"
+        className="h-auto glass-column p-3 flex flex-col relative overflow-hidden"
         style={{ minHeight: '20rem' }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -44,7 +44,7 @@ const AddColumnForm = ({
       >
         <motion.button
           onClick={onAddColumnClick}
-          className="w-full h-full flex flex-col items-center justify-center p-6 rounded-2xl text-text-secondary hover:text-accent-primary transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent group"
+          className="w-full h-full flex flex-col items-center justify-center p-6 text-text-secondary hover:text-accent-primary transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent group"
           aria-label="Add a new column"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-accent-primary/20 to-accent-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -185,9 +185,6 @@ const KanbanBoard = ({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Background overlay for glass effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/3 via-transparent to-accent-secondary/3 pointer-events-none"></div>
-            
             <div className="relative z-20">
                 <DndContext
                     sensors={sensors}
@@ -206,28 +203,32 @@ const KanbanBoard = ({
                                 if (column.id === 'add-column-placeholder') {
                                     const canAddColumn = currentUserRole === 'owner' || currentUserRole === 'editor';
                                     return canAddColumn ? (
-                                        <motion.div 
-                                            key="add-column"
-                                            className="flex-shrink-0"
-                                            style={{ 
-                                                width: '20rem',
-                                                height: uniformHeight ? `${uniformHeight}px` : 'auto'
-                                            }}
-                                            initial={{ opacity: 0, x: 30 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ duration: 0.3, delay: index * 0.05 }}
-                                        >
-                                            <AddColumnForm
-                                                isAdding={newColumn.isAdding}
-                                                name={newColumn.name}
-                                                error={newColumn.error}
-                                                onAddColumnClick={newColumn.onAddColumnClick}
-                                                onColumnNameChange={newColumn.onColumnNameChange}
-                                                onAddColumn={newColumn.onAddColumn}
-                                                onCancelAddColumn={newColumn.onCancelAddColumn}
-                                                inputRef={newColumn.addColumnInputRef}
-                                            />
-                                        </motion.div>
+                                        <>
+                                            <motion.div 
+                                                key="add-column"
+                                                className="flex-shrink-0"
+                                                style={{ 
+                                                    width: '17rem',
+                                                    height: uniformHeight ? `${uniformHeight}px` : 'auto'
+                                                }}
+                                                initial={{ opacity: 0, x: 30 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                            >
+                                                <AddColumnForm
+                                                    isAdding={newColumn.isAdding}
+                                                    name={newColumn.name}
+                                                    error={newColumn.error}
+                                                    onAddColumnClick={newColumn.onAddColumnClick}
+                                                    onColumnNameChange={newColumn.onColumnNameChange}
+                                                    onAddColumn={newColumn.onAddColumn}
+                                                    onCancelAddColumn={newColumn.onCancelAddColumn}
+                                                    inputRef={newColumn.addColumnInputRef}
+                                                />
+                                            </motion.div>
+                                            {/* Add margin after the add column */}
+                                            <div className="flex-shrink-0 w-4"></div>
+                                        </>
                                     ) : null;
                                 }
 
@@ -238,7 +239,7 @@ const KanbanBoard = ({
                                         key={column.id}
                                         className="flex-shrink-0"
                                         style={{ 
-                                            width: '20rem',
+                                            width: '17rem',
                                             height: uniformHeight ? `${uniformHeight}px` : 'auto'
                                         }}
                                         initial={{ opacity: 0, x: 30 }}
@@ -274,7 +275,7 @@ const KanbanBoard = ({
                         <DragOverlay>
                             {activeTask ? <TaskCard task={activeTask} isOverlay={true} /> : null}
                         </DragOverlay>,
-                        document.body
+                        document.body 
                     )}
                 </DndContext>
             </div>

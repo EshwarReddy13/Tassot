@@ -74,7 +74,7 @@ const ActivityText = ({ type, user, item }) => {
 const RecentActivityWidget = ({ activityFeed }) => {
     return (
         <motion.div 
-            className="glass-project-widget p-6"
+            className="glass-card p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -94,7 +94,7 @@ const RecentActivityWidget = ({ activityFeed }) => {
                     activityFeed.map((activity, index) => (
                         <motion.div 
                             key={index} 
-                            className="glass-project-card p-4"
+                            className="glass-dark p-4"
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -118,7 +118,7 @@ const RecentActivityWidget = ({ activityFeed }) => {
                     ))
                 ) : (
                     <motion.div 
-                        className="glass-project-card p-8 text-center"
+                        className="glass-dark p-8 text-center"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}

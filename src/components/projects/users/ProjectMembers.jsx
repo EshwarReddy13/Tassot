@@ -40,19 +40,19 @@ const ProjectMembers = ({ members = [], onInviteClick }) => {
   return (
     <motion.div className="flex items-center" variants={containerVariants} initial="hidden" animate="visible">
       {visibleMembers.map((member, index) => (
-        <motion.div key={member.id || index} variants={itemVariants} className={`-ml-2 first:ml-0`}>
+        <motion.div key={member.id || index} variants={itemVariants} className={`-ml-2 first:ml-0 relative z-10`}>
           <UserAvatar member={member} />
         </motion.div>
       ))}
       {hiddenCount > 0 && (
-        <motion.div variants={itemVariants} className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-bg-card ring-2 ring-bg-primary" title={`${hiddenCount} more member${hiddenCount > 1 ? 's' : ''}`}>
+        <motion.div variants={itemVariants} className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-bg-card ring-2 ring-bg-primary relative z-10" title={`${hiddenCount} more member${hiddenCount > 1 ? 's' : ''}`}>
           <span className="text-xs font-bold text-text-secondary">+{hiddenCount}</span>
         </motion.div>
       )}
       
       {/* --- The Invite button is now correctly controlled by role permissions --- */}
       {canInvite && (
-          <motion.button onClick={onInviteClick} variants={itemVariants} className="-ml-2 flex h-9 items-center gap-x-1.5 rounded-r-full rounded-l-md bg-accent-primary px-3 py-1.5 text-white transition-colors duration-300 hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary" aria-label="Invite new members" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.button onClick={onInviteClick} variants={itemVariants} className="-ml-2 flex h-9 items-center gap-x-1.5 rounded-r-full rounded-l-md glass-button-accent px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary relative z-0" aria-label="Invite new members" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <PlusIcon className="h-5 w-5" />
             <span className="pr-1 text-sm font-semibold">Invite</span>
         </motion.button>

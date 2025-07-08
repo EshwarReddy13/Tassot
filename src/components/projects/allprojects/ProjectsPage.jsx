@@ -281,7 +281,12 @@ const ProjectsPage = () => {
 
         {/* Edit Project Modal */}
         {editing && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4">
+          <div 
+            className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4"
+            onClick={() => setEditing(null)}
+            onKeyDown={(e) => e.key === 'Escape' && setEditing(null)}
+            tabIndex={0}
+          >
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 
@@ -349,7 +354,12 @@ const ProjectsPage = () => {
 
         {/* Delete Project Modal */}
         {deleting && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4">
+          <div 
+            className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4"
+            onClick={() => setDeleting(null)}
+            onKeyDown={(e) => e.key === 'Escape' && setDeleting(null)}
+            tabIndex={0}
+          >
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 

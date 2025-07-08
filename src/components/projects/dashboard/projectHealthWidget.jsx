@@ -14,7 +14,7 @@ const COLORS = {
 
 const KpiCard = ({ title, value, icon, colorClass }) => (
   <motion.div 
-    className="glass-project-card p-4 flex items-center gap-4"
+    className="glass-dark p-4 flex items-center gap-4"
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
   >
@@ -130,7 +130,7 @@ const ProjectHealthWidget = ({ summaryData }) => {
 
   return (
     <motion.div 
-      className="glass-project-widget p-6"
+      className="glass-card p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}

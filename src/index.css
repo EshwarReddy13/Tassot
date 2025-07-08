@@ -307,6 +307,23 @@ body {
   transform: translateY(-1px);
 }
 
+.glass-button-accent {
+  background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-hover) 100%);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(150, 116, 218, 0.3);
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(150, 116, 218, 0.2);
+}
+
+.glass-button-accent:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent-primary) 100%);
+  border-color: rgba(150, 116, 218, 0.5);
+  box-shadow: 0 8px 32px rgba(150, 116, 218, 0.3);
+  transform: translateY(-2px);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -378,13 +395,16 @@ body {
 
 /* Kanban Board Glass Components */
 .glass-column {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, 
+    rgba(5, 5, 5, 0.8) 0%, 
+    rgba(5, 5, 5, 0.6) 50%, 
+    rgba(5, 5, 5, 0.4) 100%
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   transition: all 0.3s ease;
+  isolation: isolate;
 }
 
 .glass-column:hover {
@@ -394,18 +414,29 @@ body {
 }
 
 .glass-task {
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: linear-gradient(135deg, 
+    rgba(50, 50, 50, 1) 0%, 
+    rgba(50, 50, 50, 0.8) 50%, 
+    rgba(50, 50, 50, 0.6) 100%
+  ) !important;
+  
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  border-radius: 0.75rem;
+  border-radius: 0.2rem;
   transition: all 0.3s ease;
+  isolation: isolate;
+  z-index: 1;
+  position: relative;
 }
 
 .glass-task:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, 
+    rgba(50, 50, 50, 1) 0%, 
+    rgba(50, 50, 50, 0.8) 50%, 
+    rgba(50, 50, 50, 0.6) 100%
+  ) !important;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px) scale(1.02);
 }
 
@@ -556,6 +587,19 @@ body {
   .glass-task-action {
     transition: none;
   }
+}
+
+/* Custom hover gradient for buttons */
+.hover-gradient {
+  transition: background 0.3s ease;
+}
+
+.hover-gradient:hover {
+  background: linear-gradient(135deg, 
+    rgba(50, 50, 50, 1) 0%, 
+    rgba(50, 50, 50, 0.8) 50%, 
+    rgba(50, 50, 50, 0.6) 100%
+  ) !important;
 }
 
 /* Enhanced Tab Styling */
