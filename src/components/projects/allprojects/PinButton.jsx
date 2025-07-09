@@ -1,6 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiMapPin } from 'react-icons/fi';
+
+const FilledBookmarkIcon = ({ className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={`w-4 h-4 ${className}`}
+    aria-hidden="true"
+  >
+    <path d="M6 2a2 2 0 0 0-2 2v18a1 1 0 0 0 1.447.894L12 19.118l6.553 3.776A1 1 0 0 0 20 22V4a2 2 0 0 0-2-2H6z" />
+  </svg>
+);
 
 const PinButton = ({ isPinned, onPinToggle, disabled = false, className = '' }) => {
   const handleClick = (e) => {
@@ -29,18 +40,14 @@ const PinButton = ({ isPinned, onPinToggle, disabled = false, className = '' }) 
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       whileHover={!disabled ? { scale: 1.1 } : {}}
       whileTap={!disabled ? { scale: 0.95 } : {}}
-      aria-label={isPinned ? 'Unpin project' : 'Pin project'}
-      title={isPinned ? 'Unpin project' : 'Pin project'}
+      aria-label={isPinned ? 'Remove bookmark' : 'Bookmark project'}
+      title={isPinned ? 'Remove bookmark' : 'Bookmark project'}
     >
       <motion.div
-        animate={{ rotate: isPinned ? 0 : 0 }}
+        animate={{ rotate: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <FiMapPin 
-          className={`w-4 h-4 transition-transform duration-200 ${
-            isPinned ? 'rotate-0' : 'rotate-45'
-          }`} 
-        />
+        <FilledBookmarkIcon className={isPinned ? '' : 'opacity-40'} />
       </motion.div>
     </motion.button>
   );

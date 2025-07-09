@@ -223,7 +223,7 @@ const ProjectsPage = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <h2 className="text-xl font-semibold text-text-primary mb-6 flex items-center">
-                    Pinned Projects
+                    Bookmarked Projects
                     <span className="ml-2 text-sm font-normal text-text-secondary bg-accent-primary/20 px-2 py-1 rounded-full">
                       {pinnedProjects.length}
                     </span>

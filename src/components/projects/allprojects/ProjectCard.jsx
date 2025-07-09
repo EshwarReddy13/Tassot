@@ -96,10 +96,10 @@ const ProjectCard = ({
 
   return (
     <motion.div 
-      className={`relative glass-card group transition-all duration-300 ${
+      className={`relative group transition-all duration-300 ${
         project.isPinned 
-          ? 'ring-2 ring-accent-primary/50 bg-accent-primary/5' 
-          : 'glass-hover'
+          ? 'bookmarked-card' 
+          : 'glass-card glass-hover'
       }`}
       initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
@@ -119,13 +119,16 @@ const ProjectCard = ({
       {/* Simple pin indicator for pinned projects */}
       {project.isPinned && (
         <motion.div 
-          className="absolute -top-2 -left-2 z-10"
+          className="absolute -top-4 -left-4 z-10"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="w-6 h-6 rounded-full flex items-center justify-center text-4xl">
-            📌
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-4xl">
+            {/* Filled bookmark icon for bookmarked projects */}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-accent-primary">
+              <path d="M6 2a2 2 0 0 0-2 2v18a1 1 0 0 0 1.447.894L12 19.118l6.553 3.776A1 1 0 0 0 20 22V4a2 2 0 0 0-2-2H6z" />
+            </svg>
           </div>
         </motion.div>
       )}
@@ -163,7 +166,7 @@ const ProjectCard = ({
       </div>
       
       {/* Action buttons with colors */}
-      <div className="absolute top-3 right-3 flex space-x-1">
+      <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
         <PinButton
           isPinned={project.isPinned}
           onPinToggle={handlePinToggle}

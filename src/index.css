@@ -749,3 +749,14 @@ select option:hover {
   background-color: var(--color-accent-primary);
   border-color: var(--color-accent-primary);
 }
+
+.bookmarked-card {
+  background: linear-gradient(135deg, var(--glass-bg-primary) 0%, var(--glass-bg-secondary) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 0.05rem solid var(--color-accent-primary);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px var(--glass-shadow);
+  background-color: transparent !important;
+  transition: all 0.3s ease;
+}
