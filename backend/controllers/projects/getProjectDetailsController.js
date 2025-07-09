@@ -20,7 +20,7 @@ export const getProjectDetailsController = async (req, res) => {
                 (
                     SELECT json_agg(b_agg)
                     FROM (
-                        SELECT b.id, b.name, b.position
+                        SELECT b.id, b.name, b.position, b.color
                         FROM boards b
                         WHERE b.project_id = p.id
                         ORDER BY b.position

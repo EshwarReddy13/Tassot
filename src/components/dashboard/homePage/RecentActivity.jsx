@@ -42,7 +42,7 @@ const ActivityItem = ({ activity }) => {
 
   return (
     <motion.div
-      className="flex items-start gap-4 p-4 hover:bg-bg-secondary rounded-xl transition-colors group cursor-pointer"
+      className="flex items-start gap-4 p-4 glass-hover rounded-xl transition-colors group cursor-pointer"
       whileHover={{ x: 4 }}
     >
       <div className={`p-2 rounded-lg ${getActivityColor(activity.action_type)} text-lg`}>
@@ -84,14 +84,7 @@ const RecentActivity = ({ activities }) => {
   const recentActivities = activities?.slice(0, 8) || [];
 
   return (
-    <div 
-      className="border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-      }}
-    >
+    <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="text-2xl">📊</span>

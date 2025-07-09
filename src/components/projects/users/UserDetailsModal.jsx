@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from "framer-motion";
 import { HiX, HiCalendar, HiMail, HiOutlineClock, HiShieldCheck } from "react-icons/hi";
 import { useUser } from '../../../contexts/UserContext';
@@ -8,6 +8,23 @@ import { toast } from 'react-hot-toast';
 const UserDetailsModal = ({ user, project, isOpen, onClose }) => {
     const { userData } = useUser();
     const { updateMemberRole } = useProjects();
+    
+    // ESC key handler
+    useEffect(() => {
+        const handleEscKey = (event) => {
+            if (event.key === 'Escape' && isOpen) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscKey);
+        };
+    }, [isOpen, onClose]);
     
     if (!user || !project) return null;
 
@@ -66,7 +83,7 @@ const UserDetailsModal = ({ user, project, isOpen, onClose }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-bg-dark bg-opacity-75 flex items-center justify-center z-50 p-4"
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                     onClick={onClose}
                     role="dialog"
                     aria-modal="true"
@@ -76,17 +93,17 @@ const UserDetailsModal = ({ user, project, isOpen, onClose }) => {
                         initial={{ scale: 0.95, y: 20 }}
                         animate={{ scale: 1, y: 0 }}
                         exit={{ scale: 0.95, y: -20 }}
-                        className="bg-bg-secondary rounded-xl shadow-2xl w-full max-w-sm flex flex-col"
+                        className="glass-modal rounded-lg w-full max-w-sm flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <header className="flex items-center justify-end p-2">
-                            <button onClick={onClose} className="p-2 rounded-full text-text-secondary hover:bg-bg-primary" aria-label="Close modal">
+                            <button onClick={onClose} className="p-2 rounded-full text-text-secondary hover:bg-white/10 transition-colors" aria-label="Close modal">
                                 <HiX className="w-5 h-5" />
                             </button>
                         </header>
                         
                         <div className="flex flex-col items-center px-6 pb-6 -mt-8">
-                             <div className="flex items-center justify-center w-24 h-24 mb-4 overflow-hidden rounded-full bg-accent-primary ring-4 ring-bg-card">
+                             <div className="flex items-center justify-center w-24 h-24 mb-4 overflow-hidden rounded-full bg-accent-primary ring-4 ring-glass-border">
                                 {user.photo_url ? (
                                     <img src={user.photo_url} alt="User profile" className="object-cover w-full h-full" referrerPolicy="no-referrer" />
                                 ) : (
@@ -99,20 +116,20 @@ const UserDetailsModal = ({ user, project, isOpen, onClose }) => {
                             </h2>
 
                             <div className="w-full mt-6 text-sm text-text-secondary">
-                                <div className="flex items-center gap-3 p-3 border-t border-bg-primary">
+                                <div className="flex items-center gap-3 p-3 border-t border-glass-border">
                                     <HiMail className="w-5 h-5 text-text-secondary flex-shrink-0" />
                                     <a href={`mailto:${user.email}`} className="text-text-primary hover:text-accent-primary truncate transition-colors">{user.email}</a>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 border-t border-bg-primary">
+                                <div className="flex items-center gap-3 p-3 border-t border-glass-border">
                                     <HiCalendar className="w-5 h-5 text-text-secondary flex-shrink-0" />
                                     <span>Joined This Project: {formatDate(user.added_at)}</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 border-t border-bg-primary">
+                                <div className="flex items-center gap-3 p-3 border-t border-glass-border">
                                     <HiOutlineClock className="w-5 h-5 text-text-secondary flex-shrink-0" />
                                     <span>Account Created: {formatDate(user.account_created_at)}</span>
                                 </div>
                                 
-                                <div className="flex flex-col p-3 border-y border-bg-primary">
+                                <div className="flex flex-col p-3 border-y border-glass-border">
                                     <div className="flex items-center gap-3">
                                         <HiShieldCheck className="w-5 h-5 text-text-secondary flex-shrink-0" />
                                         <label htmlFor="role-select" className="text-sm">Role in Project</label>
@@ -122,7 +139,7 @@ const UserDetailsModal = ({ user, project, isOpen, onClose }) => {
                                         value={user.role}
                                         onChange={(e) => handleRoleChange(e.target.value)}
                                         disabled={!canManage()}
-                                        className="w-full mt-2 bg-bg-primary text-text-primary text-sm rounded-md py-2 px-3 border border-transparent focus:ring-2 focus:ring-accent-primary disabled:opacity-60 disabled:cursor-not-allowed capitalize"
+                                        className="w-full mt-2 glass-input text-text-primary text-sm rounded-md py-2 px-3 focus:ring-2 focus:ring-accent-primary disabled:opacity-60 disabled:cursor-not-allowed capitalize"
                                     >
                                         <option value="owner" disabled={currentUserRole !== 'owner'}>Owner</option>
                                         <option value="editor">Editor</option>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 const ProjectCard = ({ project, onNavigate }) => (
   <motion.div
-    className="bg-bg-card border border-border-secondary rounded-xl p-4 hover:border-border-primary transition-all duration-300 hover:shadow-lg cursor-pointer group"
+    className="glass-dark rounded-xl p-4 cursor-pointer group"
     whileHover={{ y: -2 }}
     onClick={() => onNavigate(`/projects/${project.projectUrl || project.project_url}`)}
   >
@@ -52,18 +52,15 @@ const PinnedProjects = ({ projects, onCreateProject, onNavigate }) => {
   };
 
   return (
-    <div 
-      className="border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 h-full flex flex-col"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-      }}
-    >
+    <div className="glass-card p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">📌</span>
-          <h2 className="text-text-primary text-xl font-bold">Pinned Projects</h2>
+          <span className="text-2xl align-middle mr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-accent-primary inline-block align-middle">
+              <path d="M6 2a2 2 0 0 0-2 2v18a1 1 0 0 0 1.447.894L12 19.118l6.553 3.776A1 1 0 0 0 20 22V4a2 2 0 0 0-2-2H6z" />
+            </svg>
+          </span>
+          <h2 className="text-text-primary text-xl font-bold">Bookmarked Projects</h2>
           {pinnedProjects.length > 0 && (
             <span className="bg-accent-primary/20 text-accent-primary text-xs px-2 py-1 rounded-full font-medium">
               {pinnedProjects.length}
@@ -87,9 +84,13 @@ const PinnedProjects = ({ projects, onCreateProject, onNavigate }) => {
 
       {pinnedProjects.length === 0 ? (
         <div className="text-center py-8 flex-1 flex flex-col items-center justify-center">
-          <div className="text-text-tertiary text-6xl mb-4">📌</div>
-          <p className="text-text-secondary mb-2">No pinned projects yet</p>
-          <p className="text-text-tertiary text-sm">Pin your favorite projects to see them here</p>
+          <div className="text-text-tertiary mb-4 flex justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-accent-primary">
+              <path d="M6 2a2 2 0 0 0-2 2v18a1 1 0 0 0 1.447.894L12 19.118l6.553 3.776A1 1 0 0 0 20 22V4a2 2 0 0 0-2-2H6z" />
+            </svg>
+          </div>
+          <p className="text-text-secondary mb-2">No bookmarked projects yet</p>
+          <p className="text-text-tertiary text-sm">Bookmark your favorite projects to see them here</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">

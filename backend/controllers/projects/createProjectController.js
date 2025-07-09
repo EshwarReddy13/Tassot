@@ -88,14 +88,14 @@ export const createProjectController = async (req, res) => {
     );
 
     const defaultBoards = [
-      { name: 'To Do',       position: 0 },
-      { name: 'In Progress', position: 1 },
-      { name: 'Done',        position: 2 },
+      { name: 'To Do',       position: 0, color: '#FF3B30' },
+      { name: 'In Progress', position: 1, color: '#FF9500' },
+      { name: 'Done',        position: 2, color: '#34C759' },
     ];
     for (let board of defaultBoards) {
       await client.query(
-        `INSERT INTO boards (project_id, name, position) VALUES ($1, $2, $3)`,
-        [newProject.id, board.name, board.position]
+        `INSERT INTO boards (project_id, name, position, color) VALUES ($1, $2, $3, $4)`,
+        [newProject.id, board.name, board.position, board.color]
       );
     }
 

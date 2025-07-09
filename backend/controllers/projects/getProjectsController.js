@@ -12,7 +12,23 @@ export const getProjectsController = async (req, res) => {
               p.owner_id,
               p.created_at,
               pu.is_pinned,
-              pu.sort_order
+              pu.sort_order,
+              (
+                SELECT json_agg(m_agg)
+                FROM (
+                  SELECT 
+                    u.id, 
+                    u.first_name, 
+                    u.last_name, 
+                    u.photo_url,
+                    pu_mem.role
+                  FROM users u
+                  JOIN project_users pu_mem ON u.id = pu_mem.user_id
+                  WHERE pu_mem.project_id = p.id
+                  ORDER BY pu_mem.role = 'owner' DESC, u.first_name ASC
+                  LIMIT 5
+                ) AS m_agg
+              ) AS members
          FROM projects p
     INNER JOIN project_users pu
             ON pu.project_id = p.id
@@ -30,7 +46,8 @@ export const getProjectsController = async (req, res) => {
       ownerId:      r.owner_id,
       createdAt:    r.created_at,
       isPinned:     r.is_pinned,
-      sortOrder:    r.sort_order
+      sortOrder:    r.sort_order,
+      members:      r.members || []
     }));
 
     res.json(projects);

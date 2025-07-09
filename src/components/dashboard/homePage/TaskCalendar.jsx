@@ -64,14 +64,7 @@ const TaskCalendar = ({ tasks, onTaskClick }) => {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div 
-      className="border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 h-full flex flex-col"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(180%)'
-      }}
-    >
+    <div className="glass-card p-6 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -81,7 +74,7 @@ const TaskCalendar = ({ tasks, onTaskClick }) => {
         <div className="flex items-center gap-2">
           <motion.button
             onClick={goToPreviousMonth}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="glass-button p-2 rounded-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -96,7 +89,7 @@ const TaskCalendar = ({ tasks, onTaskClick }) => {
           </span>
           <motion.button
             onClick={goToNextMonth}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="glass-button p-2 rounded-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -131,14 +124,14 @@ const TaskCalendar = ({ tasks, onTaskClick }) => {
               <motion.div
                 key={index}
                 className={`
-                  relative min-h-[80px] p-1 rounded-lg border transition-all duration-200
+                  relative min-h-[80px] p-1 rounded-lg transition-all duration-200
                   ${isCurrentMonthDay 
-                    ? 'bg-bg-primary border-white/10 hover:border-white/20' 
-                    : 'bg-bg-secondary border-white/5'
+                    ? 'glass-tertiary' 
+                    : 'glass-dark opacity-50'
                   }
                   ${isTodayDate 
-                    ? 'bg-accent-primary/20 border-accent-primary/30' 
-                    : 'hover:bg-bg-secondary/80'
+                    ? 'bg-accent-primary/20 border border-accent-primary/30' 
+                    : ''
                   }
                 `}
                 whileHover={{ scale: 1.02 }}
@@ -198,21 +191,30 @@ const TaskCalendar = ({ tasks, onTaskClick }) => {
           })}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-accent-primary/20 border border-accent-primary/30"></div>
-            <span className="text-text-secondary text-xs">Due</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-red-500/20 border border-red-500/30"></div>
-            <span className="text-text-secondary text-xs">Overdue</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-green-500/20 border border-green-500/30"></div>
-            <span className="text-text-secondary text-xs">Completed</span>
-          </div>
-        </div>
+        {/* Selected Date Tasks */}
+        {selectedDate && (
+          <motion.div
+            className="mt-4 p-4 glass-secondary rounded-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h3 className="text-text-primary font-medium mb-2">
+              Tasks for {selectedDate.toLocaleDateString()}
+            </h3>
+            <div className="space-y-2">
+              {getTasksForDate(selectedDate).map(task => (
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between p-2 glass-tertiary rounded cursor-pointer hover:bg-accent-primary/10"
+                  onClick={() => onTaskClick(task)}
+                >
+                  <span className="text-text-primary text-sm">{task.task_name || task.taskName}</span>
+                  <span className="text-text-secondary text-xs">{task.task_key || task.taskKey}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

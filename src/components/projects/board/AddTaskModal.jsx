@@ -66,6 +66,23 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, members = [], boards = [], in
     const { enhanceTaskName, enhanceTaskDescription } = useAI();
     const { projectUrl } = useParams();
 
+    // ESC key handler
+    useEffect(() => {
+        const handleEscKey = (event) => {
+            if (event.key === 'Escape' && isOpen) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscKey);
+        };
+    }, [isOpen, onClose]);
+
     const getInitialState = () => ({
         task_name: '',
         description: '',

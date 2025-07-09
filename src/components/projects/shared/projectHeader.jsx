@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
-import ProjectMembers from './ProjectMembers.jsx';
+import ProjectMembers from '../users/ProjectMembers.jsx';
 import InviteModal from '../modals/InviteModal.jsx';
 
 const SearchIcon = (props) => (
@@ -15,6 +16,7 @@ const SearchIcon = (props) => (
 const ProjectHeader = () => {
   const { currentProject } = useProjects();
   const { userData } = useUser();
+  const location = useLocation();
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
 
   // --- FIX: Check permissions based on role ---
@@ -29,6 +31,32 @@ const ProjectHeader = () => {
 
   const canInvite = currentUserRole === 'owner' || currentUserRole === 'editor';
 
+  // Function to get the current page name based on the URL
+  const getCurrentPageName = () => {
+    const path = location.pathname;
+    const pathSegments = path.split('/');
+    
+    // Get the last segment of the path
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    
+    // If the path ends with just the project URL (no sub-route), it's the Kanban Board
+    if (lastSegment === pathSegments[2] || lastSegment === '') {
+      return 'Kanban Board';
+    }
+    
+    // Map route segments to display names
+    const pageNames = {
+      'timeline': 'Timeline',
+      'list': 'List',
+      'all-work': 'All Work',
+      'dashboard': 'Dashboard',
+      'users': 'Users',
+      'settings': 'Settings'
+    };
+    
+    return pageNames[lastSegment] || 'Kanban Board';
+  };
+
   // No change to this handler, but the UI it controls is now role-aware
   const handleInviteClick = () => {
     setInviteModalOpen(true);
@@ -38,7 +66,7 @@ const ProjectHeader = () => {
   if (!currentProject || !userData) {
       return (
           // Render a placeholder or nothing to prevent crashes
-          <header className="fixed top-0 left-[17rem] right-0 z-10 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary bg-bg-primary px-6 animate-pulse">
+          <header className="fixed top-0 left-[17rem] right-0 z-50 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary px-6 bg-bg-primary animate-pulse">
              <div className="h-6 w-1/4 bg-bg-secondary rounded"></div>
              <div className="h-9 w-1/3 bg-bg-secondary rounded-full"></div>
           </header>
@@ -47,10 +75,10 @@ const ProjectHeader = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-[17rem] right-0 z-10 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary bg-bg-primary px-6">
+      <header className="bg-bg-primary absolute top-0 left-0 right-0 z-50 flex h-[4rem] items-center justify-between border-b border-b-bg-secondary px-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="font-bold text-text-primary" style={{ fontSize: 'clamp(1.125rem, 1.5vw, 1.25rem)' }}>
-            {currentProject.project.project_name}
+          <h1 className="font-bold text-text-primary text-3xl">
+            {getCurrentPageName()}
           </h1>
         </motion.div>
         <motion.div className="flex items-center gap-x-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>

@@ -4,10 +4,10 @@ import { useParams } from 'react-router-dom';
 import { useProjects } from '../../../contexts/ProjectContext.jsx';
 import { useUser } from '../../../contexts/UserContext.jsx';
 import { useAI } from '../../../contexts/AIContext.jsx';
-import KanbanBoard from '../tasks/KanbanBoard.jsx';
-import TaskDetailsModal from '../tasks/TaskDetails.jsx';
-import AddTaskModal from '../modals/AddTaskModal.jsx';
-import AITaskCreationModal from '../modals/AITaskCreationModal.jsx';
+import KanbanBoard from './KanbanBoard.jsx';
+import TaskDetailsModal from './TaskDetails.jsx';
+import AddTaskModal from './AddTaskModal.jsx';
+import AITaskCreationModal from '../ai/AITaskCreationModal.jsx';
 import toast from 'react-hot-toast';
 
 const ProjectDetails = () => {
@@ -209,12 +209,19 @@ const ProjectDetails = () => {
         }
     };
     
-    // --- FIX: NO PERMISSION CHECK HERE ---
     const handleUpdateBoardName = (boardId, newName) => {
-        toast.promise(updateBoard(projectUrl, boardId, newName), {
+        toast.promise(updateBoard(projectUrl, boardId, { name: newName }), {
             loading: 'Renaming column...',
             success: 'Column renamed!',
             error: (err) => err.message || 'Could not rename column.',
+        });
+    };
+
+    const handleUpdateBoardColor = (boardId, newColor) => {
+        toast.promise(updateBoard(projectUrl, boardId, { color: newColor }), {
+            loading: 'Updating color...',
+            success: 'Color updated!',
+            error: (err) => err.message || 'Could not update color.',
         });
     };
 
@@ -241,7 +248,7 @@ const ProjectDetails = () => {
     }
 
     return (
-        <div className="px-4 sm:px-6 lg:px-8 py-6 bg-bg-primary min-h-[calc(100vh-4rem)]">
+        <div className="min-h-[calc(100vh-4rem)] px-4 py-4">
             <KanbanBoard
                 columns={columns}
                 tasks={tasks}
@@ -250,23 +257,23 @@ const ProjectDetails = () => {
                     isAdding: newColumn.isAdding,
                     name: newColumn.name,
                     error: newColumn.error,
-                    onAddColumnClick: () => setNewColumn({ isAdding: true, name: '', error: '' }),
-                    onColumnNameChange: (e) => setNewColumn({ ...newColumn, name: e.target.value, error: '' }),
-                    onAddColumn: handleAddColumn,
-                    onCancelAddColumn: () => setNewColumn({ isAdding: false, name: '', error: '' }),
-                    addColumnInputRef: addColumnInputRef,
+                    ref: addColumnInputRef
                 }}
+                onAddColumn={handleAddColumn}
+                onNewColumnChange={(e) => setNewColumn(prev => ({ ...prev, name: e.target.value, error: '' }))}
+                onToggleAddColumn={() => setNewColumn(prev => ({ ...prev, isAdding: !prev.isAdding }))}
+                onDeleteTask={handleDeleteTask}
+                onUpdateTaskName={handleUpdateTaskName}
+                onDeleteBoard={handleDeleteBoard}
+                onUpdateBoardName={handleUpdateBoardName}
+                onUpdateBoardColor={handleUpdateBoardColor}
                 onShowAddTaskModal={handleOpenAddTaskModal}
                 onShowAITaskModal={handleOpenAITaskModal}
                 activeTask={activeTask}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
                 isDragging={isDragging}
-                onDeleteTask={handleDeleteTask}
-                onUpdateTaskName={handleUpdateTaskName}
                 currentUserRole={currentUserRole} // --- PASS ROLE, NOT 'isOwner' ---
-                onDeleteBoard={handleDeleteBoard}
-                onUpdateBoardName={handleUpdateBoardName}
             />
             {selectedTask && (
                 <TaskDetailsModal
