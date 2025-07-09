@@ -92,12 +92,24 @@ export const ProjectProvider = ({ children }) => {
         const errorData = await res.json(); throw new Error(errorData.error || "Failed to delete board.");
     }, [firebaseUser]);
 
-    const updateBoard = useCallback(async (projectUrl, boardId, name) => {
+    const updateBoard = useCallback(async (projectUrl, boardId, updateData) => {
         if (!firebaseUser) throw new Error("Authentication required");
         const token = await firebaseUser.getIdToken();
-        const res = await fetch(`/api/projects/${projectUrl}/boards/${boardId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name }) });
-        const updatedBoard = await res.json(); if (!res.ok) throw new Error(updatedBoard.error || "Failed to update board.");
-        setCurrentProject(prev => { if (!prev) return null; const newBoards = prev.boards.map(b => b.id === boardId ? { ...b, ...updatedBoard } : b); return { ...prev, boards: newBoards }; }); return updatedBoard;
+        const res = await fetch(`/api/projects/${projectUrl}/boards/${boardId}`, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
+            body: JSON.stringify(updateData) 
+        });
+        const updatedBoard = await res.json(); 
+        if (!res.ok) throw new Error(updatedBoard.error || "Failed to update board.");
+        
+        setCurrentProject(prev => { 
+            if (!prev) return null; 
+            const newBoards = prev.boards.map(b => b.id === boardId ? { ...b, ...updatedBoard } : b); 
+            return { ...prev, boards: newBoards }; 
+        }); 
+        
+        return updatedBoard;
     }, [firebaseUser]);
 
     const removeUserFromProject = useCallback(async (projectUrl, memberId) => {

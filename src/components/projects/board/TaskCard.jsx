@@ -13,7 +13,7 @@ const formatDate = (dateString) => {
     return new Intl.DateTimeFormat('default', { month: 'short', day: 'numeric' }).format(date);
 };
 
-const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = false, onDelete, onUpdateName }) => {
+const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = false, onDelete, onUpdateName, boardColor, isDoneColumn }) => {
     const { enhanceTaskName } = useAI();
     const [isEditing, setIsEditing] = useState(false);
     const [taskName, setTaskName] = useState(task.task_name);
@@ -38,6 +38,10 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
     };
 
     const handleCardClick = (e) => {
+        // If the click came from an action button (or anything inside it), do nothing.
+        if (e.target.closest('.glass-task-action')) {
+            return;
+        }
         if (isThisCardDragging || isEditing) {
             e.preventDefault();
             e.stopPropagation();
@@ -109,7 +113,10 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-text-primary mb-3 break-words leading-relaxed text-sm">
+                                <p className={clsx(
+                                    "text-text-primary mb-3 break-words leading-relaxed text-sm",
+                                    { 'line-through text-text-secondary': isDoneColumn }
+                                )}>
                                     {task.task_name}
                                 </p>
                             )}
@@ -118,7 +125,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                         {!isEditing && (
                             <div className="flex items-end justify-between min-h-[2rem]">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-accent-primary rounded-full"></div>
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: boardColor || '#8B5CF6' }}></div>
                                     <span className="text-xs font-semibold text-text-primary py-1">
                                         {task.task_key}
                                     </span>
@@ -161,7 +168,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                 >
                     <motion.button 
                         onClick={handleEditClick} 
-                        className="p-2 glass-task-action text-text-secondary hover:text-blue-400 hover:border-blue-400/30"
+                        className="p-2 glass-task-action text-text-secondary transition-colors hover:text-blue-400"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         aria-label={`Edit task name for ${task.task_name}`}
@@ -170,7 +177,7 @@ const TaskCard = ({ task, onTaskClick, isOverlay = false, isGlobalDragging = fal
                     </motion.button>
                     <motion.button 
                         onClick={handleDeleteClick} 
-                        className="p-2 glass-task-action text-text-secondary hover:text-red-400 hover:border-red-400/30"
+                        className="p-2 glass-task-action text-text-secondary transition-colors hover:text-red-400"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         aria-label={`Delete task ${task.task_name}`}

@@ -136,6 +136,7 @@ const KanbanBoard = ({
     currentUserRole,
     onDeleteBoard,
     onUpdateBoardName,
+    onUpdateBoardColor,
 }) => {
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -261,6 +262,7 @@ const KanbanBoard = ({
                                             currentUserRole={currentUserRole}
                                             onDeleteBoard={onDeleteBoard}
                                             onUpdateBoardName={onUpdateBoardName}
+                                            onUpdateBoardColor={onUpdateBoardColor}
                                             onShowAddTaskModal={onShowAddTaskModal}
                                             onShowAITaskModal={onShowAITaskModal}
                                             uniformHeight={uniformHeight}

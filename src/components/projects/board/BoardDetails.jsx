@@ -209,12 +209,19 @@ const ProjectDetails = () => {
         }
     };
     
-    // --- FIX: NO PERMISSION CHECK HERE ---
     const handleUpdateBoardName = (boardId, newName) => {
-        toast.promise(updateBoard(projectUrl, boardId, newName), {
+        toast.promise(updateBoard(projectUrl, boardId, { name: newName }), {
             loading: 'Renaming column...',
             success: 'Column renamed!',
             error: (err) => err.message || 'Could not rename column.',
+        });
+    };
+
+    const handleUpdateBoardColor = (boardId, newColor) => {
+        toast.promise(updateBoard(projectUrl, boardId, { color: newColor }), {
+            loading: 'Updating color...',
+            success: 'Color updated!',
+            error: (err) => err.message || 'Could not update color.',
         });
     };
 
@@ -250,23 +257,23 @@ const ProjectDetails = () => {
                     isAdding: newColumn.isAdding,
                     name: newColumn.name,
                     error: newColumn.error,
-                    onAddColumnClick: () => setNewColumn({ isAdding: true, name: '', error: '' }),
-                    onColumnNameChange: (e) => setNewColumn({ ...newColumn, name: e.target.value, error: '' }),
-                    onAddColumn: handleAddColumn,
-                    onCancelAddColumn: () => setNewColumn({ isAdding: false, name: '', error: '' }),
-                    addColumnInputRef: addColumnInputRef,
+                    ref: addColumnInputRef
                 }}
+                onAddColumn={handleAddColumn}
+                onNewColumnChange={(e) => setNewColumn(prev => ({ ...prev, name: e.target.value, error: '' }))}
+                onToggleAddColumn={() => setNewColumn(prev => ({ ...prev, isAdding: !prev.isAdding }))}
+                onDeleteTask={handleDeleteTask}
+                onUpdateTaskName={handleUpdateTaskName}
+                onDeleteBoard={handleDeleteBoard}
+                onUpdateBoardName={handleUpdateBoardName}
+                onUpdateBoardColor={handleUpdateBoardColor}
                 onShowAddTaskModal={handleOpenAddTaskModal}
                 onShowAITaskModal={handleOpenAITaskModal}
                 activeTask={activeTask}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
                 isDragging={isDragging}
-                onDeleteTask={handleDeleteTask}
-                onUpdateTaskName={handleUpdateTaskName}
                 currentUserRole={currentUserRole} // --- PASS ROLE, NOT 'isOwner' ---
-                onDeleteBoard={handleDeleteBoard}
-                onUpdateBoardName={handleUpdateBoardName}
             />
             {selectedTask && (
                 <TaskDetailsModal
